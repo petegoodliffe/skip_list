@@ -8,8 +8,17 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-TEST_CASE( "smoketest", "" )
+TEST_CASE( "skip_list/smoketest", "" )
 {
-    REQUIRE(false);
+    //REQUIRE(false);
+}
+
+struct Struct { int i; float f; };
+
+TEST_CASE( "skip_list/can be constructed and destroyed", "" )
+{
+    skip_list<int>    sl_int;
+    skip_list<float>  sl_float;
+    skip_list<Struct> sl_struct;
 }
 

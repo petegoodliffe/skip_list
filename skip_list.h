@@ -42,8 +42,6 @@ public:
     //======================================================================
     // lifetime management
 
-    skip_list();
-
     explicit skip_list(const Allocator &alloc = Allocator());
 
     template <class InputIterator>
@@ -174,3 +172,39 @@ namespace std
     template <class T, class Allocator>
     void swap(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
 }
+
+//============================================================================
+// lifetime management
+
+template <class T, class Allocator>
+inline
+skip_list<T,Allocator>::skip_list(const Allocator &alloc)
+{
+}
+
+template <class T, class Allocator>
+inline
+skip_list<T,Allocator>::~skip_list()
+{
+}
+
+/*
+    skip_list();
+
+    explicit skip_list(const Allocator &alloc = Allocator());
+
+    template <class InputIterator>
+    skip_list(InputIterator first, InputIterator last, const Allocator &alloc = Allocator());
+
+    skip_list(const skip_list &other);
+    skip_list(const skip_list &other, const Allocator &alloc);
+
+    // C++11
+    //skip_list(const skip_list &&other);
+    //skip_list(const skip_list &&other, const Allocator &alloc);
+    //skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
+
+    ~skip_list();
+
+    allocator_type get_allocator() const;
+    */
