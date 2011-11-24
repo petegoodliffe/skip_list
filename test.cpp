@@ -53,3 +53,8 @@ TEST_CASE( "skip_list/construction with allocator returns copy of that allocator
     REQUIRE((skip_list<int,Struct>(Struct(10,4)).get_allocator()) == Struct(10,4));
 }
 
+TEST_CASE( "skip_list/constructed list returns empty()", "" )
+{
+    skip_list<int> list;
+    REQUIRE(list.empty());
+}

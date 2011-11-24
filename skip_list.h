@@ -152,9 +152,17 @@ public:
 private:
     struct node
     {
+        node *next;
+        value_type value;
     };
 
-    allocator_type alloc;
+    static const unsigned max_levels = 33;
+
+    const allocator_type alloc;
+    unsigned             levels;
+    node                *nodes[max_levels];
+
+    unsigned random_level();
 };
 
 template <class T, class Allocator>
@@ -187,7 +195,8 @@ namespace std
 template <class T, class Allocator>
 inline
 skip_list<T,Allocator>::skip_list(const Allocator &alloc)
-: alloc(alloc)
+:   alloc(alloc),
+    levels()
 {
 }
 
@@ -201,7 +210,8 @@ template <class T, class Allocator>
 template <class InputIterator>
 inline
 skip_list<T,Allocator>::skip_list(InputIterator first, InputIterator last, const Allocator &alloc)
-: alloc(alloc)
+:   alloc(alloc),
+    levels(0)
 {
     assert(false);
 }
@@ -209,7 +219,8 @@ skip_list<T,Allocator>::skip_list(InputIterator first, InputIterator last, const
 template <class T, class Allocator>
 inline
 skip_list<T,Allocator>::skip_list(const skip_list &other)
-: alloc(other.alloc)
+:   alloc(other.alloc),
+    levels(0)
 {
     assert(false);
 }
@@ -217,7 +228,8 @@ skip_list<T,Allocator>::skip_list(const skip_list &other)
 template <class T, class Allocator>
 inline
 skip_list<T,Allocator>::skip_list(const skip_list &other, const Allocator &alloc)
-: alloc(alloc)
+:   alloc(alloc),
+    levels(0)
 {
     assert(false);
 }
@@ -402,7 +414,7 @@ template <class T, class Allocator>
 inline
 bool skip_list<T,Allocator>::empty() const
 {
-    not_implemented_yet();
+    return levels == 0;
 }
 
 template <class T, class Allocator>
@@ -551,3 +563,13 @@ void std::swap(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
     lhs.swap(rhs);
 }
 
+//======================================================================
+// internal
+
+template <class T, class Allocator>
+inline
+unsigned skip_list<T,Allocator>::random_level()
+{
+    // TODO: decide on a better approach
+    return rand() % max_levels;
+}
