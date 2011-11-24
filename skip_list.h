@@ -138,16 +138,16 @@ public:
     friend void swap(skip_list &lhs, skip_list &rhs) { lhs.swap(rhs); }
 
     //======================================================================
-    // operations
+    // other operations
 
-    // std:;list has:
-    // merge
-    // splace
-    // remove
-    // remove_if
-    // reverse
-    // unique
-    // sort
+    // std::list has:
+    //   * merge
+    //   * splice
+    //   * remove
+    //   * remove_if
+    //   * reverse
+    //   * unique
+    //   * sort
 
 private:
     struct node
