@@ -10,8 +10,9 @@
 #include <cassert>
 void not_implemented_yet() { assert("Not implemented yet" && false); }
 
-/// TODO: allocator
-/// C++11: noexpect
+/// STL-style skip list container
+///
+/// C++11: noexect decls
 template <typename T, typename Allocator = std::allocator<T> >
 class skip_list
 {
@@ -65,7 +66,7 @@ public:
     //======================================================================
     // assignment
 
-    skip_list& operator=(const skip_list& other);
+    skip_list &operator=(const skip_list& other);
     //C++11 skip_list& operator=(skip_list&& other);
 
     void assign(size_type count, const value_type &value);
@@ -231,5 +232,265 @@ inline
 Allocator skip_list<T,Allocator>::get_allocator() const
 {
     return alloc;
+}
+
+//======================================================================
+// assignment
+
+template <class T, class Allocator>
+inline
+skip_list<T,Allocator> &skip_list<T,Allocator>::operator=(const skip_list<T,Allocator> &other)
+{
+    not_implemented_yet();
+}
+
+//C++11 skip_list& operator=(skip_list&& other);
+
+template <class T, class Allocator>
+inline
+void skip_list<T,Allocator>::assign(size_type count, const value_type &value)
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+template <typename InputIterator>
+inline
+void skip_list<T,Allocator>::assign(InputIterator first, InputIterator last)
+{
+    not_implemented_yet();
+}
+
+//======================================================================
+// element access
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::reference
+skip_list<T,Allocator>::front()
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_reference
+skip_list<T,Allocator>::front() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::reference
+skip_list<T,Allocator>::back()
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_reference
+skip_list<T,Allocator>::back() const
+{
+    not_implemented_yet();
+}
+
+//======================================================================
+// iterators
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::iterator
+skip_list<T,Allocator>::begin()
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_iterator
+skip_list<T,Allocator>::begin() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_iterator
+skip_list<T,Allocator>::cbegin() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::iterator
+skip_list<T,Allocator>::end()
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_iterator
+skip_list<T,Allocator>::end() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_iterator
+skip_list<T,Allocator>::cend() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::reverse_iterator
+skip_list<T,Allocator>::rbegin()
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_reverse_iterator
+skip_list<T,Allocator>::rbegin() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_reverse_iterator
+skip_list<T,Allocator>::crbegin() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::reverse_iterator
+skip_list<T,Allocator>::rend()
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_reverse_iterator
+skip_list<T,Allocator>::rend() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::const_reverse_iterator
+skip_list<T,Allocator>::crend() const
+{
+    not_implemented_yet();
+}
+
+//======================================================================
+// capacity
+
+template <class T, class Allocator>
+inline
+bool skip_list<T,Allocator>::empty() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::size_type
+skip_list<T,Allocator>::size() const
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::size_type
+skip_list<T,Allocator>::max_size() const
+{
+    not_implemented_yet();
+}
+
+//======================================================================
+// modifiers
+
+template <class T, class Allocator>
+inline
+void skip_list<T,Allocator>::clear()
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::iterator
+skip_list<T,Allocator>::insert(const_iterator pos, const value_type &value)
+{
+    not_implemented_yet();
+}
+
+//C++11iterator insert const_iterator pos, value_type &&value);
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::iterator
+skip_list<T,Allocator>::insert(const_iterator pos, size_type count, const value_type &value)
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+template <class InputIterator>
+inline
+typename skip_list<T,Allocator>::iterator
+skip_list<T,Allocator>::insert(const_iterator pos, InputIterator first, InputIterator last)
+{
+    not_implemented_yet();
+}
+
+//C++11iterator insert(const_iterator pos, std::initializer_list<value_type> ilist);
+// C++11 emplace
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::iterator
+skip_list<T,Allocator>::erase(const_iterator position)
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+typename skip_list<T,Allocator>::iterator
+skip_list<T,Allocator>::erase(const_iterator first, const_iterator last)
+{
+    not_implemented_yet();
+}
+
+template <class T, class Allocator>
+inline
+void skip_list<T,Allocator>::push_back(const value_type &value)
+{
+    not_implemented_yet();
+}
+
+//C++11void push_back( value_type &&value );
+//C++11 emplace_back
+
+template <class T, class Allocator>
+inline
+void skip_list<T,Allocator>::swap(skip_list<T,Allocator> &other)
+{
+    not_implemented_yet();
 }
 

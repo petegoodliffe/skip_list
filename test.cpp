@@ -13,6 +13,8 @@ TEST_CASE( "skip_list/smoketest", "" )
     //REQUIRE(false);
 }
 
+//============================================================================
+
 struct Struct
 {
     int i;
@@ -29,6 +31,8 @@ inline
 bool operator!=(const Struct &lhs, const Struct &rhs)
     { return !operator==(lhs,rhs); }
 
+//============================================================================
+
 TEST_CASE( "skip_list/can be constructed and destroyed", "" )
 {
     skip_list<int>    sl_int;
@@ -37,7 +41,6 @@ TEST_CASE( "skip_list/can be constructed and destroyed", "" )
 
     REQUIRE(true);
 }
-
 
 TEST_CASE( "skip_list/default construction gets default allocator", "" )
 {
