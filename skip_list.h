@@ -7,6 +7,9 @@
 
 #include <memory>
 
+#include <cassert>
+void not_implemented_yet() { assert("Not implemented yet" && false); }
+
 /// TODO: allocator
 /// C++11: noexpect
 template <typename T, typename Allocator = std::allocator<T> >
@@ -129,7 +132,9 @@ public:
 
     //C++11 emplace_back
 
-    void swap(skip_list& other);
+    void swap(skip_list &other);
+
+    friend void swap(skip_list &lhs, skip_list &rhs) { lhs.swap(rhs); }
 
     //======================================================================
     // operations
@@ -147,6 +152,8 @@ private:
     struct node
     {
     };
+
+    allocator_type alloc;
 };
 
 template <class T, class Allocator>
@@ -179,6 +186,7 @@ namespace std
 template <class T, class Allocator>
 inline
 skip_list<T,Allocator>::skip_list(const Allocator &alloc)
+: alloc(alloc)
 {
 }
 
@@ -188,23 +196,40 @@ skip_list<T,Allocator>::~skip_list()
 {
 }
 
-/*
-    skip_list();
+template <class T, class Allocator>
+template <class InputIterator>
+inline
+skip_list<T,Allocator>::skip_list(InputIterator first, InputIterator last, const Allocator &alloc)
+: alloc(alloc)
+{
+    assert(false);
+}
 
-    explicit skip_list(const Allocator &alloc = Allocator());
+template <class T, class Allocator>
+inline
+skip_list<T,Allocator>::skip_list(const skip_list &other)
+: alloc(other.alloc)
+{
+    assert(false);
+}
 
-    template <class InputIterator>
-    skip_list(InputIterator first, InputIterator last, const Allocator &alloc = Allocator());
+template <class T, class Allocator>
+inline
+skip_list<T,Allocator>::skip_list(const skip_list &other, const Allocator &alloc)
+: alloc(alloc)
+{
+    assert(false);
+}
 
-    skip_list(const skip_list &other);
-    skip_list(const skip_list &other, const Allocator &alloc);
+// C++11
+//skip_list(const skip_list &&other);
+//skip_list(const skip_list &&other, const Allocator &alloc);
+//skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
 
-    // C++11
-    //skip_list(const skip_list &&other);
-    //skip_list(const skip_list &&other, const Allocator &alloc);
-    //skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
+template <class T, class Allocator>
+inline
+Allocator skip_list<T,Allocator>::get_allocator() const
+{
+    return alloc;
+}
 
-    ~skip_list();
-
-    allocator_type get_allocator() const;
-    */
