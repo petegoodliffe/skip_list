@@ -158,22 +158,22 @@ private:
 };
 
 template <class T, class Allocator>
-void operator==(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+bool operator==(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
 
 template <class T, class Allocator>
-void operator!=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+bool operator!=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
 
 template <class T, class Allocator>
-void operator<(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+bool operator<(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
 
 template <class T, class Allocator>
-void operator<=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+bool operator<=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
 
 template <class T, class Allocator>
-void operator>(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+bool operator>(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
 
 template <class T, class Allocator>
-void operator>=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+bool operator>=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
 
 namespace std
 {
@@ -492,5 +492,62 @@ inline
 void skip_list<T,Allocator>::swap(skip_list<T,Allocator> &other)
 {
     not_implemented_yet();
+}
+
+//======================================================================
+// non-members
+
+template <class T, class Allocator>
+inline
+bool operator==(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+{
+    not_implemented_yet();
+    return false;
+}
+
+template <class T, class Allocator>
+inline
+bool operator!=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+{
+    return !operator=(lhs, rhs);
+}
+
+template <class T, class Allocator>
+inline
+bool operator<(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+{
+    not_implemented_yet();
+    return false;
+}
+
+template <class T, class Allocator>
+inline
+bool operator<=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+{
+    not_implemented_yet();
+    return false;
+}
+
+template <class T, class Allocator>
+inline
+bool operator>(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+{
+    not_implemented_yet();
+    return false;
+}
+
+template <class T, class Allocator>
+inline
+bool operator>=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+{
+    not_implemented_yet();
+    return false;
+}
+
+template <class T, class Allocator>
+inline
+void std::swap(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+{
+    lhs.swap(rhs);
 }
 
