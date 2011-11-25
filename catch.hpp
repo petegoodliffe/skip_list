@@ -6079,6 +6079,7 @@ namespace Catch
     }
 
     //////////////////////////////////////////////////////////////////////////
+    void showHelp(std::string exeName);
     void showHelp
     (
         std::string exeName
