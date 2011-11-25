@@ -170,6 +170,8 @@ private:
     };
 
     typedef typename allocator_type::template rebind<node>::other node_allocator;
+    friend class iterator;
+    friend class const_iterator;
 
     static const unsigned max_levels = 33;
 
@@ -220,14 +222,97 @@ class skip_list<T,Compare,Allocator>::iterator
                            skip_list<T,Compare,Allocator>::reference>
 {
 public:
+    typedef skip_list<T,Compare,Allocator> parent_type;
+    typedef const_iterator                 const_type;
+    typedef iterator                       self_type;
+    
+    iterator()
+        : parent(0), node(0) {}
+    iterator(parent_type &parent_, parent_type::node *node_)
+        : parent(&parent_), node(node_) {}
+
+    self_type &operator++()
+        { node = node->next; return *this; }
+    self_type operator++(int) // postincrement
+        { self_type old(*this); operator++(); return old; }
+
+    //self_type &operator--()
+    //    { --index; return *this; }
+    //self_type operator--(int) // postdecrement
+    //    { self_type old(*this); operator--(); return old; }
+    
+    //size_type operator-(const self_type &other) const
+    //    { return index - other.index; }
+    
+    reference operator*()  { return &node->value; }
+    pointer   operator->() { return node->value; }
+    
+    bool operator==(const self_type &other) const
+        { return parent == other.parent && node == other.node; }
+    bool operator!=(const self_type &other) const
+        { return !operator==(other); }
+    
+    bool operator==(const const_type &other) const
+        { return parent == other.parent && node == other.node; }
+    bool operator!=(const const_type &other) const
+        { return !operator==(other); }
+
+private:
+    friend class const_iterator;
+    parent_type       *parent;
+    parent_type::node *node;
 };
 
 template <class T, class Compare, class Allocator>
 class skip_list<T,Compare,Allocator>::const_iterator
+    : public std::iterator<std::forward_iterator_tag,
+                           skip_list<T,Compare,Allocator>::value_type,
+                           skip_list<T,Compare,Allocator>::difference_type,
+                           skip_list<T,Compare,Allocator>::const_pointer,
+                           skip_list<T,Compare,Allocator>::const_reference>
 {
 public:
-    const_iterator() {}
-    const_iterator(const iterator &) {}
+    typedef skip_list<T,Compare,Allocator> parent_type;
+    typedef iterator                       non_const_type;
+    typedef const_iterator                 self_type;
+
+    const_iterator()
+        : parent(0), node(0) {}
+    const_iterator(const iterator &i)
+        : parent(i.parent), node(i.node) {}
+    const_iterator(const parent_type &parent_, parent_type::node *node_)
+        : parent(&parent_), node(node_) {}
+
+    self_type &operator++()
+        { node = node->next; return *this; }
+    self_type operator++(int) // postincrement
+        { self_type old(*this); operator++(); return old; }
+
+    //self_type &operator--()
+    //    { --index; return *this; }
+    //self_type operator--(int) // postdecrement
+    //    { self_type old(*this); operator--(); return old; }
+    
+    //size_type operator-(const self_type &other) const
+    //    { return index - other.index; }
+    
+    const_reference operator*()  { return &node->value; }
+    const_pointer   operator->() { return node->value; }
+    
+    bool operator==(const self_type &other) const
+        { return parent == other.parent && node == other.node; }
+    bool operator!=(const self_type &other) const
+        { return !operator==(other); }
+
+    bool operator==(const non_const_type &other) const
+        { return parent == other.parent && node == other.node; }
+    bool operator!=(const non_const_type &other) const
+        { return !operator==(other); }
+
+private:
+    friend class iterator;
+    const parent_type       *parent;
+    const parent_type::node *node;
 };
 
 //==============================================================================
@@ -361,7 +446,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::begin()
 {
-    return iterator();
+    return iterator(*this, nodes[0]);
 }
 
 template <class T, class Compare, class Allocator>
@@ -369,7 +454,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::begin() const
 {
-    return const_iterator();
+    return const_iterator(*this, nodes[0]);
 }
 
 template <class T, class Compare, class Allocator>
@@ -377,7 +462,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::cbegin() const
 {
-    return const_iterator();
+    return const_iterator(*this, nodes[0]);
 }
 
 template <class T, class Compare, class Allocator>
@@ -385,7 +470,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::end()
 {
-    return iterator();
+    return iterator(*this, 0);
 }
 
 template <class T, class Compare, class Allocator>
@@ -393,7 +478,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::end() const
 {
-    return const_iterator();
+    return const_iterator(*this, 0);
 }
 
 template <class T, class Compare, class Allocator>
@@ -401,7 +486,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::cend() const
 {
-    return const_iterator();
+    return const_iterator(*this, 0);
 }
 
 template <class T, class Compare, class Allocator>
@@ -409,7 +494,7 @@ inline
 typename skip_list<T,Compare,Allocator>::reverse_iterator
 skip_list<T,Compare,Allocator>::rbegin()
 {
-    return const_iterator();
+    return reverse_iterator(end());
 }
 
 template <class T, class Compare, class Allocator>
@@ -417,8 +502,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reverse_iterator
 skip_list<T,Compare,Allocator>::rbegin() const
 {
-    not_implemented_yet();
-    return rend();
+    return const_reverse_iterator(end());
 }
 
 template <class T, class Compare, class Allocator>
@@ -426,8 +510,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reverse_iterator
 skip_list<T,Compare,Allocator>::crbegin() const
 {
-    not_implemented_yet();
-    return rend();
+    return const_reverse_iterator(end());
 }
 
 template <class T, class Compare, class Allocator>
@@ -435,8 +518,7 @@ inline
 typename skip_list<T,Compare,Allocator>::reverse_iterator
 skip_list<T,Compare,Allocator>::rend()
 {
-    not_implemented_yet();
-    return rend();
+    return reverse_iterator(begin());
 }
 
 template <class T, class Compare, class Allocator>
@@ -444,8 +526,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reverse_iterator
 skip_list<T,Compare,Allocator>::rend() const
 {
-    not_implemented_yet();
-    return rend();
+    return const_reverse_iterator(begin());
 }
 
 template <class T, class Compare, class Allocator>
@@ -453,8 +534,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reverse_iterator
 skip_list<T,Compare,Allocator>::crend() const
 {
-    not_implemented_yet();
-    return rend();
+    return const_reverse_iterator(begin());
 }
 
 //==============================================================================
