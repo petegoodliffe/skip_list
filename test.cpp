@@ -58,3 +58,12 @@ TEST_CASE( "skip_list/constructed list returns empty()", "" )
     skip_list<int> list;
     REQUIRE(list.empty());
 }
+
+TEST_CASE( "skip_list/iterator converts to const iterator", "" )
+{
+    skip_list<int> list;
+    skip_list<int>::iterator i = list.begin();
+    skip_list<int>::const_iterator ci = i;
+    (void)ci;
+    REQUIRE(true);
+}

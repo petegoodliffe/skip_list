@@ -209,10 +209,18 @@ namespace std
 // iterators
 
 template <class T, class Compare, class Allocator>
-class skip_list<T,Compare,Allocator>::iterator {};
+class skip_list<T,Compare,Allocator>::iterator
+{
+public:
+};
 
 template <class T, class Compare, class Allocator>
-class skip_list<T,Compare,Allocator>::const_iterator {};
+class skip_list<T,Compare,Allocator>::const_iterator
+{
+public:
+    const_iterator() {}
+    const_iterator(const iterator &i) {}
+};
 
 template <class T, class Compare, class Allocator>
 class skip_list<T,Compare,Allocator>::reverse_iterator {};
@@ -347,7 +355,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::begin()
 {
-    not_implemented_yet();
+    return iterator();
 }
 
 template <class T, class Compare, class Allocator>
@@ -355,7 +363,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::begin() const
 {
-    not_implemented_yet();
+    return const_iterator();
 }
 
 template <class T, class Compare, class Allocator>
@@ -363,7 +371,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::cbegin() const
 {
-    not_implemented_yet();
+    return const_iterator();
 }
 
 template <class T, class Compare, class Allocator>
@@ -371,7 +379,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::end()
 {
-    not_implemented_yet();
+    return iterator();
 }
 
 template <class T, class Compare, class Allocator>
@@ -379,7 +387,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::end() const
 {
-    not_implemented_yet();
+    return const_iterator();
 }
 
 template <class T, class Compare, class Allocator>
@@ -387,7 +395,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::cend() const
 {
-    not_implemented_yet();
+    return const_iterator();
 }
 
 template <class T, class Compare, class Allocator>
@@ -395,7 +403,7 @@ inline
 typename skip_list<T,Compare,Allocator>::reverse_iterator
 skip_list<T,Compare,Allocator>::rbegin()
 {
-    not_implemented_yet();
+    return const_iterator();
 }
 
 template <class T, class Compare, class Allocator>
@@ -404,6 +412,7 @@ typename skip_list<T,Compare,Allocator>::const_reverse_iterator
 skip_list<T,Compare,Allocator>::rbegin() const
 {
     not_implemented_yet();
+    return rend();
 }
 
 template <class T, class Compare, class Allocator>
@@ -412,6 +421,7 @@ typename skip_list<T,Compare,Allocator>::const_reverse_iterator
 skip_list<T,Compare,Allocator>::crbegin() const
 {
     not_implemented_yet();
+    return rend();
 }
 
 template <class T, class Compare, class Allocator>
@@ -420,6 +430,7 @@ typename skip_list<T,Compare,Allocator>::reverse_iterator
 skip_list<T,Compare,Allocator>::rend()
 {
     not_implemented_yet();
+    return rend();
 }
 
 template <class T, class Compare, class Allocator>
@@ -428,6 +439,7 @@ typename skip_list<T,Compare,Allocator>::const_reverse_iterator
 skip_list<T,Compare,Allocator>::rend() const
 {
     not_implemented_yet();
+    return rend();
 }
 
 template <class T, class Compare, class Allocator>
@@ -436,6 +448,7 @@ typename skip_list<T,Compare,Allocator>::const_reverse_iterator
 skip_list<T,Compare,Allocator>::crend() const
 {
     not_implemented_yet();
+    return rend();
 }
 
 //==============================================================================
