@@ -68,6 +68,7 @@
 				C16AEE98147FA3A100E7977A /* Sources */,
 				C16AEE99147FA3A100E7977A /* Frameworks */,
 				C16AEE9A147FA3A100E7977A /* CopyFiles */,
+				C16AEEB7147FB7CD00E7977A /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -102,6 +103,22 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C16AEEB7147FB7CD00E7977A /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests\n\"${TARGET_BUILD_DIR}/${TARGETNAME}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C16AEE98147FA3A100E7977A /* Sources */ = {
