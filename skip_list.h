@@ -166,6 +166,8 @@ public:
     enum { max_levels = 33 };
     static unsigned random_level();
     unsigned new_level();
+    
+    void dump();
 
 private:
     struct node
@@ -766,6 +768,24 @@ unsigned skip_list<T,Compare,Allocator>::new_level()
         ++levels;
     }
     return level;
+}
+    
+template <class T, class Compare, class Allocator>
+inline
+void skip_list<T,Compare,Allocator>::dump()
+{
+    printf("skip_list(levels=%u)\n", levels);
+    for (unsigned l = 0; l < levels; ++l)
+    {
+        printf("  %u: ", l);
+        node *n = head.next[l];
+        while (n)
+        {
+            printf("> %d ", n->value);
+            n = n->next[l];
+        }
+        printf("\n");
+    }
 }
 
 }
