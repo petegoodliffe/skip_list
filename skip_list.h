@@ -630,5 +630,5 @@ inline
 unsigned skip_list<T,Compare,Allocator>::random_level()
 {
     // TODO: decide on a better approach
-    return rand() % max_levels;
+    return unsigned(rand()) % max_levels;
 }

@@ -180,6 +180,7 @@
 		C16AEEA7147FA3A100E7977A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
 				GCC_WARN_SHADOW = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -188,6 +189,7 @@
 		C16AEEA8147FA3A100E7977A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
 				GCC_WARN_SHADOW = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
