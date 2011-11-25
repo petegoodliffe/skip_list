@@ -1,7 +1,7 @@
-//============================================================================
+//==============================================================================
 // skip_list.h
 // Copyright (c) 2011 Pete Goodliffe. All rights reserved
-//============================================================================
+//==============================================================================
 
 #pragma once
 
@@ -195,7 +195,7 @@ namespace std
     void swap(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
 }
 
-//============================================================================
+//==============================================================================
 // iterators
 
 template <class T, class Compare, class Allocator>
@@ -210,7 +210,7 @@ class skip_list<T,Compare,Allocator>::reverse_iterator {};
 template <class T, class Compare, class Allocator>
 class skip_list<T,Compare,Allocator>::const_reverse_iterator {};
 
-//============================================================================
+//==============================================================================
 // lifetime management
 
 template <class T, class Compare, class Allocator>
@@ -267,7 +267,7 @@ Allocator skip_list<T,Compare,Allocator>::get_allocator() const
     return alloc;
 }
 
-//======================================================================
+//==============================================================================
 // assignment
 
 template <class T, class Compare, class Allocator>
@@ -294,7 +294,7 @@ void skip_list<T,Compare,Allocator>::assign(InputIterator first, InputIterator l
     not_implemented_yet();
 }
 
-//======================================================================
+//==============================================================================
 // element access
 
 template <class T, class Compare, class Allocator>
@@ -329,7 +329,7 @@ skip_list<T,Compare,Allocator>::back() const
     not_implemented_yet();
 }
 
-//======================================================================
+//==============================================================================
 // iterators
 
 template <class T, class Compare, class Allocator>
@@ -428,7 +428,7 @@ skip_list<T,Compare,Allocator>::crend() const
     not_implemented_yet();
 }
 
-//======================================================================
+//==============================================================================
 // capacity
 
 template <class T, class Compare, class Allocator>
@@ -454,7 +454,7 @@ skip_list<T,Compare,Allocator>::max_size() const
     not_implemented_yet();
 }
 
-//======================================================================
+//==============================================================================
 // modifiers
 
 template <class T, class Compare, class Allocator>
@@ -527,7 +527,7 @@ void skip_list<T,Compare,Allocator>::swap(skip_list<T,Compare,Allocator> &other)
     not_implemented_yet();
 }
 
-//======================================================================
+//==============================================================================
 // non-members
 
 template <class T, class Compare, class Allocator>
@@ -584,7 +584,7 @@ void std::swap(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocato
     lhs.swap(rhs);
 }
 
-//======================================================================
+//==============================================================================
 // internal
 
 template <class T, class Compare, class Allocator>
