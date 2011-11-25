@@ -126,14 +126,14 @@ public:
 
     void clear();
 
-    iterator insert(const_iterator pos, const value_type &value);
+    iterator insert(const value_type &value);    
+    iterator insert(const_iterator hint, const value_type &value);
 
-    //C++11iterator insert const_iterator pos, value_type &&value);
-
-    iterator insert(const_iterator pos, size_type count, const value_type &value);
+    //C++11iterator insert(value_type &&value);
+    //C++11iterator insert(const_iterator hint, const value_type &&value);
 
     template <class InputIterator>
-    iterator insert(const_iterator pos, InputIterator first, InputIterator last);
+    iterator insert(InputIterator first, InputIterator last);
 
     //C++11iterator insert(const_iterator pos, std::initializer_list<value_type> ilist);
 
@@ -581,12 +581,11 @@ void skip_list<T,Compare,Allocator>::clear()
 template <class T, class Compare, class Allocator>
 inline
 typename skip_list<T,Compare,Allocator>::iterator
-skip_list<T,Compare,Allocator>::insert(const_iterator pos, const value_type &value)
+skip_list<T,Compare,Allocator>::insert(const value_type &value)
 {
     if (nodes[0] == 0)
     {
-        //assert_that(pos == begin());
-        //assert_that(begin() == end());
+        assert_that((begin() == end()));
         nodes[0] = node_allocator(alloc).allocate(1, (void*)0);
         // TODO: construct in-place
         nodes[0]->value = value;
@@ -600,21 +599,23 @@ skip_list<T,Compare,Allocator>::insert(const_iterator pos, const value_type &val
     }
 }
 
-//C++11iterator insert const_iterator pos, value_type &&value);
-
 template <class T, class Compare, class Allocator>
 inline
 typename skip_list<T,Compare,Allocator>::iterator
-skip_list<T,Compare,Allocator>::insert(const_iterator pos, size_type count, const value_type &value)
+skip_list<T,Compare,Allocator>::insert(const_iterator hint, const value_type &value)
 {
-    not_implemented_yet();
+    // TODO - try to optimse lookup using this
+    (void) hint;
+    return insert(value);
 }
+
+//C++11iterator insert const_iterator pos, value_type &&value);
 
 template <class T, class Compare, class Allocator>
 template <class InputIterator>
 inline
 typename skip_list<T,Compare,Allocator>::iterator
-skip_list<T,Compare,Allocator>::insert(const_iterator pos, InputIterator first, InputIterator last)
+skip_list<T,Compare,Allocator>::insert(InputIterator first, InputIterator last)
 {
     not_implemented_yet();
 }

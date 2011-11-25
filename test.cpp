@@ -128,6 +128,17 @@ TEST_CASE( "skip_list/default iterator/const_iterator inequality", "" )
     REQUIRE_FALSE(b != a);
 }
 
+TEST_CASE( "skip_list/empty list begin() is end()", "" )
+{
+    skip_list<int> list;
+    
+    REQUIRE(list.begin() == list.end());
+    (list.cbegin() == list.cend());
+    
+    const skip_list<int> &clist(list);
+    REQUIRE(clist.cbegin() == clist.cend());
+}
+
 //============================================================================
 // Checking code compiles
 
@@ -146,14 +157,14 @@ TEST_CASE( "skip_list/iterator converts to const iterator", "" )
 TEST_CASE( "skip_list/inserting one item is not empty()", "" )
 {
     skip_list<int> list;
-    list.insert(list.cbegin(), 10);
+    list.insert(10);
     REQUIRE_FALSE(list.empty());
 }
 
 TEST_CASE( "skip_list/inserting one item begin() is not end()", "" )
 {
     skip_list<int> list;
-    list.insert(list.cbegin(), 10);
+    list.insert(10);
     REQUIRE(list.begin() != list.end());
     REQUIRE(list.cbegin() != list.cend());
     REQUIRE_FALSE(list.begin() == list.end());
@@ -167,7 +178,7 @@ TEST_CASE( "skip_list/inserting one item begin() is not end()", "" )
 TEST_CASE( "skip_list/inserting one item returned from front()", "" )
 {
     skip_list<int> list;
-    list.insert(list.cbegin(), 10);
+    list.insert(10);
     REQUIRE(list.front() == 10);
     
     const skip_list<int> &clist(list);
@@ -177,7 +188,7 @@ TEST_CASE( "skip_list/inserting one item returned from front()", "" )
 TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
 {
     skip_list<int> list;
-    list.insert(list.cbegin(), 10);
+    list.insert(10);
     REQUIRE(list.front() == 10);
     
     const skip_list<int> &clist(list);
