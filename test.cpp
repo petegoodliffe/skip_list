@@ -33,13 +33,21 @@ inline
 bool operator!=(const Struct &lhs, const Struct &rhs)
     { return !operator==(lhs,rhs); }
 
+template <typename T = int>
 struct TestingAllocator : Struct
 {
     TestingAllocator() : Struct() {}
     TestingAllocator(int i, float f) : Struct(i,f) {}
 
-    template <typename T>
-    struct rebind { typedef TestingAllocator other; };
+    template <typename OTHER>
+    struct rebind { typedef TestingAllocator<OTHER> other; };
+    
+    typedef size_t    size_type;
+    typedef ptrdiff_t difference_type;
+    typedef T&        reference;
+    typedef const T&  const_reference;
+    typedef T*        pointer;
+    typedef const T*  const_pointer;
 };
 
 //============================================================================
@@ -57,12 +65,12 @@ TEST_CASE( "skip_list/can be constructed and destroyed", "" )
 TEST_CASE( "skip_list/default construction gets default allocator", "" )
 {
     REQUIRE(skip_list<int>().get_allocator() == std::allocator<int>());
-    REQUIRE((skip_list<int,std::less<int>,TestingAllocator>().get_allocator()) == TestingAllocator());
+    REQUIRE((skip_list<int,std::less<int>,TestingAllocator<int> >().get_allocator()) == TestingAllocator<int>());
 }
 
 TEST_CASE( "skip_list/construction with allocator returns copy of that allocator", "" )
 {
-    REQUIRE((skip_list<int,std::less<int>,TestingAllocator>(TestingAllocator(10,4)).get_allocator()) == TestingAllocator(10,4));
+    REQUIRE((skip_list<int,std::less<int>,TestingAllocator<int> >(TestingAllocator<int>(10,4)).get_allocator()) == TestingAllocator<int>(10,4));
 }
 
 TEST_CASE( "skip_list/constructed list returns empty()", "" )
