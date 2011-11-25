@@ -168,6 +168,8 @@ private:
         value_type value;
     };
 
+    typedef typename allocator_type::template rebind<node>::other node_allocator;
+
     static const unsigned max_levels = 33;
 
     allocator_type  alloc;
@@ -215,7 +217,7 @@ class skip_list<T,Compare,Allocator>::const_iterator
 {
 public:
     const_iterator() {}
-    const_iterator(const iterator &i) {}
+    const_iterator(const iterator &) {}
 };
 
 template <class T, class Compare, class Allocator>
@@ -240,7 +242,7 @@ template <class T, class Compare, class Allocator>
 inline
 skip_list<T,Compare,Allocator>::~skip_list()
 {
-    //clear();
+    clear();
 }
 
 template <class T, class Compare, class Allocator>
@@ -484,7 +486,12 @@ template <class T, class Compare, class Allocator>
 inline
 void skip_list<T,Compare,Allocator>::clear()
 {
-    not_implemented_yet();
+    if (nodes[0])
+    {
+        //node_allocator(alloc).destroy(*nodes[0]);
+        //node_allocator(alloc).deallocate(nodes[0]);
+    }
+    //not_implemented_yet();
 }
 
 template <class T, class Compare, class Allocator>
@@ -496,7 +503,6 @@ skip_list<T,Compare,Allocator>::insert(const_iterator pos, const value_type &val
     {
         //assert_that(pos == begin());
         //assert_that(begin() == end());
-        typedef typename allocator_type::template rebind<node>::other node_allocator;
         nodes[0] = node_allocator(alloc).allocate(1, (void*)0);
         // TODO: construct in-place
         nodes[0]->value = value;
