@@ -315,54 +315,6 @@ private:
     const typename parent_type::node *node;
 };
 
-template <class T, class Compare, class Allocator>
-inline
-bool operator==(const class skip_list<T,Compare,Allocator>::const_iterator &rhs,
-                const class skip_list<T,Compare,Allocator>::const_iterator &lhs)
-{
-    return rhs.equal_to(lhs);
-}
-
-template <class T, class Compare, class Allocator>
-inline
-bool operator!=(const class skip_list<T,Compare,Allocator>::const_iterator &rhs,
-                const class skip_list<T,Compare,Allocator>::const_iterator &lhs)
-{
-    return !rhs.equal_to(lhs);
-}
-
-template <class T, class Compare, class Allocator>
-inline
-bool operator==(const class skip_list<T,Compare,Allocator>::iterator       &rhs,
-                const class skip_list<T,Compare,Allocator>::const_iterator &lhs)
-{
-    return skip_list<T,Compare,Allocator>::const_iterator(rhs) == lhs;
-}
-
-template <class T, class Compare, class Allocator>
-inline
-bool operator!=(const class skip_list<T,Compare,Allocator>::iterator       &rhs,
-                const class skip_list<T,Compare,Allocator>::const_iterator &lhs)
-{
-    return skip_list<T,Compare,Allocator>::const_iterator(rhs) != lhs;
-}
-
-template <class T, class Compare, class Allocator>
-inline
-bool operator==(const class skip_list<T,Compare,Allocator>::const_iterator &rhs,
-                const class skip_list<T,Compare,Allocator>::iterator       &lhs)
-{
-    return skip_list<T,Compare,Allocator>::const_iterator(lhs) == rhs;
-}
-
-template <class T, class Compare, class Allocator>
-inline
-bool operator!=(const class skip_list<T,Compare,Allocator>::const_iterator &rhs,
-                const class skip_list<T,Compare,Allocator>::iterator       &lhs)
-{
-    return skip_list<T,Compare,Allocator>::const_iterator(lhs) != rhs;
-}
-
 //==============================================================================
 // lifetime management
 
