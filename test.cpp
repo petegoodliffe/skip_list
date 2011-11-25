@@ -207,7 +207,6 @@ TEST_CASE( "skip_list/inserting one item returns a count()", "" )
 {
     skip_list<int> list;
     list.insert(10);
-    list.dump();
     REQUIRE(list.count(0) == 0);
     REQUIRE(list.count(1) == 0);
     REQUIRE(list.count(10) == 1);
@@ -240,7 +239,7 @@ TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
 //============================================================================
 // iterating through a series of items
 
-TEST_CASE( "skip_list/inserting a series and iterating through", "" )
+TEST_CASE( "skip_list/inserting an ordered series and iterating through", "" )
 {
     skip_list<int> list;
     list.insert(10);
@@ -250,6 +249,26 @@ TEST_CASE( "skip_list/inserting a series and iterating through", "" )
     
     skip_list<int>::iterator i = list.begin();
 
+    REQUIRE(i != list.end()); REQUIRE(*i == 10); ++i;
+    REQUIRE(i != list.end()); REQUIRE(*i == 20); ++i;
+    REQUIRE(i != list.end()); REQUIRE(*i == 30); ++i;
+    REQUIRE(i != list.end()); REQUIRE(*i == 40); ++i;
+    REQUIRE(i == list.end());
+}
+
+TEST_CASE( "skip_list/inserting an unordered series and iterating through", "" )
+{
+    skip_list<int> list;
+    list.insert(30);
+    list.insert(10);
+    list.insert(40);
+    list.insert(20);
+    list.insert(0);
+    list.dump();
+    
+    skip_list<int>::iterator i = list.begin();
+    
+    REQUIRE(i != list.end()); REQUIRE(*i == 0); ++i;
     REQUIRE(i != list.end()); REQUIRE(*i == 10); ++i;
     REQUIRE(i != list.end()); REQUIRE(*i == 20); ++i;
     REQUIRE(i != list.end()); REQUIRE(*i == 30); ++i;

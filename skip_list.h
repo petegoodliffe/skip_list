@@ -604,16 +604,16 @@ skip_list<T,Compare,Allocator>::insert(const value_type &value)
         new_node->next[n] = 0;
 
     node *insert_point = &head;
-    for (int i = int(levels-1); i >= 0; i--)
+    for (unsigned l = levels; l; )
     {
-        while (insert_point->next[i] && insert_point->next[i]->value < value)
+        --l;
+        while (insert_point->next[l] && insert_point->next[l]->value < value)
+            insert_point = insert_point->next[l];
+
+        if (l <= level)
         {
-            insert_point = insert_point->next[i];
-        }
-        if (i <= int(level))
-        {
-            new_node->next[i] = insert_point->next[i];
-            insert_point->next[i] = new_node;
+            new_node->next[l] = insert_point->next[l];
+            insert_point->next[l] = new_node;
         }
     }
 
