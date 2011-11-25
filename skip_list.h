@@ -170,8 +170,7 @@ public:
 private:
     struct node
     {
-        node *next;
-        node *down;
+        node *next[max_levels];
         value_type value;
     };
 
@@ -182,7 +181,7 @@ private:
 
     allocator_type  alloc;
     unsigned        levels;
-    node           *nodes[max_levels];
+    node            head; // needn't have value
 };
 
 template <class T, class Compare, class Allocator>
@@ -236,7 +235,7 @@ public:
         : parent(&parent_), node(node_) {}
 
     self_type &operator++()
-        { node = node->next; return *this; }
+        { node = node->next[0]; return *this; }
     self_type operator++(int) // postincrement
         { self_type old(*this); operator++(); return old; }
 
@@ -329,8 +328,8 @@ skip_list<T,Compare,Allocator>::skip_list(const Allocator &alloc_)
 :   alloc(alloc_),
     levels()
 {
-    for (unsigned n = 0; n < max_levels; ++n)
-        nodes[n] = 0;
+    for (unsigned n = 0; n < max_levels; n++)
+        head.next[n] = 0;
 }
 
 template <class T, class Compare, class Allocator>
@@ -415,8 +414,8 @@ inline
 typename skip_list<T,Compare,Allocator>::reference
 skip_list<T,Compare,Allocator>::front()
 {
-    assert_that(nodes[0]);
-    return nodes[0]->value;
+    assert_that(head.next[0]);
+    return head.next[0]->value;
 }
 
 template <class T, class Compare, class Allocator>
@@ -424,8 +423,8 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reference
 skip_list<T,Compare,Allocator>::front() const
 {
-    assert_that(nodes[0]);
-    return nodes[0]->value;
+    assert_that(head.next[0]);
+    return head.next[0]->value;
 }
 
 template <class T, class Compare, class Allocator>
@@ -452,7 +451,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::begin()
 {
-    return iterator(*this, nodes[0]);
+    return iterator(*this, head.next[0]);
 }
 
 template <class T, class Compare, class Allocator>
@@ -460,7 +459,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::begin() const
 {
-    return const_iterator(*this, nodes[0]);
+    return const_iterator(*this, head.next[0]);
 }
 
 template <class T, class Compare, class Allocator>
@@ -468,7 +467,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::cbegin() const
 {
-    return const_iterator(*this, nodes[0]);
+    return const_iterator(*this, head.next[0]);
 }
 
 template <class T, class Compare, class Allocator>
@@ -576,7 +575,7 @@ template <class T, class Compare, class Allocator>
 inline
 void skip_list<T,Compare,Allocator>::clear()
 {
-    if (nodes[0])
+    //if (nodes[0])
     {
         //node_allocator(alloc).destroy(*nodes[0]);
         //node_allocator(alloc).deallocate(nodes[0]);
@@ -589,23 +588,29 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::insert(const value_type &value)
 {
-    levels =1;
-    const unsigned level = 0;//new_level();
-    
+    const unsigned level = new_level();
+
     node *new_node = node_allocator(alloc).allocate(1, (void*)0);
     // TODO: construct in-place
     new_node->value = value;
-    new_node->next = 0;
-    new_node->down = 0;
+    for (unsigned n = 0; n < max_levels; ++n)
+        new_node->next[n] = 0;
 
-    node **insert_point = &nodes[level];
-    while (*insert_point && (*insert_point)->value < value)
-        insert_point = &(*insert_point)->next;
-    new_node->next = *insert_point;
-    *insert_point = new_node;
-    
-    // point down
-    return end(); // TODO
+    node *insert_point = &head;
+    for (int i = int(levels-1); i >= 0; i--)
+    {
+        while (insert_point->next[i] && insert_point->next[i]->value < value)
+        {
+            insert_point = insert_point->next[i];
+        }
+        if (i <= int(level))
+        {
+            new_node->next[i] = insert_point->next[i];
+            insert_point->next[i] = new_node;
+        }
+    }
+
+    return iterator(*this, new_node);
 }
 
 template <class T, class Compare, class Allocator>
@@ -755,7 +760,7 @@ inline
 unsigned skip_list<T,Compare,Allocator>::new_level()
 {    
     unsigned level = random_level();
-    if (level > levels)
+    if (level >= levels)
     {
         level = levels;
         ++levels;
