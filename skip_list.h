@@ -161,6 +161,10 @@ public:
     //   * reverse
     //   * unique
     //   * sort
+    
+public:
+    enum { max_levels = 33 };
+    static unsigned random_level();
 
 private:
     struct node
@@ -173,13 +177,10 @@ private:
     friend class iterator;
     friend class const_iterator;
 
-    static const unsigned max_levels = 33;
 
     allocator_type  alloc;
     unsigned        levels;
     node           *nodes[max_levels];
-
-    unsigned random_level();
 };
 
 template <class T, class Compare, class Allocator>
@@ -722,12 +723,25 @@ namespace goodliffe {
 //==============================================================================
 // internal
 
+/// Generate a stream of levels, probabilstically chosen.
+/// With a probability of 1/2, return 0.
+/// With 1/4 probability, return 1.
+/// With 1/8 probability, return 2.
+/// And so forth.
+/// TODO: Consider making this a template method
 template <class T, class Compare, class Allocator>
 inline
 unsigned skip_list<T,Compare,Allocator>::random_level()
 {
-    // TODO: decide on a better approach
-    return unsigned(rand()) % max_levels;
+    // The number of 1-bits before we encounter the first 0-bit is the level of
+    /// the node. Since R is 32-bit, the level can be at most 32.
+    unsigned level = 0;
+    for (unsigned number = unsigned(rand()); (number & 1) == 1; number >>= 1)
+    {
+        level++;
+        //if (number == _levels) { _levels++; break; }
+    }
+    return level;
 }
 
 }

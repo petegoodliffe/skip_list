@@ -194,3 +194,26 @@ TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
     const skip_list<int> &clist(list);
     REQUIRE(clist.front() == 10);
 }
+
+//============================================================================
+// random level selection
+
+TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
+{
+    skip_list<int> list;
+    std::vector<unsigned> levels(skip_list<int>::max_levels, 0);
+    for (unsigned n = 0; n < 10000; ++n)
+    {
+        unsigned random = list.random_level();
+        REQUIRE(random < skip_list<int>::max_levels);
+        levels[random]++;
+    }
+    for (unsigned n = 0; n < skip_list<int>::max_levels; ++n)
+        fprintf(stderr, "Level[%u]=%u\n", n, levels[n]);
+    
+    for (unsigned n = 0; n < skip_list<int>::max_levels-1; ++n)
+    {
+        if (levels[n+1]) break;
+        REQUIRE(levels[n] > levels[n+1]);
+    }
+}
