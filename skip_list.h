@@ -151,6 +151,11 @@ public:
     friend void swap(skip_list &lhs, skip_list &rhs) { lhs.swap(rhs); }
 
     //======================================================================
+    // lookup
+
+    size_type count(const value_type &value) const;
+
+    //======================================================================
     // other operations
 
     // std::list has:
@@ -670,6 +675,24 @@ inline
 void skip_list<T,Compare,Allocator>::swap(skip_list<T,Compare,Allocator> &other)
 {
     not_implemented_yet();
+}
+    
+//==============================================================================
+// lookup
+
+template <class T, class Compare, class Allocator>
+inline
+typename skip_list<T,Compare,Allocator>::size_type
+skip_list<T,Compare,Allocator>::count(const value_type &value) const
+{
+    // TODO: == <=
+    const node *search = &head;
+    for (int i = int(levels-1); i >= 0; i--)
+    {
+        while (search->next[i] && search->next[i]->value <= value)
+            search = search->next[i];
+    }
+    return search != &head && search->value == value;
 }
 
 //==============================================================================

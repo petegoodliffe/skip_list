@@ -82,7 +82,15 @@ TEST_CASE( "skip_list/constructed list returns empty()", "" )
 TEST_CASE( "skip_list/max_size() does something sensible", "" )
 {
     const skip_list<int> list;
-    REQUIRE(list.max_size() > 100);
+    REQUIRE(list.max_size() > 10000);
+}
+
+TEST_CASE( "skip_list/empty list does not count() a value", "" )
+{
+    const skip_list<int> list;
+    REQUIRE(list.count(10) == 0);
+    REQUIRE(list.count(1) == 0);
+    REQUIRE(list.count(0) == 0);
 }
 
 //============================================================================
@@ -195,6 +203,17 @@ TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
     REQUIRE(clist.front() == 10);
 }
 
+TEST_CASE( "skip_list/inserting one item returns a count()", "" )
+{
+    skip_list<int> list;
+    list.insert(10);
+    list.dump();
+    REQUIRE(list.count(0) == 0);
+    REQUIRE(list.count(1) == 0);
+    REQUIRE(list.count(10) == 1);
+    REQUIRE(list.count(11) == 0);
+}
+
 //============================================================================
 // random level selection
 
@@ -208,8 +227,8 @@ TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
         REQUIRE(random < skip_list<int>::max_levels);
         levels[random]++;
     }
-    for (unsigned n = 0; n < skip_list<int>::max_levels; ++n)
-        fprintf(stderr, "Level[%u]=%u\n", n, levels[n]);
+    //for (unsigned n = 0; n < skip_list<int>::max_levels; ++n)
+    //    fprintf(stderr, "Level[%u]=%u\n", n, levels[n]);
     
     for (unsigned n = 0; n < skip_list<int>::max_levels-1; ++n)
     {
