@@ -560,7 +560,7 @@ inline
 typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::max_size() const
 {
-    not_implemented_yet();
+    return alloc.max_size();
 }
 
 //==============================================================================

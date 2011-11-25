@@ -75,19 +75,14 @@ TEST_CASE( "skip_list/construction with allocator returns copy of that allocator
 
 TEST_CASE( "skip_list/constructed list returns empty()", "" )
 {
-    skip_list<int> list;
+    const skip_list<int> list;
     REQUIRE(list.empty());
 }
 
-TEST_CASE( "skip_list/empty list begin() is end()", "" )
+TEST_CASE( "skip_list/max_size() does something sensible", "" )
 {
-    skip_list<int> list;
-
-    REQUIRE(list.begin() == list.end());
-    (list.cbegin() == list.cend());
-    
-    const skip_list<int> &clist(list);
-    REQUIRE(clist.cbegin() == clist.cend());
+    const skip_list<int> list;
+    REQUIRE(list.max_size() > 100);
 }
 
 //============================================================================
