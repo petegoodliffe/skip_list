@@ -239,6 +239,54 @@ TEST_CASE( "skip_list/erase last item removes it", "" )
 }
 
 //============================================================================
+// size
+
+TEST_CASE( "skip_list/empty list has size zero", "" )
+{
+    const skip_list<int> list;
+    REQUIRE(list.size() == 0);
+}
+
+TEST_CASE( "skip_list/size of one item list", "" )
+{
+    skip_list<int> list;
+    list.insert(69);
+    REQUIRE(list.size() == 1);
+}
+
+TEST_CASE( "skip_list/size of list after erase", "" )
+{
+    skip_list<int> list;
+    list.insert(69);
+    list.erase(69);
+    REQUIRE(list.size() == 0);
+}
+
+TEST_CASE( "skip_list/size of list after erasing item not in list", "" )
+{
+    skip_list<int> list;
+    list.insert(69);
+    list.erase(2);
+    REQUIRE(list.size() == 1);
+}
+
+TEST_CASE( "skip_list/size of list after erase", "" )
+{
+    skip_list<int> list;
+    list.insert(1);
+    list.insert(2);
+    list.insert(3);
+    list.erase(2);
+    REQUIRE(list.size() == 2);
+    list.erase(1);
+    REQUIRE(list.size() == 1);
+    list.erase(1);
+    REQUIRE(list.size() == 1);
+    list.erase(3);
+    REQUIRE(list.size() == 0);
+}
+
+//============================================================================
 // random level selection
 
 TEST_CASE( "skip_list/inserting one item returned from begin()", "" )

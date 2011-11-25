@@ -139,8 +139,8 @@ public:
     // C++11 emplace
 
     size_type erase(const value_type &value);
-    iterator erase(const_iterator position);
-    iterator erase(const_iterator first, const_iterator last);
+    iterator  erase(const_iterator position);
+    iterator  erase(const_iterator first, const_iterator last);
 
     void push_back(const value_type &value);
     //C++11void push_back( value_type &&value );
@@ -191,6 +191,7 @@ private:
     allocator_type  alloc;
     unsigned        levels;
     node            head; // needn't have value
+    size_type       item_count;
 };
 
 template <class T, class Compare, class Allocator>
@@ -336,6 +337,8 @@ inline
 skip_list<T,Compare,Allocator>::skip_list(const Allocator &alloc_)
 :   alloc(alloc_),
     levels(0)
+    levels(0),
+    item_count(0)
 {
     for (unsigned n = 0; n < max_levels; n++)
         head.next[n] = 0;
@@ -353,7 +356,8 @@ template <class InputIterator>
 inline
 skip_list<T,Compare,Allocator>::skip_list(InputIterator first, InputIterator last, const Allocator &alloc_)
 :   alloc(alloc_),
-    levels(0)
+    levels(0),
+    item_count(0)
 {
     not_implemented_yet();
 }
@@ -362,7 +366,8 @@ template <class T, class Compare, class Allocator>
 inline
 skip_list<T,Compare,Allocator>::skip_list(const skip_list &other)
 :   alloc(other.alloc),
-    levels(0)
+    levels(0),
+    item_count(0)
 {    
     not_implemented_yet();
 }
@@ -371,7 +376,8 @@ template <class T, class Compare, class Allocator>
 inline
 skip_list<T,Compare,Allocator>::skip_list(const skip_list &other, const Allocator &alloc_)
 :   alloc(alloc_),
-    levels(0)
+    levels(0),
+    item_count(0)
 {
     not_implemented_yet();
 }
@@ -566,7 +572,7 @@ inline
 typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::size() const
 {
-    not_implemented_yet();
+    return item_count;
 }
 
 template <class T, class Compare, class Allocator>
@@ -618,6 +624,8 @@ skip_list<T,Compare,Allocator>::insert(const value_type &value)
             insert_point->next[l] = new_node;
         }
     }
+
+    ++item_count;
 
     return iterator(*this, new_node);
 }
@@ -677,6 +685,9 @@ skip_list<T,Compare,Allocator>::erase(const value_type &value)
             if (cur->next[l]->value > value) break;
         }
     }
+    
+    // delete node
+    item_count -= found;
 
     return found;
 }
