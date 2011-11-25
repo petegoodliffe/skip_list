@@ -197,18 +197,27 @@ bool operator>(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocato
 
 template <class T, class Compare, class Allocator>
 bool operator>=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
+    
+} // namespace goodliffe
 
 namespace std
 {
     template <class T, class Compare, class Allocator>
-    void swap(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
+    void swap(goodliffe::skip_list<T,Compare,Allocator> &lhs, goodliffe::skip_list<T,Compare,Allocator> &rhs);
 }
 
 //==============================================================================
 // iterators
 
+namespace goodliffe {
+
 template <class T, class Compare, class Allocator>
 class skip_list<T,Compare,Allocator>::iterator
+    : public std::iterator<std::forward_iterator_tag,
+                           skip_list<T,Compare,Allocator>::value_type,
+                           skip_list<T,Compare,Allocator>::difference_type,
+                           skip_list<T,Compare,Allocator>::pointer,
+                           skip_list<T,Compare,Allocator>::reference>
 {
 public:
 };
@@ -615,13 +624,17 @@ bool operator>=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocat
     not_implemented_yet();
     return false;
 }
+    
+} // namespace goodliffe
 
 template <class T, class Compare, class Allocator>
 inline
-void std::swap(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
+void std::swap(goodliffe::skip_list<T,Compare,Allocator> &lhs, goodliffe::skip_list<T,Compare,Allocator> &rhs)
 {
     lhs.swap(rhs);
 }
+
+namespace goodliffe {
 
 //==============================================================================
 // internal
