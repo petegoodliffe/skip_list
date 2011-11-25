@@ -9,16 +9,12 @@
 #include <functional> // for std::less
 
 //==============================================================================
+// diagnostics
 
 #include <cassert>
 #include <stdio.h>
-#define pg_fail(a)        {fprintf(stderr,"%s:%d: %s\n", __FILE__, __LINE__, a); assert(false);}
-#define assert_that(a) {fprintf(stderr,"%s:%d: Assertion failed\n", __FILE__, __LINE__); assert(a);}
-
-//void not_implemented_yet();
-//inline
-//void not_implemented_yet() { assert_that("Not implemented yet" && false); }
-
+#define pg_fail(a)            {fprintf(stderr,"%s:%d: \"%s\"\n", __FILE__, __LINE__, a); assert(false);}
+#define assert_that(a)        {if (!a) pg_fail(#a);}
 #define not_implemented_yet() pg_fail("not implemented yet")
 
 //==============================================================================
