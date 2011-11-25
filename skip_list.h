@@ -9,6 +9,8 @@
 #include <functional> // for std::less
 
 #include <cassert>
+void not_implemented_yet();
+inline
 void not_implemented_yet() { assert("Not implemented yet" && false); }
 
 /// STL-style skip list container
@@ -192,6 +194,21 @@ namespace std
     template <class T, class Compare, class Allocator>
     void swap(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
 }
+
+//============================================================================
+// iterators
+
+template <class T, class Compare, class Allocator>
+class skip_list<T,Compare,Allocator>::iterator {};
+
+template <class T, class Compare, class Allocator>
+class skip_list<T,Compare,Allocator>::const_iterator {};
+
+template <class T, class Compare, class Allocator>
+class skip_list<T,Compare,Allocator>::reverse_iterator {};
+
+template <class T, class Compare, class Allocator>
+class skip_list<T,Compare,Allocator>::const_reverse_iterator {};
 
 //============================================================================
 // lifetime management
