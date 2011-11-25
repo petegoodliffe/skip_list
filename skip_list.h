@@ -53,8 +53,8 @@ public:
 
     class iterator;
     class const_iterator;
-    typedef std::reverse_iterator<iterator>       reverse_iterator;
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    //typedef std::reverse_iterator<iterator>       reverse_iterator;
+    //typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     //======================================================================
     // lifetime management
@@ -106,13 +106,13 @@ public:
     const_iterator end() const;
     const_iterator cend() const;
 
-    reverse_iterator       rbegin();
-    const_reverse_iterator rbegin() const;
-    const_reverse_iterator crbegin() const;
+    //reverse_iterator       rbegin();
+    //const_reverse_iterator rbegin() const;
+    //const_reverse_iterator crbegin() const;
 
-    reverse_iterator       rend();
-    const_reverse_iterator rend() const;
-    const_reverse_iterator crend() const;
+    //reverse_iterator       rend();
+    //const_reverse_iterator rend() const;
+    //const_reverse_iterator crend() const;
 
     //======================================================================
     // capacity
@@ -488,7 +488,7 @@ skip_list<T,Compare,Allocator>::cend() const
 {
     return const_iterator(*this, 0);
 }
-
+/*
 template <class T, class Compare, class Allocator>
 inline
 typename skip_list<T,Compare,Allocator>::reverse_iterator
@@ -536,7 +536,7 @@ skip_list<T,Compare,Allocator>::crend() const
 {
     return const_reverse_iterator(begin());
 }
-
+*/
 //==============================================================================
 // capacity
 
