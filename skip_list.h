@@ -229,8 +229,8 @@ class skip_list<T,Compare,Allocator>::const_reverse_iterator {};
 
 template <class T, class Compare, class Allocator>
 inline
-skip_list<T,Compare,Allocator>::skip_list(const Allocator &alloc)
-:   alloc(alloc),
+skip_list<T,Compare,Allocator>::skip_list(const Allocator &alloc_)
+:   alloc(alloc_),
     levels()
 {
     nodes[0] = 0;
@@ -246,8 +246,8 @@ skip_list<T,Compare,Allocator>::~skip_list()
 template <class T, class Compare, class Allocator>
 template <class InputIterator>
 inline
-skip_list<T,Compare,Allocator>::skip_list(InputIterator first, InputIterator last, const Allocator &alloc)
-:   alloc(alloc),
+skip_list<T,Compare,Allocator>::skip_list(InputIterator first, InputIterator last, const Allocator &alloc_)
+:   alloc(alloc_),
     levels(0)
 {
     not_implemented_yet();
@@ -264,8 +264,8 @@ skip_list<T,Compare,Allocator>::skip_list(const skip_list &other)
 
 template <class T, class Compare, class Allocator>
 inline
-skip_list<T,Compare,Allocator>::skip_list(const skip_list &other, const Allocator &alloc)
-:   alloc(alloc),
+skip_list<T,Compare,Allocator>::skip_list(const skip_list &other, const Allocator &alloc_)
+:   alloc(alloc_),
     levels(0)
 {
     not_implemented_yet();

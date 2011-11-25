@@ -21,7 +21,7 @@ struct Struct
     float f;
 
     Struct() : i(0), f(0) {}
-    Struct(int i, float f) : i(i), f(f) {}
+    Struct(int i_, float f_) : i(i_), f(f_) {}
 };
 
 inline

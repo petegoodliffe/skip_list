@@ -180,6 +180,7 @@
 		C16AEEA7147FA3A100E7977A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_WARN_SHADOW = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -187,6 +188,7 @@
 		C16AEEA8147FA3A100E7977A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_WARN_SHADOW = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
