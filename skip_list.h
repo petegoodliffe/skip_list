@@ -498,6 +498,9 @@ skip_list<T,Compare,Allocator>::insert(const_iterator pos, const value_type &val
         //assert_that(begin() == end());
         typedef typename allocator_type::template rebind<node>::other node_allocator;
         nodes[0] = node_allocator(alloc).allocate(1, (void*)0);
+        // TODO: construct in-place
+        nodes[0]->value = value;
+        nodes[0]->next = 0;
         return begin();
     }
     else

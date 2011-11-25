@@ -32,6 +32,7 @@ bool operator!=(const Struct &lhs, const Struct &rhs)
     { return !operator==(lhs,rhs); }
 
 //============================================================================
+// simple construction tests
 
 TEST_CASE( "skip_list/can be constructed and destroyed", "" )
 {
@@ -59,12 +60,8 @@ TEST_CASE( "skip_list/constructed list returns empty()", "" )
     REQUIRE(list.empty());
 }
 
-TEST_CASE( "skip_list/inserting one item is not empty()", "" )
-{
-    skip_list<int> list;
-    list.insert(list.cbegin(), 10);
-    REQUIRE_FALSE(list.empty());
-}
+//============================================================================
+// Checking code compiles
 
 TEST_CASE( "skip_list/iterator converts to const iterator", "" )
 {
@@ -73,4 +70,24 @@ TEST_CASE( "skip_list/iterator converts to const iterator", "" )
     skip_list<int>::const_iterator ci = i;
     (void)ci;
     REQUIRE(true);
+}
+
+//============================================================================
+// inserting one item
+
+TEST_CASE( "skip_list/inserting one item is not empty()", "" )
+{
+    skip_list<int> list;
+    list.insert(list.cbegin(), 10);
+    REQUIRE_FALSE(list.empty());
+}
+
+TEST_CASE( "skip_list/inserting one item returned from front()", "" )
+{
+    skip_list<int> list;
+    list.insert(list.cbegin(), 10);
+    REQUIRE(list.front() == 10);
+    
+    const skip_list<int> &clist(list);
+    REQUIRE(clist.front() == 10);
 }
