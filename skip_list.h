@@ -7,6 +7,7 @@
 
 #include <memory>     // for std::allocator
 #include <functional> // for std::less
+#include <iterator>   // for std::reverse_iterator
 
 //==============================================================================
 // diagnostics
@@ -52,8 +53,8 @@ public:
 
     class iterator;
     class const_iterator;
-    class reverse_iterator;
-    class const_reverse_iterator;
+    typedef std::reverse_iterator<iterator>       reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     //======================================================================
     // lifetime management
@@ -219,12 +220,6 @@ public:
     const_iterator() {}
     const_iterator(const iterator &) {}
 };
-
-template <class T, class Compare, class Allocator>
-class skip_list<T,Compare,Allocator>::reverse_iterator {};
-
-template <class T, class Compare, class Allocator>
-class skip_list<T,Compare,Allocator>::const_reverse_iterator {};
 
 //==============================================================================
 // lifetime management
