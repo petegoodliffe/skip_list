@@ -41,15 +41,15 @@ public:
     //======================================================================
     // types
 
-    typedef T                                               value_type;
-    typedef Allocator                                       allocator_type;
-    typedef typename allocator_type::size_type              size_type;
-    typedef typename allocator_type::difference_type        difference_type;
-    typedef typename allocator_type::reference              reference;
-    typedef typename allocator_type::const_reference        const_reference;
-    typedef typename allocator_type::pointer                pointer;
-    typedef typename allocator_type::const_pointer          const_pointer;
-    typedef Compare                                         compare;
+    typedef T                                           value_type;
+    typedef Allocator                                   allocator_type;
+    typedef typename allocator_type::size_type          size_type;
+    typedef typename allocator_type::difference_type    difference_type;
+    typedef typename allocator_type::reference          reference;
+    typedef typename allocator_type::const_reference    const_reference;
+    typedef typename allocator_type::pointer            pointer;
+    typedef typename allocator_type::const_pointer      const_pointer;
+    typedef Compare                                     compare;
 
     class iterator;
     class const_iterator;
@@ -222,9 +222,10 @@ class skip_list<T,Compare,Allocator>::iterator
                            typename skip_list<T,Compare,Allocator>::reference>
 {
 public:
-    typedef skip_list<T,Compare,Allocator> parent_type;
-    typedef const_iterator                 const_type;
-    typedef iterator                       self_type;
+    typedef skip_list<T,Compare,Allocator>          parent_type;
+    typedef typename parent_type::const_iterator    const_type;
+    typedef typename parent_type::node              node_type;
+    typedef iterator                                self_type;
     
     iterator()
         : parent(0), node(0) {}
@@ -259,8 +260,8 @@ public:
 
 private:
     friend class const_iterator;
-    parent_type                *parent;
-    typename parent_type::node *node;
+    parent_type *parent;
+    node_type   *node;
 };
 
 template <class T, class Compare, class Allocator>
@@ -272,15 +273,16 @@ class skip_list<T,Compare,Allocator>::const_iterator
                            typename skip_list<T,Compare,Allocator>::const_reference>
 {
 public:
-    typedef skip_list<T,Compare,Allocator> parent_type;
-    typedef typename parent_type::iterator non_const_type;
-    typedef const_iterator                 self_type;
+    typedef const skip_list<T,Compare,Allocator>    parent_type;
+    typedef typename parent_type::iterator          non_const_type;
+    typedef const typename parent_type::node        node_type;
+    typedef const_iterator                          self_type;
 
     const_iterator()
         : parent(0), node(0) {}
     const_iterator(const non_const_type &i)
         : parent(i.parent), node(i.node) {}
-    const_iterator(const parent_type &parent_, typename parent_type::node *node_)
+    const_iterator(const parent_type &parent_, node_type *node_)
         : parent(&parent_), node(node_) {}
 
     self_type &operator++()
@@ -311,8 +313,8 @@ public:
 
 private:
     friend class iterator;
-    const parent_type                *parent;
-    const typename parent_type::node *node;
+    parent_type *parent;
+    node_type   *node;
 };
 
 //==============================================================================
