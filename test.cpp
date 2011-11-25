@@ -45,12 +45,12 @@ TEST_CASE( "skip_list/can be constructed and destroyed", "" )
 TEST_CASE( "skip_list/default construction gets default allocator", "" )
 {
     REQUIRE(skip_list<int>().get_allocator() == std::allocator<int>());
-    REQUIRE((skip_list<int,Struct>().get_allocator()) == Struct());
+    REQUIRE((skip_list<int,std::less<int>,Struct>().get_allocator()) == Struct());
 }
 
 TEST_CASE( "skip_list/construction with allocator returns copy of that allocator", "" )
 {
-    REQUIRE((skip_list<int,Struct>(Struct(10,4)).get_allocator()) == Struct(10,4));
+    REQUIRE((skip_list<int,std::less<int>,Struct>(Struct(10,4)).get_allocator()) == Struct(10,4));
 }
 
 TEST_CASE( "skip_list/constructed list returns empty()", "" )

@@ -5,15 +5,18 @@
 
 #pragma once
 
-#include <memory>
+#include <memory>     // for std::allocator
+#include <functional> // for std::less
 
 #include <cassert>
 void not_implemented_yet() { assert("Not implemented yet" && false); }
 
 /// STL-style skip list container
 ///
-/// C++11: noexect decls
-template <typename T, typename Allocator = std::allocator<T> >
+/// C++11: noexcept decls
+template <typename T,
+          typename Compare   = std::less<T>,
+          typename Allocator = std::allocator<T> >
 class skip_list
 {
 public:
@@ -25,6 +28,7 @@ public:
     typedef Allocator         allocator_type;
     typedef size_t            size_type;
     typedef ptrdiff_t         difference_type;
+    typedef Compare           compare;
 
     // pre C++11
     typedef value_type       &reference;
@@ -66,7 +70,7 @@ public:
     //======================================================================
     // assignment
 
-    skip_list &operator=(const skip_list& other);
+    skip_list &operator=(const skip_list &other);
     //C++11 skip_list& operator=(skip_list&& other);
 
     void assign(size_type count, const value_type &value);
@@ -165,69 +169,69 @@ private:
     unsigned random_level();
 };
 
-template <class T, class Allocator>
-bool operator==(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+template <class T, class Compare, class Allocator>
+bool operator==(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
 
-template <class T, class Allocator>
-bool operator!=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+template <class T, class Compare, class Allocator>
+bool operator!=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
 
-template <class T, class Allocator>
-bool operator<(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+template <class T, class Compare, class Allocator>
+bool operator<(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
 
-template <class T, class Allocator>
-bool operator<=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+template <class T, class Compare, class Allocator>
+bool operator<=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
 
-template <class T, class Allocator>
-bool operator>(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+template <class T, class Compare, class Allocator>
+bool operator>(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
 
-template <class T, class Allocator>
-bool operator>=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+template <class T, class Compare, class Allocator>
+bool operator>=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
 
 namespace std
 {
-    template <class T, class Allocator>
-    void swap(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs);
+    template <class T, class Compare, class Allocator>
+    void swap(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
 }
 
 //============================================================================
 // lifetime management
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-skip_list<T,Allocator>::skip_list(const Allocator &alloc)
+skip_list<T,Compare,Allocator>::skip_list(const Allocator &alloc)
 :   alloc(alloc),
     levels()
 {
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-skip_list<T,Allocator>::~skip_list()
+skip_list<T,Compare,Allocator>::~skip_list()
 {
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 template <class InputIterator>
 inline
-skip_list<T,Allocator>::skip_list(InputIterator first, InputIterator last, const Allocator &alloc)
+skip_list<T,Compare,Allocator>::skip_list(InputIterator first, InputIterator last, const Allocator &alloc)
 :   alloc(alloc),
     levels(0)
 {
     assert(false);
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-skip_list<T,Allocator>::skip_list(const skip_list &other)
+skip_list<T,Compare,Allocator>::skip_list(const skip_list &other)
 :   alloc(other.alloc),
     levels(0)
 {
     assert(false);
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-skip_list<T,Allocator>::skip_list(const skip_list &other, const Allocator &alloc)
+skip_list<T,Compare,Allocator>::skip_list(const skip_list &other, const Allocator &alloc)
 :   alloc(alloc),
     levels(0)
 {
@@ -239,9 +243,9 @@ skip_list<T,Allocator>::skip_list(const skip_list &other, const Allocator &alloc
 //skip_list(const skip_list &&other, const Allocator &alloc);
 //skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-Allocator skip_list<T,Allocator>::get_allocator() const
+Allocator skip_list<T,Compare,Allocator>::get_allocator() const
 {
     return alloc;
 }
@@ -249,26 +253,26 @@ Allocator skip_list<T,Allocator>::get_allocator() const
 //======================================================================
 // assignment
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-skip_list<T,Allocator> &skip_list<T,Allocator>::operator=(const skip_list<T,Allocator> &other)
+skip_list<T,Compare,Allocator> &skip_list<T,Compare,Allocator>::operator=(const skip_list<T,Compare,Allocator> &other)
 {
     not_implemented_yet();
 }
 
 //C++11 skip_list& operator=(skip_list&& other);
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-void skip_list<T,Allocator>::assign(size_type count, const value_type &value)
+void skip_list<T,Compare,Allocator>::assign(size_type count, const value_type &value)
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 template <typename InputIterator>
 inline
-void skip_list<T,Allocator>::assign(InputIterator first, InputIterator last)
+void skip_list<T,Compare,Allocator>::assign(InputIterator first, InputIterator last)
 {
     not_implemented_yet();
 }
@@ -276,34 +280,34 @@ void skip_list<T,Allocator>::assign(InputIterator first, InputIterator last)
 //======================================================================
 // element access
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::reference
-skip_list<T,Allocator>::front()
+typename skip_list<T,Compare,Allocator>::reference
+skip_list<T,Compare,Allocator>::front()
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_reference
-skip_list<T,Allocator>::front() const
+typename skip_list<T,Compare,Allocator>::const_reference
+skip_list<T,Compare,Allocator>::front() const
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::reference
-skip_list<T,Allocator>::back()
+typename skip_list<T,Compare,Allocator>::reference
+skip_list<T,Compare,Allocator>::back()
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_reference
-skip_list<T,Allocator>::back() const
+typename skip_list<T,Compare,Allocator>::const_reference
+skip_list<T,Compare,Allocator>::back() const
 {
     not_implemented_yet();
 }
@@ -311,98 +315,98 @@ skip_list<T,Allocator>::back() const
 //======================================================================
 // iterators
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::iterator
-skip_list<T,Allocator>::begin()
+typename skip_list<T,Compare,Allocator>::iterator
+skip_list<T,Compare,Allocator>::begin()
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_iterator
-skip_list<T,Allocator>::begin() const
+typename skip_list<T,Compare,Allocator>::const_iterator
+skip_list<T,Compare,Allocator>::begin() const
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_iterator
-skip_list<T,Allocator>::cbegin() const
+typename skip_list<T,Compare,Allocator>::const_iterator
+skip_list<T,Compare,Allocator>::cbegin() const
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::iterator
-skip_list<T,Allocator>::end()
+typename skip_list<T,Compare,Allocator>::iterator
+skip_list<T,Compare,Allocator>::end()
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_iterator
-skip_list<T,Allocator>::end() const
+typename skip_list<T,Compare,Allocator>::const_iterator
+skip_list<T,Compare,Allocator>::end() const
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_iterator
-skip_list<T,Allocator>::cend() const
+typename skip_list<T,Compare,Allocator>::const_iterator
+skip_list<T,Compare,Allocator>::cend() const
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::reverse_iterator
-skip_list<T,Allocator>::rbegin()
+typename skip_list<T,Compare,Allocator>::reverse_iterator
+skip_list<T,Compare,Allocator>::rbegin()
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_reverse_iterator
-skip_list<T,Allocator>::rbegin() const
+typename skip_list<T,Compare,Allocator>::const_reverse_iterator
+skip_list<T,Compare,Allocator>::rbegin() const
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_reverse_iterator
-skip_list<T,Allocator>::crbegin() const
+typename skip_list<T,Compare,Allocator>::const_reverse_iterator
+skip_list<T,Compare,Allocator>::crbegin() const
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::reverse_iterator
-skip_list<T,Allocator>::rend()
+typename skip_list<T,Compare,Allocator>::reverse_iterator
+skip_list<T,Compare,Allocator>::rend()
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_reverse_iterator
-skip_list<T,Allocator>::rend() const
+typename skip_list<T,Compare,Allocator>::const_reverse_iterator
+skip_list<T,Compare,Allocator>::rend() const
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::const_reverse_iterator
-skip_list<T,Allocator>::crend() const
+typename skip_list<T,Compare,Allocator>::const_reverse_iterator
+skip_list<T,Compare,Allocator>::crend() const
 {
     not_implemented_yet();
 }
@@ -410,25 +414,25 @@ skip_list<T,Allocator>::crend() const
 //======================================================================
 // capacity
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-bool skip_list<T,Allocator>::empty() const
+bool skip_list<T,Compare,Allocator>::empty() const
 {
     return levels == 0;
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::size_type
-skip_list<T,Allocator>::size() const
+typename skip_list<T,Compare,Allocator>::size_type
+skip_list<T,Compare,Allocator>::size() const
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::size_type
-skip_list<T,Allocator>::max_size() const
+typename skip_list<T,Compare,Allocator>::size_type
+skip_list<T,Compare,Allocator>::max_size() const
 {
     not_implemented_yet();
 }
@@ -436,36 +440,36 @@ skip_list<T,Allocator>::max_size() const
 //======================================================================
 // modifiers
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-void skip_list<T,Allocator>::clear()
+void skip_list<T,Compare,Allocator>::clear()
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::iterator
-skip_list<T,Allocator>::insert(const_iterator pos, const value_type &value)
+typename skip_list<T,Compare,Allocator>::iterator
+skip_list<T,Compare,Allocator>::insert(const_iterator pos, const value_type &value)
 {
     not_implemented_yet();
 }
 
 //C++11iterator insert const_iterator pos, value_type &&value);
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::iterator
-skip_list<T,Allocator>::insert(const_iterator pos, size_type count, const value_type &value)
+typename skip_list<T,Compare,Allocator>::iterator
+skip_list<T,Compare,Allocator>::insert(const_iterator pos, size_type count, const value_type &value)
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 template <class InputIterator>
 inline
-typename skip_list<T,Allocator>::iterator
-skip_list<T,Allocator>::insert(const_iterator pos, InputIterator first, InputIterator last)
+typename skip_list<T,Compare,Allocator>::iterator
+skip_list<T,Compare,Allocator>::insert(const_iterator pos, InputIterator first, InputIterator last)
 {
     not_implemented_yet();
 }
@@ -473,25 +477,25 @@ skip_list<T,Allocator>::insert(const_iterator pos, InputIterator first, InputIte
 //C++11iterator insert(const_iterator pos, std::initializer_list<value_type> ilist);
 // C++11 emplace
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::iterator
-skip_list<T,Allocator>::erase(const_iterator position)
+typename skip_list<T,Compare,Allocator>::iterator
+skip_list<T,Compare,Allocator>::erase(const_iterator position)
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Allocator>::iterator
-skip_list<T,Allocator>::erase(const_iterator first, const_iterator last)
+typename skip_list<T,Compare,Allocator>::iterator
+skip_list<T,Compare,Allocator>::erase(const_iterator first, const_iterator last)
 {
     not_implemented_yet();
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-void skip_list<T,Allocator>::push_back(const value_type &value)
+void skip_list<T,Compare,Allocator>::push_back(const value_type &value)
 {
     not_implemented_yet();
 }
@@ -499,9 +503,9 @@ void skip_list<T,Allocator>::push_back(const value_type &value)
 //C++11void push_back( value_type &&value );
 //C++11 emplace_back
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-void skip_list<T,Allocator>::swap(skip_list<T,Allocator> &other)
+void skip_list<T,Compare,Allocator>::swap(skip_list<T,Compare,Allocator> &other)
 {
     not_implemented_yet();
 }
@@ -509,56 +513,56 @@ void skip_list<T,Allocator>::swap(skip_list<T,Allocator> &other)
 //======================================================================
 // non-members
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-bool operator==(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+bool operator==(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
     not_implemented_yet();
     return false;
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-bool operator!=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+bool operator!=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
     return !operator=(lhs, rhs);
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-bool operator<(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+bool operator<(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
     not_implemented_yet();
     return false;
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-bool operator<=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+bool operator<=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
     not_implemented_yet();
     return false;
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-bool operator>(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+bool operator>(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
     not_implemented_yet();
     return false;
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-bool operator>=(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+bool operator>=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
     not_implemented_yet();
     return false;
 }
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-void std::swap(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
+void std::swap(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
     lhs.swap(rhs);
 }
@@ -566,9 +570,9 @@ void std::swap(skip_list<T,Allocator> &lhs, skip_list<T,Allocator> &rhs)
 //======================================================================
 // internal
 
-template <class T, class Allocator>
+template <class T, class Compare, class Allocator>
 inline
-unsigned skip_list<T,Allocator>::random_level()
+unsigned skip_list<T,Compare,Allocator>::random_level()
 {
     // TODO: decide on a better approach
     return rand() % max_levels;
