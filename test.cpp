@@ -59,6 +59,13 @@ TEST_CASE( "skip_list/constructed list returns empty()", "" )
     REQUIRE(list.empty());
 }
 
+TEST_CASE( "skip_list/inserting one item is not empty()", "" )
+{
+    skip_list<int> list;
+    list.insert(list.cbegin(), 10);
+    REQUIRE_FALSE(list.empty());
+}
+
 TEST_CASE( "skip_list/iterator converts to const iterator", "" )
 {
     skip_list<int> list;

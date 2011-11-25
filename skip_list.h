@@ -174,9 +174,9 @@ private:
 
     static const unsigned max_levels = 33;
 
-    const allocator_type alloc;
-    unsigned             levels;
-    node                *nodes[max_levels];
+    allocator_type  alloc;
+    unsigned        levels;
+    node           *nodes[max_levels];
 
     unsigned random_level();
 };
@@ -237,12 +237,14 @@ skip_list<T,Compare,Allocator>::skip_list(const Allocator &alloc)
 :   alloc(alloc),
     levels()
 {
+    nodes[0] = 0;
 }
 
 template <class T, class Compare, class Allocator>
 inline
 skip_list<T,Compare,Allocator>::~skip_list()
 {
+    //clear();
 }
 
 template <class T, class Compare, class Allocator>
@@ -320,7 +322,8 @@ inline
 typename skip_list<T,Compare,Allocator>::reference
 skip_list<T,Compare,Allocator>::front()
 {
-    not_implemented_yet();
+    assert_that(nodes[0]);
+    return nodes[0]->value;
 }
 
 template <class T, class Compare, class Allocator>
@@ -328,7 +331,8 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reference
 skip_list<T,Compare,Allocator>::front() const
 {
-    not_implemented_yet();
+    assert_that(nodes[0]);
+    return nodes[0]->value;
 }
 
 template <class T, class Compare, class Allocator>
@@ -458,7 +462,7 @@ template <class T, class Compare, class Allocator>
 inline
 bool skip_list<T,Compare,Allocator>::empty() const
 {
-    return levels == 0;
+    return nodes[0] == 0;
 }
 
 template <class T, class Compare, class Allocator>
@@ -492,7 +496,19 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::insert(const_iterator pos, const value_type &value)
 {
-    not_implemented_yet();
+    if (nodes[0] == 0)
+    {
+        //assert_that(pos == begin());
+        //assert_that(begin() == end());
+        typedef typename allocator_type::template rebind<node>::other node_allocator;
+        nodes[0] = node_allocator(alloc).allocate(1, (void*)0);
+        return begin();
+    }
+    else
+    {
+        not_implemented_yet();
+        return end();
+    }
 }
 
 //C++11iterator insert const_iterator pos, value_type &&value);
