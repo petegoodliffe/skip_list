@@ -214,6 +214,31 @@ TEST_CASE( "skip_list/inserting one item returns a count()", "" )
 }
 
 //============================================================================
+// erasing
+
+TEST_CASE( "skip_list/erase no contained item doesn't break things", "" )
+{
+    skip_list<int> list;
+    list.insert(10);
+    REQUIRE(list.erase(11) == 0);
+
+    REQUIRE(list.count(10) == 1);
+    REQUIRE(list.begin() != list.end());
+}
+
+TEST_CASE( "skip_list/erase last item removes it", "" )
+{
+    skip_list<int> list;
+    list.insert(10);
+
+    REQUIRE(list.erase(10) == 1);
+    REQUIRE(list.count(10) == 0);
+    REQUIRE(list.begin() == list.end());
+    
+    REQUIRE(list.erase(10) == 0);
+}
+
+//============================================================================
 // random level selection
 
 TEST_CASE( "skip_list/inserting one item returned from begin()", "" )

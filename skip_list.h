@@ -136,8 +136,9 @@ public:
     iterator insert(InputIterator first, InputIterator last);
 
     //C++11iterator insert(const_iterator pos, std::initializer_list<value_type> ilist);
-
     // C++11 emplace
+
+    size_type erase(const value_type &value);
     iterator erase(const_iterator position);
     iterator erase(const_iterator first, const_iterator last);
 
@@ -185,6 +186,7 @@ private:
     friend class iterator;
     friend class const_iterator;
 
+    node *insertion_point(const value_type &value) const;
 
     allocator_type  alloc;
     unsigned        levels;
@@ -333,7 +335,7 @@ template <class T, class Compare, class Allocator>
 inline
 skip_list<T,Compare,Allocator>::skip_list(const Allocator &alloc_)
 :   alloc(alloc_),
-    levels()
+    levels(0)
 {
     for (unsigned n = 0; n < max_levels; n++)
         head.next[n] = 0;
@@ -646,10 +648,44 @@ skip_list<T,Compare,Allocator>::insert(InputIterator first, InputIterator last)
 
 template <class T, class Compare, class Allocator>
 inline
+typename skip_list<T,Compare,Allocator>::size_type
+skip_list<T,Compare,Allocator>::erase(const value_type &value)
+{
+    node *search = insertion_point(value);
+    if (search && search->value == value)
+    {
+        //patch up forwards and backwards
+    }
+    
+
+
+    node *cur = &head;
+    size_type found = 0;
+    for (unsigned l = levels; l;)
+    {
+        l--;
+
+        for (; cur->next[l]; cur = cur->next[l])
+        {
+            if (cur->next[l]->value == value)
+            {
+                found = 1;
+                cur->next[l] = cur->next[l]->next[l];
+                break;
+            }
+            
+            if (cur->next[l]->value > value) break;
+        }
+    }
+
+    return found;
+}
+
+template <class T, class Compare, class Allocator>
+inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::erase(const_iterator position)
 {
-    not_implemented_yet();
 }
 
 template <class T, class Compare, class Allocator>
@@ -686,12 +722,7 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::count(const value_type &value) const
 {
     // TODO: == <=
-    const node *search = &head;
-    for (int i = int(levels-1); i >= 0; i--)
-    {
-        while (search->next[i] && search->next[i]->value <= value)
-            search = search->next[i];
-    }
+    const node *search = insertion_point(value);
     return search != &head && search->value == value;
 }
 
@@ -809,6 +840,22 @@ void skip_list<T,Compare,Allocator>::dump()
         }
         printf("\n");
     }
+}
+
+template <class T, class Compare, class Allocator>
+inline
+typename skip_list<T,Compare,Allocator>::node *
+skip_list<T,Compare,Allocator>::insertion_point(const value_type &value) const
+{
+    // I could have a const and non-const overload, but this is simpler
+    node *search = const_cast<node*>(&head);
+    for (unsigned l = levels; l; )
+    {
+        --l;
+        while (search->next[l] && search->next[l]->value <= value)
+            search = search->next[l];
+    }
+    return search;
 }
 
 }
