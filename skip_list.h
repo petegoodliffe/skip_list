@@ -8,10 +8,20 @@
 #include <memory>     // for std::allocator
 #include <functional> // for std::less
 
+//==============================================================================
+
 #include <cassert>
-void not_implemented_yet();
-inline
-void not_implemented_yet() { assert("Not implemented yet" && false); }
+#include <stdio.h>
+#define pg_fail(a)        {fprintf(stderr,"%s:%d: %s\n", __FILE__, __LINE__, a); assert(false);}
+#define assert_that(a) {fprintf(stderr,"%s:%d: Assertion failed\n", __FILE__, __LINE__); assert(a);}
+
+//void not_implemented_yet();
+//inline
+//void not_implemented_yet() { assert_that("Not implemented yet" && false); }
+
+#define not_implemented_yet() pg_fail("not implemented yet")
+
+//==============================================================================
 
 /// STL-style skip list container
 ///
@@ -234,7 +244,7 @@ skip_list<T,Compare,Allocator>::skip_list(InputIterator first, InputIterator las
 :   alloc(alloc),
     levels(0)
 {
-    assert(false);
+    not_implemented_yet();
 }
 
 template <class T, class Compare, class Allocator>
@@ -242,8 +252,8 @@ inline
 skip_list<T,Compare,Allocator>::skip_list(const skip_list &other)
 :   alloc(other.alloc),
     levels(0)
-{
-    assert(false);
+{    
+    not_implemented_yet();
 }
 
 template <class T, class Compare, class Allocator>
@@ -252,7 +262,7 @@ skip_list<T,Compare,Allocator>::skip_list(const skip_list &other, const Allocato
 :   alloc(alloc),
     levels(0)
 {
-    assert(false);
+    not_implemented_yet();
 }
 
 // C++11
