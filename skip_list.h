@@ -165,11 +165,13 @@ public:
 public:
     enum { max_levels = 33 };
     static unsigned random_level();
+    unsigned new_level();
 
 private:
     struct node
     {
         node *next;
+        node *down;
         value_type value;
     };
 
@@ -246,7 +248,7 @@ public:
     //size_type operator-(const self_type &other) const
     //    { return index - other.index; }
     
-    reference operator*()  { return &node->value; }
+    reference operator*()  { return node->value; }
     pointer   operator->() { return node->value; }
     
     bool operator==(const self_type &other) const
@@ -327,7 +329,8 @@ skip_list<T,Compare,Allocator>::skip_list(const Allocator &alloc_)
 :   alloc(alloc_),
     levels()
 {
-    nodes[0] = 0;
+    for (unsigned n = 0; n < max_levels; ++n)
+        nodes[n] = 0;
 }
 
 template <class T, class Compare, class Allocator>
@@ -547,7 +550,7 @@ template <class T, class Compare, class Allocator>
 inline
 bool skip_list<T,Compare,Allocator>::empty() const
 {
-    return nodes[0] == 0;
+    return levels == 0;
 }
 
 template <class T, class Compare, class Allocator>
@@ -586,20 +589,23 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::insert(const value_type &value)
 {
-    if (nodes[0] == 0)
-    {
-        assert_that((begin() == end()));
-        nodes[0] = node_allocator(alloc).allocate(1, (void*)0);
-        // TODO: construct in-place
-        nodes[0]->value = value;
-        nodes[0]->next = 0;
-        return begin();
-    }
-    else
-    {
-        not_implemented_yet();
-        return end();
-    }
+    levels =1;
+    const unsigned level = 0;//new_level();
+    
+    node *new_node = node_allocator(alloc).allocate(1, (void*)0);
+    // TODO: construct in-place
+    new_node->value = value;
+    new_node->next = 0;
+    new_node->down = 0;
+
+    node **insert_point = &nodes[level];
+    while (*insert_point && (*insert_point)->value < value)
+        insert_point = &(*insert_point)->next;
+    new_node->next = *insert_point;
+    *insert_point = new_node;
+    
+    // point down
+    return end(); // TODO
 }
 
 template <class T, class Compare, class Allocator>
@@ -739,7 +745,20 @@ unsigned skip_list<T,Compare,Allocator>::random_level()
     for (unsigned number = unsigned(rand()); (number & 1) == 1; number >>= 1)
     {
         level++;
-        //if (number == _levels) { _levels++; break; }
+        //if (level == levels) { levels++; break; }
+    }
+    return level;
+}
+
+template <class T, class Compare, class Allocator>
+inline
+unsigned skip_list<T,Compare,Allocator>::new_level()
+{    
+    unsigned level = random_level();
+    if (level > levels)
+    {
+        level = levels;
+        ++levels;
     }
     return level;
 }

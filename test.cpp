@@ -217,3 +217,23 @@ TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
         REQUIRE(levels[n] > levels[n+1]);
     }
 }
+
+//============================================================================
+// iterating through a series of items
+
+TEST_CASE( "skip_list/inserting a series and iterating through", "" )
+{
+    skip_list<int> list;
+    list.insert(10);
+    list.insert(20);
+    list.insert(30);
+    list.insert(40);
+    
+    skip_list<int>::iterator i = list.begin();
+
+    REQUIRE(i != list.end()); REQUIRE(*i == 10); ++i;
+    REQUIRE(i != list.end()); REQUIRE(*i == 20); ++i;
+    REQUIRE(i != list.end()); REQUIRE(*i == 30); ++i;
+    REQUIRE(i != list.end()); REQUIRE(*i == 40); ++i;
+    REQUIRE(i == list.end());
+}
