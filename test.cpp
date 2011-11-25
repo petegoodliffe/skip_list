@@ -8,6 +8,8 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
+using goodliffe::skip_list;
+
 TEST_CASE( "skip_list/smoketest", "" )
 {
     //REQUIRE(false);

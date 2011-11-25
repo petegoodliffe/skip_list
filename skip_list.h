@@ -20,9 +20,17 @@
 
 //==============================================================================
 
-/// STL-style skip list container
+namespace goodliffe {
+
+/// An STL-style skip list container; a reasonably fast ordered container.
 ///
-/// C++11: noexcept decls
+/// TODO: C++11: noexcept decls
+///
+/// @param T         Template type for kind of object held in the container.
+/// @param Compare   Template type describing the ordering comparator.
+///                  Defaults to useing the less than operator.
+/// @param Allocator Template type for memory allocator for the contents of
+///                  of the container. Defaults to a standard std::allocator
 template <typename T,
           typename Compare   = std::less<T>,
           typename Allocator = std::allocator<T> >
@@ -632,4 +640,6 @@ unsigned skip_list<T,Compare,Allocator>::random_level()
 {
     // TODO: decide on a better approach
     return unsigned(rand()) % max_levels;
+}
+
 }
