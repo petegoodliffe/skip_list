@@ -274,6 +274,9 @@ public:
     void     dump() const;
 
 private:
+    skip_list_impl(const skip_list_impl &other);
+    skip_list_impl &operator=(const skip_list_impl &other);
+
     Allocator          alloc;
     unsigned           levels;
     node_type  * const head;
