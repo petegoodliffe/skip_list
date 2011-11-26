@@ -296,15 +296,15 @@ class skip_list<T,Compare,Allocator>::iterator
                            typename skip_list<T,Compare,Allocator>::reference>
 {
 public:
-    typedef skip_list<T,Compare,Allocator>          parent_type;
-    typedef typename parent_type::const_iterator    const_type;
-    typedef typename parent_type::impl_type::node_type         node_type;
-    typedef iterator                                self_type;
+    typedef skip_list<T,Compare,Allocator>              parent_type;
+    typedef typename parent_type::const_iterator        const_type;
+    typedef typename parent_type::impl_type::node_type  node_type;
+    typedef iterator                                    self_type;
     
     iterator()
         : parent(0), node(0) {}
-    iterator(parent_type &parent_, node_type *node_)
-        : parent(&parent_), node(node_) {}
+    iterator(parent_type *parent_, node_type *node_)
+        : parent(parent_), node(node_) {}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }
@@ -356,8 +356,8 @@ public:
         : parent(0), node(0) {}
     const_iterator(const non_const_type &i)
         : parent(i.parent), node(i.node) {}
-    const_iterator(const parent_type &parent_, node_type *node_)
-        : parent(&parent_), node(node_) {}
+    const_iterator(const parent_type *parent_, node_type *node_)
+        : parent(parent_), node(node_) {}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }
@@ -517,7 +517,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::begin()
 {
-    return iterator(*this, impl.front());
+    return iterator(this, impl.front());
 }
 
 template <class T, class Compare, class Allocator>
@@ -525,7 +525,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::begin() const
 {
-    return const_iterator(*this, impl.front());
+    return const_iterator(this, impl.front());
 }
 
 template <class T, class Compare, class Allocator>
@@ -533,7 +533,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::cbegin() const
 {
-    return const_iterator(*this, impl.front());
+    return const_iterator(this, impl.front());
 }
 
 template <class T, class Compare, class Allocator>
@@ -541,7 +541,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::end()
 {
-    return iterator(*this, 0);
+    return iterator(this, 0);
 }
 
 template <class T, class Compare, class Allocator>
@@ -549,7 +549,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::end() const
 {
-    return const_iterator(*this, 0);
+    return const_iterator(this, 0);
 }
 
 template <class T, class Compare, class Allocator>
@@ -557,7 +557,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::cend() const
 {
-    return const_iterator(*this, 0);
+    return const_iterator(this, 0);
 }
 
 template <class T, class Compare, class Allocator>
@@ -649,7 +649,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::insert(const value_type &value)
 {
-    return iterator(*this, impl.insert(value));
+    return iterator(this, impl.insert(value));
 }
 
 template <class T, class Compare, class Allocator>
@@ -750,7 +750,7 @@ skip_list<T,Compare,Allocator>::find(const value_type &value)
 {
     node_type *node = impl.find(value);
     return impl.is_valid(node) && node->value == value
-        ? iterator(*this, node)
+        ? iterator(this, node)
         : end();
 }
   
@@ -761,7 +761,7 @@ skip_list<T,Compare,Allocator>::find(const value_type &value) const
 {
     const node_type *node = impl.find(value);
     return impl.is_valid(node) && node->value == value
-        ? const_iterator(*this, node)
+        ? const_iterator(this, node)
         : end();
 }
 
