@@ -521,6 +521,8 @@ struct Counter
     
     bool operator<(const Counter &other) const { return value < other.value; }
     
+    int get_int() const { return value;}
+
     // TODO: this shouldn't be a requirement
     bool operator==(const Counter &rhs) const { return value == rhs.value; }
     bool operator<=(const Counter &rhs) const { return value <= rhs.value; }
@@ -574,10 +576,21 @@ TEST_CASE( "skip_list/remove/two item list object lifetime", "" )
 
     list.insert(1);
     list.insert(2);
+    list.dump();
     
     REQUIRE(list.size() == 2);      REQUIRE(Counter::count == 3);
     REQUIRE(list.erase(1) == 1);    REQUIRE(Counter::count == 2);
     REQUIRE(list.erase(1) == 0);    REQUIRE(Counter::count == 2);
+    
+    {
+        skip_list<Counter>::iterator i = list.begin();
+        REQUIRE(i != list.end());
+        REQUIRE(*i == 2);
+        ++i;
+        REQUIRE(i == list.end());
+    }
+    list.dump();
+
     REQUIRE(list.erase(2) == 1);    REQUIRE(Counter::count == 1);
 
     REQUIRE(list.begin() == list.end());

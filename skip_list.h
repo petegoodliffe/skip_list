@@ -179,6 +179,8 @@ public:
     //   * reverse
     //   * unique
     //   * sort
+    
+    void dump() const { impl.dump(); }
 
 private:
     friend class iterator;
@@ -270,7 +272,7 @@ public:
     static unsigned random_level();
 
     unsigned new_level();
-    void     dump();
+    void     dump() const;
 
 private:
     Allocator   alloc;
@@ -871,12 +873,12 @@ typename skip_list_impl<T,Compare,Allocator>::node_type*
 skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
 {
     const unsigned level = new_level();
-    
+
     node_type *new_node = node_allocator(alloc).allocate(1, (void*)0);
     alloc.construct(&new_node->value, value);
     for (unsigned n = 0; n < max_levels; ++n)
         new_node->next[n] = new_node->prev[n] = 0;
-    
+
     node_type *insert_point = &head;
     for (unsigned l = levels; l; )
     {
@@ -909,14 +911,15 @@ skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
     {
         node_type *prev = node->prev[l];
         node_type *next = node->next[l];
+        //assert_that(prev);
         if (prev)
             prev->next[l] = next;
-        else
-            head.next[l] = next;
+        if (next)
+            next->prev[l] = prev;
     }
 
     alloc.destroy(&node->value);
-    //TODO: node_allocator(alloc).deallocate(node, 1u);
+    node_allocator(alloc).deallocate(node, 1u);
 
     item_count--;
 }
@@ -964,25 +967,29 @@ unsigned skip_list_impl<T,Compare,Allocator>::new_level()
     }
     return level;
 }
-    
+
+// for diagnostics only
 template <class T, class Compare, class Allocator>
 inline
-void skip_list_impl<T,Compare,Allocator>::dump()
+void skip_list_impl<T,Compare,Allocator>::dump() const
 {
     printf("skip_list(levels=%u)\n", levels);
     for (unsigned l = 0; l < levels; ++l)
     {
-        printf("  %u: ", l);
-        node_type *n = head.next[l];
+        printf("  [%u] ", l);
+        const node_type *n = &head;
         while (n)
         {
-            node_type *next = n->next[l];
-            bool prev_ok = true;
+            const node_type *next = n->next[l];
+            bool prev_ok = false;
             if (next)
             {
-                if (next->prev[l] != n) prev_ok = false;
+                if (next->prev[l] == n) prev_ok = true;
             }
-            printf("> %d%s ", n->value, prev_ok?"*":"X");
+            printf("%d%s %s",
+                   n->value.get_int(),
+                   next ? ">":"|",
+                   prev_ok?"<":"X");
             n = next;
         }
         printf("\n");
