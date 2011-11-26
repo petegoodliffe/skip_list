@@ -55,7 +55,7 @@ struct TestingAllocator : Struct
     typedef const T*  const_pointer;
     
     pointer allocate(size_type n, std::allocator<void>::const_pointer hint=0)
-        { return new char[sizeof(T)*n]; }
+        { return (pointer)new char[sizeof(T)*n]; }
     void deallocate(pointer p, size_type n)
         { delete [] p; }
     void construct(pointer p, const_reference val)
@@ -558,13 +558,13 @@ TEST_CASE( "skip_list/object lifetime", "" )
     {
         skip_list<Counter> list;
         
-        REQUIRE(Counter::count == 1); // TODO: fixme
+        REQUIRE(Counter::count == 0);
         
         list.insert(Counter(1));
-        REQUIRE(Counter::count == 2);
+        REQUIRE(Counter::count == 1);
         
         list.clear();
-        REQUIRE(Counter::count == 1);
+        REQUIRE(Counter::count == 0);
     }
     REQUIRE(Counter::count == 0);
 }
@@ -572,15 +572,14 @@ TEST_CASE( "skip_list/object lifetime", "" )
 TEST_CASE( "skip_list/remove/two item list object lifetime", "" )
 {
     skip_list<Counter> list;
-    REQUIRE(Counter::count == 1);
 
     list.insert(1);
     list.insert(2);
     list.dump();
     
-    REQUIRE(list.size() == 2);      REQUIRE(Counter::count == 3);
-    REQUIRE(list.erase(1) == 1);    REQUIRE(Counter::count == 2);
-    REQUIRE(list.erase(1) == 0);    REQUIRE(Counter::count == 2);
+    REQUIRE(list.size() == 2);      REQUIRE(Counter::count == 2);
+    REQUIRE(list.erase(1) == 1);    REQUIRE(Counter::count == 1);
+    REQUIRE(list.erase(1) == 0);    REQUIRE(Counter::count == 1);
     
     {
         skip_list<Counter>::iterator i = list.begin();
@@ -591,7 +590,7 @@ TEST_CASE( "skip_list/remove/two item list object lifetime", "" )
     }
     list.dump();
 
-    REQUIRE(list.erase(2) == 1);    REQUIRE(Counter::count == 1);
+    REQUIRE(list.erase(2) == 1);    REQUIRE(Counter::count == 0);
 
     REQUIRE(list.begin() == list.end());
 }
@@ -601,11 +600,10 @@ TEST_CASE( "skip_list/clear/object lifetime", "" )
     Counter::count = 0;
     {
         skip_list<Counter> list;
-        REQUIRE(Counter::count == 1);
 
         for (int n = 0; n < 10; ++n) list.insert(n);
         list.clear();
-        REQUIRE(Counter::count == 1);
+        REQUIRE(Counter::count == 0);
     }
     REQUIRE(Counter::count == 0);
 }

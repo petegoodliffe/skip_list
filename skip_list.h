@@ -257,12 +257,12 @@ public:
     size_type        size() const
                         { return item_count; }
     bool             is_valid(const node_type *node) const
-                        { return node && node != &head; }
+                        { return node && node != head; }
     node_type       *front()
-                        { return head.next[0]; }
+                        { return head->next[0]; }
                         // TODO: back when empty?
     const node_type *front() const
-                        { return head.next[0]; }
+                        { return head->next[0]; }
                         // TODO: back when empty?
     node_type       *find(const value_type &value) const;
     node_type       *insert(const value_type &value);
@@ -277,7 +277,7 @@ public:
 private:
     Allocator   alloc;
     unsigned    levels;
-    node_type   head; // needn't have default-constructed value
+    node_type  *head; // needn't have default-constructed value
     size_type   item_count;
 };
     
@@ -847,16 +847,18 @@ inline
 skip_list_impl<T,Compare,Allocator>::skip_list_impl(const Allocator &alloc_)
 :   alloc(alloc_),
     levels(0),
+    head(node_allocator(alloc).allocate(1, (void*)0)),
     item_count(0)
 {
     for (unsigned n = 0; n < max_levels; n++)
-        head.next[n] = head.prev[n] = 0;
+        head->next[n] = head->prev[n] = 0;
 }
 
 template <class T, class Compare, class Allocator>
 inline
 skip_list_impl<T,Compare,Allocator>::~skip_list_impl()
 {
+    node_allocator(alloc).deallocate(head, 1);
     remove_all();
 }
 
@@ -879,7 +881,7 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
     for (unsigned n = 0; n < max_levels; ++n)
         new_node->next[n] = new_node->prev[n] = 0;
 
-    node_type *insert_point = &head;
+    node_type *insert_point = head;
     for (unsigned l = levels; l; )
     {
         --l;
@@ -977,7 +979,7 @@ void skip_list_impl<T,Compare,Allocator>::dump() const
     for (unsigned l = 0; l < levels; ++l)
     {
         printf("  [%u] ", l);
-        const node_type *n = &head;
+        const node_type *n = head;
         while (n)
         {
             const node_type *next = n->next[l];
@@ -1003,7 +1005,7 @@ skip_list_impl<T,Compare,Allocator>::find(const value_type &value) const
 {
     // TODO: == <=
     // I could have a const and non-const overload, but this is simpler
-    node_type *search = const_cast<node_type*>(&head);
+    node_type *search = const_cast<node_type*>(head);
     for (unsigned l = levels; l; )
     {
         --l;
