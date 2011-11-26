@@ -254,16 +254,12 @@ public:
 
     Allocator get_allocator() const;
 
-    size_type        size() const
-                        { return item_count; }
-    bool             is_valid(const node_type *node) const
-                        { return node && node != head; }
-    node_type       *front()
-                        { return head->next[0]; }
-                        // TODO: back when empty?
-    const node_type *front() const
-                        { return head->next[0]; }
-                        // TODO: back when empty?
+    size_type        size() const                          { return item_count; }
+    bool             is_valid(const node_type *node) const { return node && node != head && node != tail; }
+    node_type       *front()                               { return head->next[0]; }
+    const node_type *front() const                         { return head->next[0]; }
+    node_type       *one_past_end()                        { return tail; }
+    const node_type *one_past_end() const                  { return tail; }
     node_type       *find(const value_type &value) const;
     node_type       *insert(const value_type &value);
     void             remove(node_type *value);
@@ -275,10 +271,11 @@ public:
     void     dump() const;
 
 private:
-    Allocator   alloc;
-    unsigned    levels;
-    node_type  *head; // needn't have default-constructed value
-    size_type   item_count;
+    Allocator          alloc;
+    unsigned           levels;
+    node_type  * const head; // needn't have default-constructed value
+    node_type  * const tail;
+    size_type          item_count;
 };
     
 } // namespace detail
@@ -551,7 +548,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::end()
 {
-    return iterator(this, 0);
+    return iterator(this, impl.one_past_end());
 }
 
 template <class T, class Compare, class Allocator>
@@ -559,7 +556,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::end() const
 {
-    return const_iterator(this, 0);
+    return const_iterator(this, impl.one_past_end());
 }
 
 template <class T, class Compare, class Allocator>
@@ -567,7 +564,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::cend() const
 {
-    return const_iterator(this, 0);
+    return const_iterator(this, impl.one_past_end());
 }
 
 template <class T, class Compare, class Allocator>
@@ -671,6 +668,7 @@ skip_list<T,Compare,Allocator>::insert(const_iterator hint, const value_type &va
     // TODO - try to optimse lookup using this
     (void) hint;
     return insert(value);
+    not_implemented_yet();
 }
 
 //C++11iterator insert const_iterator pos, value_type &&value);
@@ -848,10 +846,16 @@ skip_list_impl<T,Compare,Allocator>::skip_list_impl(const Allocator &alloc_)
 :   alloc(alloc_),
     levels(0),
     head(node_allocator(alloc).allocate(1, (void*)0)),
+    tail(node_allocator(alloc).allocate(1, (void*)0)),
     item_count(0)
 {
     for (unsigned n = 0; n < max_levels; n++)
-        head->next[n] = head->prev[n] = 0;
+    {
+        head->next[n] = tail;
+        head->prev[n] = 0;
+        tail->next[n] = 0;
+        tail->prev[n] = head;
+    }
 }
 
 template <class T, class Compare, class Allocator>
@@ -859,6 +863,7 @@ inline
 skip_list_impl<T,Compare,Allocator>::~skip_list_impl()
 {
     node_allocator(alloc).deallocate(head, 1);
+    node_allocator(alloc).deallocate(tail, 1);
     remove_all();
 }
 
@@ -894,6 +899,7 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
             new_node->next[l] = next;
             insert_point->next[l] = new_node;
             new_node->prev[l] = insert_point;
+            //assert_that(next); TODO
             if (next)
                 next->prev[l] = new_node;
         }
@@ -909,15 +915,18 @@ inline
 void
 skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
 {
+    assert_that(node != head);
+    assert_that(node != tail);
     for (unsigned l = 0; l < max_levels; ++l)
     {
         node_type *prev = node->prev[l];
         node_type *next = node->next[l];
-        //assert_that(prev);
-        if (prev)
-            prev->next[l] = next;
-        if (next)
-            next->prev[l] = prev;
+        //assert_that(prev); TODO
+        //assert_that(next);
+        if (prev) // TODO: remove me
+        prev->next[l] = next;
+        if (next) // TODO: remove me
+        next->prev[l] = prev;
     }
 
     alloc.destroy(&node->value);
