@@ -53,8 +53,8 @@ public:
 
     class iterator;
     class const_iterator;
-    //typedef std::reverse_iterator<iterator>       reverse_iterator;
-    //typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef std::reverse_iterator<iterator>       reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     //======================================================================
     // lifetime management
@@ -106,13 +106,13 @@ public:
     const_iterator end() const;
     const_iterator cend() const;
 
-    //reverse_iterator       rbegin();
-    //const_reverse_iterator rbegin() const;
-    //const_reverse_iterator crbegin() const;
+    reverse_iterator       rbegin();
+    const_reverse_iterator rbegin() const;
+    const_reverse_iterator crbegin() const;
 
-    //reverse_iterator       rend();
-    //const_reverse_iterator rend() const;
-    //const_reverse_iterator crend() const;
+    reverse_iterator       rend();
+    const_reverse_iterator rend() const;
+    const_reverse_iterator crend() const;
 
     //======================================================================
     // capacity
@@ -179,6 +179,7 @@ private:
     struct node
     {
         node *next[max_levels];
+        node *prev[max_levels];
         value_type value;
     };
 
@@ -227,7 +228,7 @@ namespace goodliffe {
 
 template <class T, class Compare, class Allocator>
 class skip_list<T,Compare,Allocator>::iterator
-    : public std::iterator<std::forward_iterator_tag,
+    : public std::iterator<std::bidirectional_iterator_tag,
                            typename skip_list<T,Compare,Allocator>::value_type,
                            typename skip_list<T,Compare,Allocator>::difference_type,
                            typename skip_list<T,Compare,Allocator>::pointer,
@@ -249,10 +250,10 @@ public:
     self_type operator++(int) // postincrement
         { self_type old(*this); operator++(); return old; }
 
-    //self_type &operator--()
-    //    { --index; return *this; }
-    //self_type operator--(int) // postdecrement
-    //    { self_type old(*this); operator--(); return old; }
+    self_type &operator--()
+        { node = node->prev[0]; return *this; }
+    self_type operator--(int) // postdecrement
+        { self_type old(*this); operator--(); return old; }
     
     //size_type operator-(const self_type &other) const
     //    { return index - other.index; }
@@ -278,7 +279,7 @@ private:
 
 template <class T, class Compare, class Allocator>
 class skip_list<T,Compare,Allocator>::const_iterator
-    : public std::iterator<std::forward_iterator_tag,
+    : public std::iterator<std::bidirectional_iterator_tag,
                            typename skip_list<T,Compare,Allocator>::value_type,
                            typename skip_list<T,Compare,Allocator>::difference_type,
                            typename skip_list<T,Compare,Allocator>::const_pointer,
@@ -298,14 +299,14 @@ public:
         : parent(&parent_), node(node_) {}
 
     self_type &operator++()
-        { node = node->next; return *this; }
+        { node = node->next[0]; return *this; }
     self_type operator++(int) // postincrement
         { self_type old(*this); operator++(); return old; }
 
-    //self_type &operator--()
-    //    { --index; return *this; }
-    //self_type operator--(int) // postdecrement
-    //    { self_type old(*this); operator--(); return old; }
+    self_type &operator--()
+        { node = node->prev[0]; return *this; }
+    self_type operator--(int) // postdecrement
+        { self_type old(*this); operator--(); return old; }
     
     //size_type operator-(const self_type &other) const
     //    { return index - other.index; }
@@ -336,12 +337,11 @@ template <class T, class Compare, class Allocator>
 inline
 skip_list<T,Compare,Allocator>::skip_list(const Allocator &alloc_)
 :   alloc(alloc_),
-    levels(0)
     levels(0),
     item_count(0)
 {
     for (unsigned n = 0; n < max_levels; n++)
-        head.next[n] = 0;
+        head.next[n] = head.prev[n] = 0;
 }
 
 template <class T, class Compare, class Allocator>
@@ -508,7 +508,7 @@ skip_list<T,Compare,Allocator>::cend() const
 {
     return const_iterator(*this, 0);
 }
-/*
+
 template <class T, class Compare, class Allocator>
 inline
 typename skip_list<T,Compare,Allocator>::reverse_iterator
@@ -556,7 +556,7 @@ skip_list<T,Compare,Allocator>::crend() const
 {
     return const_reverse_iterator(begin());
 }
-*/
+
 //==============================================================================
 // capacity
 
@@ -564,7 +564,7 @@ template <class T, class Compare, class Allocator>
 inline
 bool skip_list<T,Compare,Allocator>::empty() const
 {
-    return levels == 0;
+    return item_count == 0;
 }
 
 template <class T, class Compare, class Allocator>
@@ -620,8 +620,12 @@ skip_list<T,Compare,Allocator>::insert(const value_type &value)
 
         if (l <= level)
         {
-            new_node->next[l] = insert_point->next[l];
+            node *next = insert_point->next[l];
+            new_node->next[l] = next;
             insert_point->next[l] = new_node;
+            new_node->prev[l] = insert_point;
+            if (next)
+                next->prev[l] = new_node;
         }
     }
 
@@ -660,15 +664,25 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::erase(const value_type &value)
 {
     node *search = insertion_point(value);
+    size_type found = 0;
     if (search && search->value == value)
     {
         //patch up forwards and backwards
+        found = 1;
+        for (unsigned l = 0; l < max_levels; ++l)
+        {
+            node *prev = search->prev[l];
+            node *next = search->next[l];
+            if (prev)
+                prev->next[l] = next;
+            else
+                head.next[l] = next;
+        }
     }
     
 
-
+/*
     node *cur = &head;
-    size_type found = 0;
     for (unsigned l = levels; l;)
     {
         l--;
@@ -684,8 +698,8 @@ skip_list<T,Compare,Allocator>::erase(const value_type &value)
             
             if (cur->next[l]->value > value) break;
         }
-    }
-    
+    }*/
+
     // delete node
     item_count -= found;
 
@@ -846,8 +860,14 @@ void skip_list<T,Compare,Allocator>::dump()
         node *n = head.next[l];
         while (n)
         {
-            printf("> %d ", n->value);
-            n = n->next[l];
+            node *next = n->next[l];
+            bool prev_ok = true;
+            if (next)
+            {
+                if (next->prev[l] != n) prev_ok = false;
+            }
+            printf("> %d%s ", n->value, prev_ok?"*":"X");
+            n = next;
         }
         printf("\n");
     }
