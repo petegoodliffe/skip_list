@@ -889,14 +889,19 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
 
     node_type *new_node = node_allocator(alloc).allocate(1, (void*)0);
     alloc.construct(&new_node->value, value);
+    
+    // This probably doesn't matter
     for (unsigned n = 0; n < max_levels; ++n)
-        new_node->next[n] = new_node->prev[n] = 0;
+    {
+        new_node->next[n] = tail;
+        new_node->prev[n] = head;
+    }
 
     node_type *insert_point = head;
     for (unsigned l = levels; l; )
     {
         --l;
-        while (insert_point->next[l] && insert_point->next[l]->value < value)
+        while (insert_point->next[l] != tail && insert_point->next[l]->value < value)
             insert_point = insert_point->next[l];
         
         if (l <= level)
@@ -905,9 +910,8 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
             new_node->next[l] = next;
             insert_point->next[l] = new_node;
             new_node->prev[l] = insert_point;
-            //assert_that(next); TODO
-            if (next)
-                next->prev[l] = new_node;
+            assert_that(next);
+            next->prev[l] = new_node;
         }
     }
     
@@ -923,15 +927,14 @@ skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
 {
     assert_that(node != head);
     assert_that(node != tail);
+
     for (unsigned l = 0; l < max_levels; ++l)
     {
         node_type *prev = node->prev[l];
         node_type *next = node->next[l];
-        //assert_that(prev); TODO
-        //assert_that(next);
-        if (prev) // TODO: remove me
+        assert_that(prev);
+        assert_that(next);
         prev->next[l] = next;
-        if (next) // TODO: remove me
         next->prev[l] = prev;
     }
 
@@ -1024,7 +1027,7 @@ skip_list_impl<T,Compare,Allocator>::find(const value_type &value) const
     for (unsigned l = levels; l; )
     {
         --l;
-        while (search->next[l] && search->next[l]->value <= value)
+        while (search->next[l] != tail && search->next[l]->value <= value)
             search = search->next[l];
     }
     return search;

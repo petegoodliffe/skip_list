@@ -287,12 +287,10 @@ TEST_CASE( "skip_list/inserting one item returns correct contains()", "" )
 {
     skip_list<int> list;
     list.insert(10);
-    REQUIRE(list.contains(10) );
+    REQUIRE(list.contains(10));
     REQUIRE_FALSE(list.contains(1));
     REQUIRE_FALSE(list.contains(9));
     REQUIRE_FALSE(list.contains(11));
-    
-    REQUIRE_FALSE(list.contains(10));
 }
 
 //============================================================================
@@ -407,7 +405,7 @@ TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
     for (unsigned n = 0; n < 10000; ++n)
     {
         unsigned random = list.random_level();
-        REQUIRE(random < skip_list_impl<int>::max_levels);
+        REQUIRE(random < unsigned(skip_list_impl<int>::max_levels));
         levels[random]++;
     }
     //for (unsigned n = 0; n < skip_list<int>::max_levels; ++n)
@@ -448,7 +446,6 @@ TEST_CASE( "skip_list/inserting an unordered series and iterating forwards", "" 
     list.insert(40);
     list.insert(20);
     list.insert(0);
-    //list.dump();
     
     skip_list<int>::iterator i = list.begin();
     
@@ -645,14 +642,15 @@ TEST_CASE( "skip_list/object lifetime", "" )
     REQUIRE(Counter::count == 0);
     {
         skip_list<Counter> list;
-        
         REQUIRE(Counter::count == 0);
         
         list.insert(Counter(1));
         REQUIRE(Counter::count == 1);
         
+        REQUIRE(list.size() == 1);
         list.clear();
         REQUIRE(Counter::count == 0);
+        REQUIRE(list.size() == 0);
     }
     REQUIRE(Counter::count == 0);
 }
@@ -663,7 +661,6 @@ TEST_CASE( "skip_list/remove/two item list object lifetime", "" )
 
     list.insert(1);
     list.insert(2);
-    list.dump();
     
     REQUIRE(list.size() == 2);      REQUIRE(Counter::count == 2);
     REQUIRE(list.erase(1) == 1);    REQUIRE(Counter::count == 1);
@@ -676,7 +673,6 @@ TEST_CASE( "skip_list/remove/two item list object lifetime", "" )
         ++i;
         REQUIRE(i == list.end());
     }
-    list.dump();
 
     REQUIRE(list.erase(2) == 1);    REQUIRE(Counter::count == 0);
 
