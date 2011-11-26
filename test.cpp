@@ -34,10 +34,14 @@ inline
 bool operator!=(const Struct &lhs, const Struct &rhs)
     { return !operator==(lhs,rhs); }
 
+//============================================================================
+
 template <typename T = int>
 struct TestingAllocator : Struct
 {
     TestingAllocator() : Struct() {}
+    template <class OTHER>
+    TestingAllocator(OTHER &) : Struct() {}
     TestingAllocator(int i, float f) : Struct(i,f) {}
 
     template <typename OTHER>
@@ -49,6 +53,15 @@ struct TestingAllocator : Struct
     typedef const T&  const_reference;
     typedef T*        pointer;
     typedef const T*  const_pointer;
+    
+    pointer allocate(size_type n, std::allocator<void>::const_pointer hint=0)
+        { return new char[sizeof(T)*n]; }
+    void deallocate(pointer p, size_type n)
+        { delete [] p; }
+    void construct(pointer p, const_reference val)
+        { new ((void*)p) T (val); }
+    void destroy(pointer p)
+        { ((T*)p)->~T(); }
 };
 
 //============================================================================
