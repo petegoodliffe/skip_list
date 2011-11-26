@@ -10,7 +10,7 @@
 #include <iterator>   // for std::reverse_iterator
 
 //==============================================================================
-// diagnostics
+#pragma mark - diagnostics
 
 #include <cassert>
 #include <stdio.h>
@@ -19,6 +19,7 @@
 #define not_implemented_yet() pg_fail("not implemented yet")
 
 //==============================================================================
+#pragma mark - detail
 // internal impementation of skip list data structure
 
 namespace goodliffe {
@@ -80,6 +81,7 @@ private:
 }
 
 //==============================================================================
+#pragma mark - skip_list
 
 /// An STL-style skip list container; a reasonably fast ordered container.
 ///
@@ -268,7 +270,7 @@ namespace std
 }
 
 //==============================================================================
-// iterators
+#pragma mark - iterators
 
 namespace goodliffe {
 
@@ -377,7 +379,7 @@ private:
 };
 
 //==============================================================================
-// lifetime management
+#pragma mark - lifetime management
 
 template <class T, class Compare, class Allocator>
 inline
@@ -431,7 +433,7 @@ Allocator skip_list<T,Compare,Allocator>::get_allocator() const
 }
 
 //==============================================================================
-// assignment
+#pragma mark - assignment
 
 template <class T, class Compare, class Allocator>
 inline
@@ -458,7 +460,7 @@ void skip_list<T,Compare,Allocator>::assign(InputIterator first, InputIterator l
 }
 
 //==============================================================================
-// element access
+#pragma mark - element access
 
 template <class T, class Compare, class Allocator>
 inline
@@ -495,7 +497,7 @@ skip_list<T,Compare,Allocator>::back() const
 }
 
 //==============================================================================
-// iterators
+#pragma mark - iterators
 
 template <class T, class Compare, class Allocator>
 inline
@@ -594,7 +596,7 @@ skip_list<T,Compare,Allocator>::crend() const
 }
 
 //==============================================================================
-// capacity
+#pragma mark - capacity
 
 template <class T, class Compare, class Allocator>
 inline
@@ -620,7 +622,7 @@ skip_list<T,Compare,Allocator>::max_size() const
 }
 
 //==============================================================================
-// modifiers
+#pragma mark - modifiers
 
 template <class T, class Compare, class Allocator>
 inline
@@ -722,7 +724,7 @@ void skip_list<T,Compare,Allocator>::swap(skip_list<T,Compare,Allocator> &other)
 }
     
 //==============================================================================
-// lookup
+#pragma mark - lookup
 
 template <class T, class Compare, class Allocator>
 inline
@@ -756,7 +758,7 @@ skip_list<T,Compare,Allocator>::find(const value_type &value) const
 }
 
 //==============================================================================
-// non-members
+#pragma mark - non-members
 
 template <class T, class Compare, class Allocator>
 inline
@@ -817,7 +819,7 @@ void std::swap(goodliffe::skip_list<T,Compare,Allocator> &lhs, goodliffe::skip_l
 namespace goodliffe {
 
 //==============================================================================
-// skip_list_impl
+#pragma mark - skip_list_impl
     
 namespace detail {
 
