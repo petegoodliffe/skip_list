@@ -715,8 +715,12 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::erase(const_iterator position)
 {
-    assert_that(position.parent == this);
-    not_implemented_yet();
+    assert_that(position.get_parent() == this);
+    assert_that(impl.is_valid(position.get_node()));
+    node_type *node = const_cast<node_type*>(position.get_node());
+    node_type *next = node->next[0];
+    impl.remove(node);
+    return iterator(this, next);
 }
 
 template <class T, class Compare, class Allocator>

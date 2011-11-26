@@ -294,7 +294,7 @@ TEST_CASE( "skip_list/inserting one item returns correct contains()", "" )
 }
 
 //============================================================================
-// erasing
+// erasing by value
 
 TEST_CASE( "skip_list/erase/not contained item doesn't break things", "" )
 {
@@ -345,6 +345,34 @@ TEST_CASE( "skip_list/erase/last item", "" )
     REQUIRE(list.front() == 10);
     
     REQUIRE(list.count(20) == 0);
+}
+
+//============================================================================
+// erasing by iterator
+
+TEST_CASE( "skip_list/erase/iterator/empy list/end", "" )
+{
+    skip_list<int> list;
+    // This will trigger an assertion, as it's invalid...
+    //REQUIRE(list.erase(list.end()) == list.end());
+}
+
+TEST_CASE( "skip_list/erase/iterator/one item list/erase begin()", "" )
+{
+    skip_list<int> list;
+    list.insert(45);
+    list.erase(list.begin());
+    REQUIRE(list.empty());
+    REQUIRE(list.begin() == list.end());
+}
+
+TEST_CASE( "skip_list/erase/iterator/one item list/erase --end()", "" )
+{
+    skip_list<int> list;
+    list.insert(45);
+    list.erase(--list.end());
+    REQUIRE(list.empty());
+    REQUIRE(list.begin() == list.end());
 }
 
 //============================================================================
