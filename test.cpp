@@ -174,6 +174,54 @@ TEST_CASE( "skip_list/iterator converts to const iterator", "" )
 }
 
 //============================================================================
+// front
+
+TEST_CASE( "skip_list/front/one item", "" )
+{
+    skip_list<int> list;
+    const skip_list<int> &clist(list);
+
+    list.insert(21);
+    REQUIRE(list.front() == 21);
+    REQUIRE(clist.front() == 21);
+}
+
+TEST_CASE( "skip_list/front/two items", "" )
+{
+    skip_list<int> list;
+    const skip_list<int> &clist(list);
+    
+    list.insert(21);
+    list.insert(7);
+    REQUIRE(list.front() == 7);
+    REQUIRE(clist.front() == 7);
+}
+
+//============================================================================
+// back
+
+TEST_CASE( "skip_list/back/one item", "" )
+{
+    skip_list<int> list;
+    const skip_list<int> &clist(list);
+    
+    list.insert(21);
+    REQUIRE(list.back() == 21);
+    REQUIRE(clist.back() == 21);
+}
+
+TEST_CASE( "skip_list/back/two items", "" )
+{
+    skip_list<int> list;
+    const skip_list<int> &clist(list);
+    
+    list.insert(21);
+    list.insert(7);
+    REQUIRE(list.back() == 21);
+    REQUIRE(clist.back() == 21);
+}
+
+//============================================================================
 // inserting one item
 
 TEST_CASE( "skip_list/inserting one item is not empty()", "" )

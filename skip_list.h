@@ -505,7 +505,7 @@ inline
 typename skip_list<T,Compare,Allocator>::reference
 skip_list<T,Compare,Allocator>::back()
 {
-    not_implemented_yet();
+    return impl.one_past_end()->prev[0]->value;
 }
 
 template <class T, class Compare, class Allocator>
@@ -513,7 +513,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reference
 skip_list<T,Compare,Allocator>::back() const
 {
-    not_implemented_yet();
+    return impl.one_past_end()->prev[0]->value;
 }
 
 //==============================================================================
