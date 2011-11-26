@@ -375,6 +375,36 @@ TEST_CASE( "skip_list/erase/iterator/one item list/erase --end()", "" )
     REQUIRE(list.begin() == list.end());
 }
 
+TEST_CASE( "skip_list/erase/iterator/three item list/middle", "" )
+{
+    skip_list<int> list; list.insert(1); list.insert(2); list.insert(3);
+
+    list.erase(++list.begin()); REQUIRE(list.size() == 2);
+    
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i++ == 1); REQUIRE(*i++ == 3); REQUIRE(i == list.end());
+}
+
+TEST_CASE( "skip_list/erase/iterator/three item list/begin", "" )
+{
+    skip_list<int> list; list.insert(1); list.insert(2); list.insert(3);
+    
+    list.erase(list.begin()); REQUIRE(list.size() == 2);
+    
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i++ == 2); REQUIRE(*i++ == 3); REQUIRE(i == list.end());
+}
+
+TEST_CASE( "skip_list/erase/iterator/three item list/end", "" )
+{
+    skip_list<int> list; list.insert(1); list.insert(2); list.insert(3);
+    
+    list.erase(--list.end()); REQUIRE(list.size() == 2);
+    
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i++ == 1); REQUIRE(*i++ == 2); REQUIRE(i == list.end());
+}
+
 //============================================================================
 // size
 
