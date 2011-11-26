@@ -463,6 +463,26 @@ TEST_CASE( "skip_list/inserting a series and iterating forwards and backwards", 
     REQUIRE(i == list.end());
 }
 
+TEST_CASE( "skip_list/inserting an unordered series and iterating backwards", "" )
+{
+    skip_list<int> list;
+    list.insert(30);
+    list.insert(10);
+    list.insert(40);
+    list.insert(20);
+    list.insert(0);
+    
+    skip_list<int>::iterator i = list.end();
+    
+    --i; REQUIRE(i != list.end());
+
+    REQUIRE(i != list.begin()); REQUIRE(*i == 40); --i;
+    REQUIRE(i != list.begin()); REQUIRE(*i == 30); --i;
+    REQUIRE(i != list.begin()); REQUIRE(*i == 20); --i;
+    REQUIRE(i != list.begin()); REQUIRE(*i == 10); --i;
+    REQUIRE(i == list.begin()); REQUIRE(*i == 0);
+}
+
 //============================================================================
 // find
 
