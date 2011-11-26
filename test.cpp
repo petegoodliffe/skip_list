@@ -487,6 +487,8 @@ TEST_CASE( "skip_list/clear/two item list", "" )
     list.clear();
     REQUIRE(list.size() == 0);
     REQUIRE(list.empty());
+    REQUIRE(list.begin().get_parent() == list.end().get_parent());
+    REQUIRE(list.begin().get_node() == list.end().get_node());
     REQUIRE(list.begin() == list.end());
 }
 
@@ -518,6 +520,10 @@ struct Counter
     int value;
     
     bool operator<(const Counter &other) const { return value < other.value; }
+    
+    // TODO: this shouldn't be a requirement
+    bool operator==(const Counter &rhs) const { return value == rhs.value; }
+    bool operator<=(const Counter &rhs) const { return value <= rhs.value; }
 };
 
 int Counter::count = 0;
@@ -559,6 +565,22 @@ TEST_CASE( "skip_list/object lifetime", "" )
         REQUIRE(Counter::count == 1);
     }
     REQUIRE(Counter::count == 0);
+}
+
+TEST_CASE( "skip_list/remove/two item list object lifetime", "" )
+{
+    skip_list<Counter> list;
+    REQUIRE(Counter::count == 1);
+
+    list.insert(1);
+    list.insert(2);
+    
+    REQUIRE(list.size() == 2);      REQUIRE(Counter::count == 3);
+    REQUIRE(list.erase(1) == 1);    REQUIRE(Counter::count == 2);
+    REQUIRE(list.erase(1) == 0);    REQUIRE(Counter::count == 2);
+    REQUIRE(list.erase(2) == 1);    REQUIRE(Counter::count == 1);
+
+    REQUIRE(list.begin() == list.end());
 }
 
 TEST_CASE( "skip_list/clear/object lifetime", "" )

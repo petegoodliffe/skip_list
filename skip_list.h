@@ -332,6 +332,10 @@ public:
     bool operator!=(const const_type &other) const
         { return !operator==(other); }
 
+    // diagnostic
+    const parent_type *get_parent() const { return parent; }
+    const node_type   *get_node()   const { return node; }
+
 private:
     friend class const_iterator;
     parent_type *parent;
@@ -384,6 +388,10 @@ public:
         { return parent == other.parent && node == other.node; }
     bool operator!=(const non_const_type &other) const
         { return !operator==(other); }
+    
+    // diagnostic
+    const parent_type *get_parent() const { return parent; }
+    const node_type   *get_node()   const { return node; }
 
 private:
     friend class iterator;
@@ -702,6 +710,7 @@ typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::erase(const_iterator position)
 {
     assert_that(position.parent == this);
+    not_implemented_yet();
 }
 
 template <class T, class Compare, class Allocator>
