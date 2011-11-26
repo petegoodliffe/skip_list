@@ -864,8 +864,7 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
     const unsigned level = new_level();
     
     node_type *new_node = node_allocator(alloc).allocate(1, (void*)0);
-    // TODO: construct in-place
-    new_node->value = value;
+    alloc.construct(&new_node->value, value);
     for (unsigned n = 0; n < max_levels; ++n)
         new_node->next[n] = new_node->prev[n] = 0;
     
@@ -907,8 +906,8 @@ skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
             head.next[l] = next;
     }
 
-    // TODO: delete node
-    //node_allocator(alloc).deallocate(node, 1u);
+    alloc.destroy(&node->value);
+    //TODO: node_allocator(alloc).deallocate(node, 1u);
 
     item_count--;
 }
