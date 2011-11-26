@@ -444,3 +444,46 @@ TEST_CASE( "skip_list/find/in a populated list", "" )
     REQUIRE(*clist.find(40) == 40);
     REQUIRE(*clist.find(0) == 0);
 }
+
+//============================================================================
+// clear
+
+TEST_CASE( "skip_list/clear/empty list", "" )
+{
+    skip_list<int> list;
+    list.clear();
+    REQUIRE(true); // didn't crash :-)
+    REQUIRE(list.size() == 0);
+}
+
+TEST_CASE( "skip_list/clear/one item list", "" )
+{
+    skip_list<int> list;
+    list.insert(1);
+    list.clear();
+    REQUIRE(list.size() == 0);
+    REQUIRE(list.empty());
+    REQUIRE(list.begin() == list.end());
+}
+
+TEST_CASE( "skip_list/clear/two item list", "" )
+{
+    skip_list<int> list;
+    for (int n = 0; n < 2; ++n) list.insert(n);
+    
+    list.clear();
+    REQUIRE(list.size() == 0);
+    REQUIRE(list.empty());
+    REQUIRE(list.begin() == list.end());
+}
+
+TEST_CASE( "skip_list/clear/several item list", "" )
+{
+    skip_list<int> list;
+    for (int n = 0; n < 10; ++n) list.insert(n);
+
+    list.clear();
+    REQUIRE(list.size() == 0);
+    REQUIRE(list.empty());
+    REQUIRE(list.begin() == list.end());
+}
