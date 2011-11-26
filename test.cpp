@@ -297,8 +297,9 @@ TEST_CASE( "skip_list/insert() returns iterator to inserted element", "" )
 {
     skip_list<int> list;
     
-    skip_list<int>::iterator i = list.insert(10);
-    REQUIRE(*i == 10);
+    skip_list<int>::insert_by_value_result r = list.insert(10);
+    REQUIRE(r.second);
+    REQUIRE(*r.first == 10);
 }
 
 TEST_CASE( "skip_list/can't insert same item twice", "" )
@@ -308,11 +309,12 @@ TEST_CASE( "skip_list/can't insert same item twice", "" )
     list.insert(10);
     REQUIRE(list.size() == 1);
 
-    skip_list<int>::iterator i = list.insert(10);
-    REQUIRE(i == list.end());
+    skip_list<int>::insert_by_value_result r = list.insert(10);
+    REQUIRE(!r.second);
+    REQUIRE(r.first == list.end());
     REQUIRE(list.size() == 1);
     
-    i = list.begin();
+    skip_list<int>::iterator i = list.begin();
     REQUIRE(*i++ == 10);
     REQUIRE(i == list.end());
 }

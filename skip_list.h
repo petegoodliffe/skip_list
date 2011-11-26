@@ -8,6 +8,7 @@
 #include <memory>     // for std::allocator
 #include <functional> // for std::less
 #include <iterator>   // for std::reverse_iterator
+#include <utility>    // for std::pair
 
 //==============================================================================
 #pragma mark - detail
@@ -147,8 +148,10 @@ public:
     // modifiers
 
     void clear();
+    
+    typedef typename std::pair<iterator,bool> insert_by_value_result;
 
-    iterator insert(const value_type &value);    
+    insert_by_value_result insert(const value_type &value);
     iterator insert(const_iterator hint, const value_type &value);
 
     //C++11iterator insert(value_type &&value);
@@ -667,10 +670,11 @@ void skip_list<T,Compare,Allocator>::clear()
 
 template <class T, class Compare, class Allocator>
 inline
-typename skip_list<T,Compare,Allocator>::iterator
+typename skip_list<T,Compare,Allocator>::insert_by_value_result
 skip_list<T,Compare,Allocator>::insert(const value_type &value)
 {
-    return iterator(this, impl.insert(value));
+    node_type *node = impl.insert(value);
+    return std::make_pair(iterator(this, node), impl.is_valid(node));
 }
 
 template <class T, class Compare, class Allocator>
