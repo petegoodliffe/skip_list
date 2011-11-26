@@ -25,6 +25,8 @@ namespace goodliffe {
 
 namespace detail {
 
+/// Internal implementation of skip_list data structure and methods for
+/// modifying it.
 template <typename T,
           typename Compare   = std::less<T>,
           typename Allocator = std::allocator<T> >
@@ -49,14 +51,26 @@ public:
 
     Allocator get_allocator() const;
 
-    node_type *find(const value_type &value) const;
-    node_type *insert(const value_type &value);
-    void       remove(node_type *value);
+    size_type        size() const
+                        { return item_count; }
+    bool             is_valid(const node_type *node) const
+                        { return node && node != &head; }
+    node_type       *front()
+                        { return head.next[0]; }
+                        // TODO: back when empty?
+    const node_type *front() const
+                        { return head.next[0]; }
+                        // TODO: back when empty?
+    node_type       *find(const value_type &value) const;
+    node_type       *insert(const value_type &value);
+    void             remove(node_type *value);
 
     static unsigned random_level();
-    unsigned new_level();
-    void dump();
 
+    unsigned new_level();
+    void     dump();
+
+private:
     Allocator   alloc;
     unsigned    levels;
     node_type   head; // needn't have default-constructed value
@@ -221,7 +235,7 @@ private:
     friend class iterator;
     friend class const_iterator;
 
-    impl_type       impl;
+    impl_type impl;
 };
 
 template <class T, class Compare, class Allocator>
@@ -448,8 +462,8 @@ inline
 typename skip_list<T,Compare,Allocator>::reference
 skip_list<T,Compare,Allocator>::front()
 {
-    assert_that(impl.head.next[0]);
-    return impl.head.next[0]->value;
+    assert_that(impl.size() != 0);
+    return impl.front()->value;
 }
 
 template <class T, class Compare, class Allocator>
@@ -457,8 +471,8 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reference
 skip_list<T,Compare,Allocator>::front() const
 {
-    assert_that(impl.head.next[0]);
-    return impl.head.next[0]->value;
+    assert_that(impl.size() != 0);
+    return impl.front()->value;
 }
 
 template <class T, class Compare, class Allocator>
@@ -485,7 +499,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::begin()
 {
-    return iterator(*this, impl.head.next[0]);
+    return iterator(*this, impl.front());
 }
 
 template <class T, class Compare, class Allocator>
@@ -493,7 +507,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::begin() const
 {
-    return const_iterator(*this, impl.head.next[0]);
+    return const_iterator(*this, impl.front());
 }
 
 template <class T, class Compare, class Allocator>
@@ -501,7 +515,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::cbegin() const
 {
-    return const_iterator(*this, impl.head.next[0]);
+    return const_iterator(*this, impl.front());
 }
 
 template <class T, class Compare, class Allocator>
@@ -583,7 +597,7 @@ template <class T, class Compare, class Allocator>
 inline
 bool skip_list<T,Compare,Allocator>::empty() const
 {
-    return impl.item_count == 0;
+    return impl.size() == 0;
 }
 
 template <class T, class Compare, class Allocator>
@@ -591,7 +605,7 @@ inline
 typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::size() const
 {
-    return impl.item_count;
+    return impl.size();
 }
 
 template <class T, class Compare, class Allocator>
@@ -599,7 +613,7 @@ inline
 typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::max_size() const
 {
-    return impl.alloc.max_size();
+    return impl.get_allocator().max_size();
 }
 
 //==============================================================================
@@ -713,7 +727,7 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::count(const value_type &value) const
 {
     const node_type *node = impl.find(value);
-    return node != &impl.head && node->value == value;
+    return impl.is_valid(node) && node->value == value;
 }
 
 //==============================================================================
