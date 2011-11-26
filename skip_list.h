@@ -219,9 +219,11 @@ namespace std
 //==============================================================================
 #pragma mark - diagnostics
 
+void pg_assertion_break();
+void pg_assertion_break() { fprintf(stderr, "BREAK HERE\n"); }
 #include <cassert>
 #include <stdio.h>
-#define pg_fail(a)            {fprintf(stderr,"%s:%d: \"%s\"\n", __FILE__, __LINE__, a); assert(false);}
+#define pg_fail(a)            {fprintf(stderr,"%s:%d: \"%s\"\n", __FILE__, __LINE__, a); /*assert(false);*/ pg_assertion_break(); }
 #define assert_that(a)        {if (!(a)) pg_fail(#a);}
 #define not_implemented_yet() pg_fail("not implemented yet")
 
