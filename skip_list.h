@@ -31,37 +31,35 @@ template <typename T,
 class skip_list_impl
 {
 public:
-    typedef T                               value_type;
-    typedef typename Allocator::size_type   size_type;
-
     enum { max_levels = 33 };
 
     struct node_type
     {
         node_type *next[max_levels];
         node_type *prev[max_levels];
-        value_type value;
+        T          value;
     };
     
+    typedef T                                                     value_type;
+    typedef typename Allocator::size_type                         size_type;
     typedef typename Allocator::template rebind<node_type>::other node_allocator;
 
-    skip_list_impl(const Allocator &alloc_ = Allocator());
+    skip_list_impl(const Allocator &alloc = Allocator());
     ~skip_list_impl();
 
     Allocator get_allocator() const;
 
-    node_type *insertion_point(const value_type &value) const;
+    node_type *find(const value_type &value) const;
     node_type *insert(const value_type &value);
-    void  remove(node_type *value);
+    void       remove(node_type *value);
 
     static unsigned random_level();
     unsigned new_level();
-    
     void dump();
 
     Allocator   alloc;
     unsigned    levels;
-    node_type        head; // needn't have default-constructed value
+    node_type   head; // needn't have default-constructed value
     size_type   item_count;
 };
 
@@ -85,7 +83,7 @@ class skip_list
 {
 private:
     typedef detail::skip_list_impl<T,Compare,Allocator> impl_type;
-    typedef typename impl_type::node_type                    node_type;
+    typedef typename impl_type::node_type               node_type;
 
 public:
 
@@ -268,7 +266,7 @@ class skip_list<T,Compare,Allocator>::iterator
 public:
     typedef skip_list<T,Compare,Allocator>          parent_type;
     typedef typename parent_type::const_iterator    const_type;
-    typedef typename parent_type::node_type              node_type;
+    typedef typename parent_type::impl_type::node_type         node_type;
     typedef iterator                                self_type;
     
     iterator()
@@ -319,7 +317,7 @@ class skip_list<T,Compare,Allocator>::const_iterator
 public:
     typedef const skip_list<T,Compare,Allocator>    parent_type;
     typedef typename parent_type::iterator          non_const_type;
-    typedef const typename parent_type::node_type   node_type;
+    typedef const typename parent_type::impl_type::node_type   node_type;
     typedef const_iterator                          self_type;
 
     const_iterator()
@@ -624,8 +622,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::insert(const value_type &value)
 {
-    node_type *inserted = impl.insert(value);
-    return iterator(*this, inserted);
+    return iterator(*this, impl.insert(value));
 }
 
 template <class T, class Compare, class Allocator>
@@ -633,6 +630,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::insert(const_iterator hint, const value_type &value)
 {
+    assert_that(hint.parent == this);
     // TODO - try to optimse lookup using this
     (void) hint;
     return insert(value);
@@ -646,6 +644,8 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::insert(InputIterator first, InputIterator last)
 {
+    assert_that(first.parent == this);
+    assert_that(last.parent == this);
     not_implemented_yet();
 }
 
@@ -657,10 +657,10 @@ inline
 typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::erase(const value_type &value)
 {
-    node_type *search = impl.insertion_point(value);
-    if (search && search->value == value)
+    node_type *node = impl.find(value);
+    if (node && node->value == value)
     {
-        impl.remove(search);
+        impl.remove(node);
         return 1;
     }
     else
@@ -674,6 +674,7 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::erase(const_iterator position)
 {
+    assert_that(position.parent == this);
 }
 
 template <class T, class Compare, class Allocator>
@@ -681,6 +682,8 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::erase(const_iterator first, const_iterator last)
 {
+    assert_that(first.parent == this);
+    assert_that(last.parent == this);
     not_implemented_yet();
 }
 
@@ -709,8 +712,8 @@ inline
 typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::count(const value_type &value) const
 {
-    const node_type *search = impl.insertion_point(value);
-    return search != &impl.head && search->value == value;
+    const node_type *node = impl.find(value);
+    return node != &impl.head && node->value == value;
 }
 
 //==============================================================================
@@ -921,7 +924,7 @@ void skip_list_impl<T,Compare,Allocator>::dump()
 template <class T, class Compare, class Allocator>
 inline
 typename skip_list_impl<T,Compare,Allocator>::node_type *
-skip_list_impl<T,Compare,Allocator>::insertion_point(const value_type &value) const
+skip_list_impl<T,Compare,Allocator>::find(const value_type &value) const
 {
     // TODO: == <=
     // I could have a const and non-const overload, but this is simpler
