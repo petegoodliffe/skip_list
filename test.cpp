@@ -283,6 +283,18 @@ TEST_CASE( "skip_list/inserting one item returns a count()", "" )
     REQUIRE(list.count(11) == 0);
 }
 
+TEST_CASE( "skip_list/inserting one item returns correct contains()", "" )
+{
+    skip_list<int> list;
+    list.insert(10);
+    REQUIRE(list.contains(10) );
+    REQUIRE_FALSE(list.contains(1));
+    REQUIRE_FALSE(list.contains(9));
+    REQUIRE_FALSE(list.contains(11));
+    
+    REQUIRE_FALSE(list.contains(10));
+}
+
 //============================================================================
 // erasing
 
