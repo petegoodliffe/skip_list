@@ -221,7 +221,7 @@ namespace std
 #include <cassert>
 #include <stdio.h>
 #define pg_fail(a)            {fprintf(stderr,"%s:%d: \"%s\"\n", __FILE__, __LINE__, a); assert(false);}
-#define assert_that(a)        {if (!a) pg_fail(#a);}
+#define assert_that(a)        {if (!(a)) pg_fail(#a);}
 #define not_implemented_yet() pg_fail("not implemented yet")
 
 //==============================================================================
