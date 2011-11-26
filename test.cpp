@@ -217,7 +217,7 @@ TEST_CASE( "skip_list/inserting one item returns a count()", "" )
 //============================================================================
 // erasing
 
-TEST_CASE( "skip_list/erase no contained item doesn't break things", "" )
+TEST_CASE( "skip_list/erase/not contained item doesn't break things", "" )
 {
     skip_list<int> list;
     list.insert(10);
@@ -227,7 +227,7 @@ TEST_CASE( "skip_list/erase no contained item doesn't break things", "" )
     REQUIRE(list.begin() != list.end());
 }
 
-TEST_CASE( "skip_list/erase last item removes it", "" )
+TEST_CASE( "skip_list/erase/only item", "" )
 {
     skip_list<int> list;
     list.insert(10);
@@ -237,6 +237,35 @@ TEST_CASE( "skip_list/erase last item removes it", "" )
     REQUIRE(list.begin() == list.end());
     
     REQUIRE(list.erase(10) == 0);
+}
+
+TEST_CASE( "skip_list/erase/first item", "" )
+{
+    skip_list<int> list;
+    list.insert(10);
+    list.insert(20);
+    
+    REQUIRE(list.size() == 2);
+    REQUIRE(list.erase(10) == 1);
+    REQUIRE(list.size() == 1);
+    REQUIRE(list.front() == 20);
+
+    REQUIRE(list.count(10) == 0);
+    REQUIRE(list.size() == 1);
+}
+
+TEST_CASE( "skip_list/erase/last item", "" )
+{
+    skip_list<int> list;
+    list.insert(10);
+    list.insert(20);
+    
+    REQUIRE(list.size() == 2);
+    REQUIRE(list.erase(20) == 1);
+    REQUIRE(list.size() == 1);
+    REQUIRE(list.front() == 10);
+    
+    REQUIRE(list.count(20) == 0);
 }
 
 //============================================================================
