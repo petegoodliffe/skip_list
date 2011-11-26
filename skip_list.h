@@ -10,15 +10,6 @@
 #include <iterator>   // for std::reverse_iterator
 
 //==============================================================================
-#pragma mark - diagnostics
-
-#include <cassert>
-#include <stdio.h>
-#define pg_fail(a)            {fprintf(stderr,"%s:%d: \"%s\"\n", __FILE__, __LINE__, a); assert(false);}
-#define assert_that(a)        {if (!a) pg_fail(#a);}
-#define not_implemented_yet() pg_fail("not implemented yet")
-
-//==============================================================================
 #pragma mark - detail
 
 namespace goodliffe {
@@ -222,6 +213,15 @@ namespace std
     template <class T, class Compare, class Allocator>
     void swap(goodliffe::skip_list<T,Compare,Allocator> &lhs, goodliffe::skip_list<T,Compare,Allocator> &rhs);
 }
+
+//==============================================================================
+#pragma mark - diagnostics
+
+#include <cassert>
+#include <stdio.h>
+#define pg_fail(a)            {fprintf(stderr,"%s:%d: \"%s\"\n", __FILE__, __LINE__, a); assert(false);}
+#define assert_that(a)        {if (!a) pg_fail(#a);}
+#define not_implemented_yet() pg_fail("not implemented yet")
 
 //==============================================================================
 #pragma mark - skip_list_impl declaration
