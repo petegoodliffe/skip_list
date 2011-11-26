@@ -163,6 +163,7 @@ public:
     //======================================================================
     // lookup
 
+    bool           contains(const value_type &value) const { return count(value); }
     size_type      count(const value_type &value) const;
 
     iterator       find(const value_type &value);
@@ -273,7 +274,7 @@ public:
 private:
     Allocator          alloc;
     unsigned           levels;
-    node_type  * const head; // needn't have default-constructed value
+    node_type  * const head;
     node_type  * const tail;
     size_type          item_count;
 };

@@ -107,6 +107,14 @@ TEST_CASE( "skip_list/empty list does not count() a value", "" )
     REQUIRE(list.count(0) == 0);
 }
 
+TEST_CASE( "skip_list/empty list does not contains() a value", "" )
+{
+    const skip_list<int> list;
+    REQUIRE_FALSE(list.contains(10));
+    REQUIRE_FALSE(list.contains(1));
+    REQUIRE_FALSE(list.contains(0));
+}
+
 //============================================================================
 // iterators
 
