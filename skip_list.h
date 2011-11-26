@@ -1,6 +1,6 @@
 //==============================================================================
 // skip_list.h
-// Copyright (c) 2011 Pete Goodliffe. All rights reserved
+// Copyright (c) 2011 Pete Goodliffe. All rights reserved.
 //==============================================================================
 
 #pragma once
@@ -356,10 +356,10 @@ class skip_list<T,Compare,Allocator>::const_iterator
                            typename skip_list<T,Compare,Allocator>::const_reference>
 {
 public:
-    typedef const skip_list<T,Compare,Allocator>    parent_type;
-    typedef typename parent_type::iterator          non_const_type;
-    typedef const typename parent_type::impl_type::node_type   node_type;
-    typedef const_iterator                          self_type;
+    typedef const skip_list<T,Compare,Allocator>                parent_type;
+    typedef typename parent_type::iterator                      non_const_type;
+    typedef const typename parent_type::impl_type::node_type    node_type;
+    typedef const_iterator                                      self_type;
 
     const_iterator()
         : parent(0), node(0) {}
