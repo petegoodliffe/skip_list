@@ -151,11 +151,6 @@ public:
     iterator  erase(const_iterator position);
     iterator  erase(const_iterator first, const_iterator last);
 
-    void push_back(const value_type &value);
-    //C++11void push_back( value_type &&value );
-
-    //C++11 emplace_back
-
     void swap(skip_list &other);
 
     friend void swap(skip_list &lhs, skip_list &rhs) { lhs.swap(rhs); }
@@ -732,16 +727,6 @@ skip_list<T,Compare,Allocator>::erase(const_iterator first, const_iterator last)
     assert_that(last.parent == this);
     not_implemented_yet();
 }
-
-template <class T, class Compare, class Allocator>
-inline
-void skip_list<T,Compare,Allocator>::push_back(const value_type &value)
-{
-    not_implemented_yet();
-}
-
-//C++11void push_back( value_type &&value );
-//C++11 emplace_back
 
 template <class T, class Compare, class Allocator>
 inline
