@@ -40,6 +40,7 @@ namespace detail
 ///     * rationalise requirements on contained type
 ///     * use the Compare
 ///     * all not_implemented_yet methods
+///     * better random generator
 ///     * make "multi" list version
 ///
 /// Following the freaky STL container names, this might be better named
@@ -845,11 +846,10 @@ void std::swap(goodliffe::skip_list<T,Compare,Allocator> &lhs, goodliffe::skip_l
     lhs.swap(rhs);
 }
 
-namespace goodliffe {
-
 //==============================================================================
 #pragma mark - skip_list_impl
-    
+
+namespace goodliffe {
 namespace detail {
 
 template <class T, class Compare, class Allocator>
@@ -885,7 +885,24 @@ Allocator skip_list_impl<T,Compare,Allocator>::get_allocator() const
 {
     return alloc;
 }
-    
+
+template <class T, class Compare, class Allocator>
+inline
+typename skip_list_impl<T,Compare,Allocator>::node_type *
+skip_list_impl<T,Compare,Allocator>::find(const value_type &value) const
+{
+    // TODO: == <=
+    // I could have a const and non-const overload, but this is simpler
+    node_type *search = const_cast<node_type*>(head);
+    for (unsigned l = levels; l; )
+    {
+        --l;
+        while (search->next[l] != tail && search->next[l]->value <= value)
+            search = search->next[l];
+    }
+    return search;
+}
+
 template <class T, class Compare, class Allocator>
 inline
 typename skip_list_impl<T,Compare,Allocator>::node_type*
@@ -963,6 +980,7 @@ inline
 void
 skip_list_impl<T,Compare,Allocator>::remove_all()
 {
+    // TODO: optimse
     while (item_count)
     {
         remove(front());
@@ -1028,23 +1046,6 @@ void skip_list_impl<T,Compare,Allocator>::dump() const
         }
         printf("\n");
     }
-}
-
-template <class T, class Compare, class Allocator>
-inline
-typename skip_list_impl<T,Compare,Allocator>::node_type *
-skip_list_impl<T,Compare,Allocator>::find(const value_type &value) const
-{
-    // TODO: == <=
-    // I could have a const and non-const overload, but this is simpler
-    node_type *search = const_cast<node_type*>(head);
-    for (unsigned l = levels; l; )
-    {
-        --l;
-        while (search->next[l] != tail && search->next[l]->value <= value)
-            search = search->next[l];
-    }
-    return search;
 }
 
 } // namespace detail
