@@ -20,63 +20,17 @@
 
 //==============================================================================
 #pragma mark - detail
-// internal impementation of skip list data structure
 
 namespace goodliffe {
 
-namespace detail {
-
-/// Internal implementation of skip_list data structure and methods for
-/// modifying it.
-template <typename T,
-          typename Compare   = std::less<T>,
-          typename Allocator = std::allocator<T> >
-class skip_list_impl
+/// internal namespace for impementation of skip list data structure
+/// @internal
+namespace detail
 {
-public:
-    enum { max_levels = 33 };
-
-    struct node_type
-    {
-        node_type *next[max_levels];
-        node_type *prev[max_levels];
-        T          value;
-    };
-    
-    typedef T                                                     value_type;
-    typedef typename Allocator::size_type                         size_type;
-    typedef typename Allocator::template rebind<node_type>::other node_allocator;
-
-    skip_list_impl(const Allocator &alloc = Allocator());
-    ~skip_list_impl();
-
-    Allocator get_allocator() const;
-
-    size_type        size() const
-                        { return item_count; }
-    bool             is_valid(const node_type *node) const
-                        { return node && node != &head; }
-    node_type       *front()
-                        { return head.next[0]; }
-                        // TODO: back when empty?
-    const node_type *front() const
-                        { return head.next[0]; }
-                        // TODO: back when empty?
-    node_type       *find(const value_type &value) const;
-    node_type       *insert(const value_type &value);
-    void             remove(node_type *value);
-
-    static unsigned random_level();
-
-    unsigned new_level();
-    void     dump();
-
-private:
-    Allocator   alloc;
-    unsigned    levels;
-    node_type   head; // needn't have default-constructed value
-    size_type   item_count;
-};
+    template <typename T,
+              typename Compare   = std::less<T>,
+              typename Allocator = std::allocator<T> >
+    class skip_list_impl;
 
 }
 
@@ -268,6 +222,66 @@ namespace std
     template <class T, class Compare, class Allocator>
     void swap(goodliffe::skip_list<T,Compare,Allocator> &lhs, goodliffe::skip_list<T,Compare,Allocator> &rhs);
 }
+
+//==============================================================================
+#pragma mark - skip_list_impl declaration
+
+namespace goodliffe {
+namespace detail {
+        
+/// Internal implementation of skip_list data structure and methods for
+/// modifying it.
+template <typename T, typename Compare, typename Allocator>
+class skip_list_impl
+{
+public:
+    enum { max_levels = 33 };
+
+    struct node_type
+    {
+        node_type *next[max_levels];
+        node_type *prev[max_levels];
+        T          value;
+    };
+    
+    typedef T                                                     value_type;
+    typedef typename Allocator::size_type                         size_type;
+    typedef typename Allocator::template rebind<node_type>::other node_allocator;
+
+    skip_list_impl(const Allocator &alloc = Allocator());
+    ~skip_list_impl();
+
+    Allocator get_allocator() const;
+
+    size_type        size() const
+                        { return item_count; }
+    bool             is_valid(const node_type *node) const
+                        { return node && node != &head; }
+    node_type       *front()
+                        { return head.next[0]; }
+                        // TODO: back when empty?
+    const node_type *front() const
+                        { return head.next[0]; }
+                        // TODO: back when empty?
+    node_type       *find(const value_type &value) const;
+    node_type       *insert(const value_type &value);
+    void             remove(node_type *value);
+    void             remove_all();
+
+    static unsigned random_level();
+
+    unsigned new_level();
+    void     dump();
+
+private:
+    Allocator   alloc;
+    unsigned    levels;
+    node_type   head; // needn't have default-constructed value
+    size_type   item_count;
+};
+    
+} // namespace detail
+} // namespace goodliffe
 
 //==============================================================================
 #pragma mark - iterators
