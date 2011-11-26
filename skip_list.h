@@ -14,15 +14,14 @@
 
 namespace goodliffe {
 
-/// internal namespace for impementation of skip list data structure
 /// @internal
+/// Internal namespace for impementation of skip list data structure
 namespace detail
 {
     template <typename T,
               typename Compare   = std::less<T>,
               typename Allocator = std::allocator<T> >
     class skip_list_impl;
-
 }
 
 //==============================================================================
@@ -642,12 +641,7 @@ template <class T, class Compare, class Allocator>
 inline
 void skip_list<T,Compare,Allocator>::clear()
 {
-    //if (nodes[0])
-    {
-        //node_allocator(alloc).destroy(*nodes[0]);
-        //node_allocator(alloc).deallocate(nodes[0]);
-    }
-    //not_implemented_yet();
+    impl.remove_all();
 }
 
 template <class T, class Compare, class Allocator>
@@ -852,7 +846,7 @@ template <class T, class Compare, class Allocator>
 inline
 skip_list_impl<T,Compare,Allocator>::~skip_list_impl()
 {
-    // TODO
+    remove_all();
 }
 
 template <class T, class Compare, class Allocator>
@@ -873,7 +867,7 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
     // TODO: construct in-place
     new_node->value = value;
     for (unsigned n = 0; n < max_levels; ++n)
-        new_node->next[n] = 0;
+        new_node->next[n] = new_node->prev[n] = 0;
     
     node_type *insert_point = &head;
     for (unsigned l = levels; l; )
@@ -897,26 +891,37 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
     
     return new_node;
 }
-
     
 template <class T, class Compare, class Allocator>
 inline
 void
-skip_list_impl<T,Compare,Allocator>::remove(node_type *search)
+skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
 {
     for (unsigned l = 0; l < max_levels; ++l)
     {
-        node_type *prev = search->prev[l];
-        node_type *next = search->next[l];
+        node_type *prev = node->prev[l];
+        node_type *next = node->next[l];
         if (prev)
             prev->next[l] = next;
         else
             head.next[l] = next;
     }
 
-    // delete node
+    // TODO: delete node
+    //node_allocator(alloc).deallocate(node, 1u);
 
     item_count--;
+}
+
+template <class T, class Compare, class Allocator>
+inline
+void
+skip_list_impl<T,Compare,Allocator>::remove_all()
+{
+    while (item_count)
+    {
+        remove(front());
+    }
 }
 
 /// Generate a stream of levels, probabilstically chosen.

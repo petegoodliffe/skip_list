@@ -543,3 +543,34 @@ TEST_CASE( "Counter/sanity test", "" )
     { Counter c1(1); Counter c2(2); c2 = c1; REQUIRE(Counter::count == 2); }
     REQUIRE(Counter::count == 0);
 }
+
+TEST_CASE( "skip_list/object lifetime", "" )
+{
+    REQUIRE(Counter::count == 0);
+    {
+        skip_list<Counter> list;
+        
+        REQUIRE(Counter::count == 1); // TODO: fixme
+        
+        list.insert(Counter(1));
+        REQUIRE(Counter::count == 2);
+        
+        list.clear();
+        REQUIRE(Counter::count == 1);
+    }
+    REQUIRE(Counter::count == 0);
+}
+
+TEST_CASE( "skip_list/clear/object lifetime", "" )
+{
+    Counter::count = 0;
+    {
+        skip_list<Counter> list;
+        REQUIRE(Counter::count == 1);
+
+        for (int n = 0; n < 10; ++n) list.insert(n);
+        list.clear();
+        REQUIRE(Counter::count == 1);
+    }
+    REQUIRE(Counter::count == 0);
+}
