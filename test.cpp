@@ -487,3 +487,46 @@ TEST_CASE( "skip_list/clear/several item list", "" )
     REQUIRE(list.empty());
     REQUIRE(list.begin() == list.end());
 }
+
+//============================================================================
+// lifetime of objects in the container
+
+struct Counter
+{
+    static int count;
+
+    Counter() : value(0) { ++count; } // TODO: do not require this
+
+    Counter(int i) : value(i) { ++count; }
+    ~Counter() { --count; }
+    Counter(const Counter &other) : value(other.value) { ++count; }
+    Counter &operator=(const Counter &other) { value = other.value; return *this; }
+    
+    int value;
+    
+    bool operator<(const Counter &other) const { return value < other.value; }
+};
+
+int Counter::count = 0;
+
+TEST_CASE( "Counter/sanity test", "" )
+{
+    REQUIRE(Counter::count == 0);
+
+    { Counter(1); REQUIRE(Counter::count == 0); }
+    
+    { Counter c; REQUIRE(Counter::count == 1); }
+    REQUIRE(Counter::count == 0);
+    
+    { Counter c(1); REQUIRE(Counter::count == 1); }
+    REQUIRE(Counter::count == 0);
+
+    { Counter c1(1); Counter c2(2); REQUIRE(Counter::count == 2); }
+    REQUIRE(Counter::count == 0);
+
+    { Counter c1(1); Counter c2(c1); REQUIRE(Counter::count == 2); }
+    REQUIRE(Counter::count == 0);
+    
+    { Counter c1(1); Counter c2(2); c2 = c1; REQUIRE(Counter::count == 2); }
+    REQUIRE(Counter::count == 0);
+}
