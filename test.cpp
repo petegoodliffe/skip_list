@@ -372,3 +372,46 @@ TEST_CASE( "skip_list/inserting a series and iterating forwards and backwards", 
     REQUIRE(i != list.end()); REQUIRE(*i == 40); ++i;
     REQUIRE(i == list.end());
 }
+
+//============================================================================
+// find
+
+TEST_CASE( "skip_list/find/empty list", "" )
+{
+    skip_list<int> list;
+    const skip_list<int> &clist = list;
+
+    REQUIRE(list.find(12)  == list.end());
+    REQUIRE(clist.find(12) == list.end());
+    REQUIRE(clist.find(12) == clist.end());
+}
+
+TEST_CASE( "skip_list/find/in a populated list", "" )
+{
+    skip_list<int> list;
+    const skip_list<int> &clist = list;
+
+    list.insert(30);
+    list.insert(10);
+    list.insert(40);
+    list.insert(20);
+    list.insert(0);
+    
+    REQUIRE(list.find(12) == list.end());
+    REQUIRE(clist.find(12) == list.end());
+    REQUIRE(clist.find(12) == clist.end());
+
+    REQUIRE(list.find(10) != list.end());
+    REQUIRE(*list.find(10) == 10);
+    REQUIRE(*list.find(20) == 20);
+    REQUIRE(*list.find(30) == 30);
+    REQUIRE(*list.find(40) == 40);
+    REQUIRE(*list.find(0) == 0);
+    
+    REQUIRE(clist.find(10) != clist.end());
+    REQUIRE(*clist.find(10) == 10);
+    REQUIRE(*clist.find(20) == 20);
+    REQUIRE(*clist.find(30) == 30);
+    REQUIRE(*clist.find(40) == 40);
+    REQUIRE(*clist.find(0) == 0);
+}

@@ -217,7 +217,10 @@ public:
     //======================================================================
     // lookup
 
-    size_type count(const value_type &value) const;
+    size_type      count(const value_type &value) const;
+
+    iterator       find(const value_type &value);
+    const_iterator find(const value_type &value) const;
 
     //======================================================================
     // other operations
@@ -354,7 +357,7 @@ public:
     //size_type operator-(const self_type &other) const
     //    { return index - other.index; }
     
-    const_reference operator*()  { return &node->value; }
+    const_reference operator*()  { return node->value; }
     const_pointer   operator->() { return node->value; }
     
     bool operator==(const self_type &other) const
@@ -728,6 +731,28 @@ skip_list<T,Compare,Allocator>::count(const value_type &value) const
 {
     const node_type *node = impl.find(value);
     return impl.is_valid(node) && node->value == value;
+}
+
+template <class T, class Compare, class Allocator>
+inline
+typename skip_list<T,Compare,Allocator>::iterator
+skip_list<T,Compare,Allocator>::find(const value_type &value)
+{
+    node_type *node = impl.find(value);
+    return impl.is_valid(node) && node->value == value
+        ? iterator(*this, node)
+        : end();
+}
+  
+template <class T, class Compare, class Allocator>
+inline
+typename skip_list<T,Compare,Allocator>::const_iterator
+skip_list<T,Compare,Allocator>::find(const value_type &value) const
+{
+    const node_type *node = impl.find(value);
+    return impl.is_valid(node) && node->value == value
+        ? const_iterator(*this, node)
+        : end();
 }
 
 //==============================================================================
