@@ -293,6 +293,30 @@ TEST_CASE( "skip_list/inserting one item returns correct contains()", "" )
     REQUIRE_FALSE(list.contains(11));
 }
 
+TEST_CASE( "skip_list/insert() returns iterator to inserted element", "" )
+{
+    skip_list<int> list;
+    
+    skip_list<int>::iterator i = list.insert(10);
+    REQUIRE(*i == 10);
+}
+
+TEST_CASE( "skip_list/can't insert same item twice", "" )
+{
+    skip_list<int> list;
+    
+    list.insert(10);
+    REQUIRE(list.size() == 1);
+
+    skip_list<int>::iterator i = list.insert(10);
+    REQUIRE(i == list.end());
+    REQUIRE(list.size() == 1);
+    
+    i = list.begin();
+    REQUIRE(*i++ == 10);
+    REQUIRE(i == list.end());
+}
+
 //============================================================================
 // erasing by value
 

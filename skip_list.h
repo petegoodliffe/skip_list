@@ -29,7 +29,20 @@ namespace detail
 
 /// An STL-style skip list container; a reasonably fast ordered container.
 ///
-/// TODO: C++11: noexcept decls
+/// The skip list provides fast searching, and good insert/erase performance.
+/// You can iterate bi-directionally, but do not have full random access.
+///
+/// TODO:
+///     * C++11: noexcept decls
+///     * C++11: move operations
+///     * possibly optimse prev ptrs (not many, just one)
+///     * rationalise requirements on contained type
+///     * use the Compare
+///     * all not_implemented_yet methods
+///     * make "multi" list version
+///
+/// Following the freaky STL container names, this might be better named
+/// unique_sorted_list or sorted_list, or somesuch.
 ///
 /// @param T         Template type for kind of object held in the container.
 /// @param Compare   Template type describing the ordering comparator.
@@ -896,14 +909,22 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
         if (l <= level)
         {
             node_type *next = insert_point->next[l];
-            new_node->next[l] = next;
-            insert_point->next[l] = new_node;
-            new_node->prev[l] = insert_point;
             assert_that(next);
-            next->prev[l] = new_node;
+        
+            new_node->next[l]     = next;
+            insert_point->next[l] = new_node;
+            new_node->prev[l]     = insert_point;
+            next->prev[l]         = new_node;
+            
+            if (next != tail && next->value == value)
+            {
+                ++item_count;
+                remove(new_node);
+                return tail;
+            }
         }
     }
-    
+
     ++item_count;
     
     return new_node;
