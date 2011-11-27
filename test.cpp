@@ -612,6 +612,40 @@ TEST_CASE( "skip_list/inserting an unordered series and iterating backwards", ""
 }
 
 //============================================================================
+// assign
+
+int assign_source_data[]    = { 45, 34, 67, 12 };
+int *assign_source_data_end = assign_source_data + 4;
+
+TEST_CASE( "skip_list/assign/empty list", "" )
+{
+    skip_list<int> list;
+    list.assign(assign_source_data, assign_source_data_end);
+    REQUIRE(list.size() == 4);
+
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i == 12); ++i; REQUIRE(i != list.end());
+    REQUIRE(*i == 34); ++i; REQUIRE(i != list.end());
+    REQUIRE(*i == 45); ++i; REQUIRE(i != list.end());
+    REQUIRE(*i == 67); ++i; REQUIRE(i == list.end());
+}
+
+TEST_CASE( "skip_list/assign/populated list", "" )
+{
+    skip_list<int> list;
+    list.insert(1); list.insert(2); list.insert(300);
+
+    list.assign(assign_source_data, assign_source_data_end);
+    REQUIRE(list.size() == 4);
+    
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i == 12); ++i; REQUIRE(i != list.end());
+    REQUIRE(*i == 34); ++i; REQUIRE(i != list.end());
+    REQUIRE(*i == 45); ++i; REQUIRE(i != list.end());
+    REQUIRE(*i == 67); ++i; REQUIRE(i == list.end());
+}
+
+//============================================================================
 // find
 
 TEST_CASE( "skip_list/find/empty list", "" )

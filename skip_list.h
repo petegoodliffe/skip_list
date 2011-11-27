@@ -485,7 +485,8 @@ template <typename InputIterator>
 inline
 void skip_list<T,Compare,Allocator>::assign(InputIterator first, InputIterator last)
 {
-    not_implemented_yet();
+    clear();
+    while (first != last) insert(*first++);
 }
 
 //==============================================================================
