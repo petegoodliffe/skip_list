@@ -106,8 +106,6 @@ public:
     skip_list &operator=(const skip_list &other);
     //C++11 skip_list& operator=(skip_list&& other);
 
-    void assign(size_type count, const value_type &value);
-
     template <typename InputIterator>
     void assign(InputIterator first, InputIterator last);
 
@@ -481,13 +479,6 @@ skip_list<T,Compare,Allocator> &skip_list<T,Compare,Allocator>::operator=(const 
 }
 
 //C++11 skip_list& operator=(skip_list&& other);
-
-template <class T, class Compare, class Allocator>
-inline
-void skip_list<T,Compare,Allocator>::assign(size_type count, const value_type &value)
-{
-    not_implemented_yet();
-}
 
 template <class T, class Compare, class Allocator>
 template <typename InputIterator>
