@@ -754,6 +754,29 @@ TEST_CASE( "skip_list/ocopy ctor with allocator/copy still maintains seprate lis
 }
 
 //============================================================================
+// swap
+
+TEST_CASE( "skip_list/swap", "" )
+{
+    skip_list<int> l1, l2;
+    l1.insert(1);
+    l1.insert(2);
+    l1.insert(3);
+    
+    l1.swap(l2);
+    REQUIRE(l1.size() == 0);
+    REQUIRE(l2.size() == 3);
+    
+    l1.swap(l2);
+    REQUIRE(l1.size() == 3);
+    REQUIRE(l2.size() == 0);
+    
+    l2.swap(l1);
+    REQUIRE(l1.size() == 0);
+    REQUIRE(l2.size() == 3);
+}
+
+//============================================================================
 // insert(iter,iter)
 
 TEST_CASE( "skip_list/insert(iter,iter)/empty list", "" )

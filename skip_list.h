@@ -289,21 +289,21 @@ public:
     node_type       *insert(const value_type &value, node_type *hint = 0);
     void             remove(node_type *value);
     void             remove_all();
+    void             swap(skip_list_impl &other);
 
-    static unsigned random_level();
-
-    unsigned new_level();
-    void     dump() const;
+    static unsigned  random_level();
+    unsigned         new_level();
+    void             dump() const;
 
 private:
     skip_list_impl(const skip_list_impl &other);
     skip_list_impl &operator=(const skip_list_impl &other);
 
-    Allocator          alloc;
-    unsigned           levels;
-    node_type  * const head;
-    node_type  * const tail;
-    size_type          item_count;
+    Allocator   alloc;
+    unsigned    levels;
+    node_type  *head;
+    node_type  *tail;
+    size_type   item_count;
 };
     
 } // namespace detail
@@ -778,9 +778,10 @@ skip_list<T,Compare,Allocator>::erase(const_iterator first, const_iterator last)
 
 template <class T, class Compare, class Allocator>
 inline
-void skip_list<T,Compare,Allocator>::swap(skip_list<T,Compare,Allocator> &other)
+void
+skip_list<T,Compare,Allocator>::swap(skip_list<T,Compare,Allocator> &other)
 {
-    not_implemented_yet();
+    impl.swap(other.impl);
 }
     
 //==============================================================================
@@ -1048,6 +1049,19 @@ unsigned skip_list_impl<T,Compare,Allocator>::new_level()
         ++levels;
     }
     return level;
+}
+
+template <class T, class Compare, class Allocator>
+inline
+void skip_list_impl<T,Compare,Allocator>::swap(skip_list_impl &other)
+{
+    using std::swap;
+
+    swap(alloc,      other.alloc); // might throw? others shouldn't
+    swap(levels,     other.levels);
+    swap(head,       other.head);
+    swap(tail,       other.tail);
+    swap(item_count, other.item_count);
 }
 
 // for diagnostics only
