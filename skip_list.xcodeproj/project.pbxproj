@@ -27,6 +27,7 @@
 		C16AEEB3147FA40400E7977A /* catch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = catch.hpp; sourceTree = "<group>"; };
 		C16AEEB4147FA40400E7977A /* skip_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = skip_list.h; sourceTree = "<group>"; };
 		C16AEEB5147FA40400E7977A /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
+		C1E1E06D1482C2B40071FEB1 /* get_time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = get_time.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +44,7 @@
 		C16AEE91147FA3A100E7977A = {
 			isa = PBXGroup;
 			children = (
+				C1E1E06D1482C2B40071FEB1 /* get_time.h */,
 				C16AEEB3147FA40400E7977A /* catch.hpp */,
 				C16AEEB4147FA40400E7977A /* skip_list.h */,
 				C16AEEB5147FA40400E7977A /* test.cpp */,

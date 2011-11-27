@@ -802,3 +802,38 @@ TEST_CASE( "skip_list/clear/object lifetime", "" )
     }
     REQUIRE(Counter::count == 0);
 }
+
+//============================================================================
+// performance test
+//============================================================================
+
+#include "get_time.h"
+
+TEST_CASE( "skip_list/performance", "" )
+{
+    std::vector<int> data;
+    for (int n = 0; n < 10000; ++n)
+        data.push_back(rand());
+    
+    {
+        long start = get_time_ms();
+        std::set<int> set;
+        for (std::vector<int>::iterator i = data.begin(); i != data.end(); ++i)
+            set.insert(*i);
+        long end = get_time_ms();
+        
+        long elapsed = end-start;
+        fprintf(stderr, "std::set insert by value: %ld\n", elapsed);
+    }
+    
+    {
+        long start = get_time_ms();
+        skip_list<int> list;
+        for (std::vector<int>::iterator i = data.begin(); i != data.end(); ++i)
+            list.insert(*i);
+        long end = get_time_ms();
+        
+        long elapsed = end-start;
+        fprintf(stderr, "skip_list insert by value: %ld\n", elapsed);
+    }
+}
