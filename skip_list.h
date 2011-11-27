@@ -443,7 +443,7 @@ skip_list<T,Compare,Allocator>::skip_list(InputIterator first, InputIterator las
 template <class T, class Compare, class Allocator>
 inline
 skip_list<T,Compare,Allocator>::skip_list(const skip_list &other)
-:   impl(other.alloc)
+:   impl(other.get_allocator())
 {    
     not_implemented_yet();
 }
@@ -475,7 +475,8 @@ template <class T, class Compare, class Allocator>
 inline
 skip_list<T,Compare,Allocator> &skip_list<T,Compare,Allocator>::operator=(const skip_list<T,Compare,Allocator> &other)
 {
-    not_implemented_yet();
+    assign(other.begin(), other.end());
+    return *this;
 }
 
 //C++11 skip_list& operator=(skip_list&& other);
