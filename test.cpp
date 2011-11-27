@@ -432,6 +432,20 @@ TEST_CASE( "skip_list/erase/iterator/three item list/end", "" )
 }
 
 //============================================================================
+// erasing by range
+
+TEST_CASE( "skip_list/erase/iterator/three item list/middle", "" )
+{
+    skip_list<int> list; list.insert(1); list.insert(2); list.insert(3); list.insert(4);
+    
+    list.erase(++list.begin(), ----list.end());
+    REQUIRE(list.size() == 2);
+    
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i++ == 2); REQUIRE(*i++ == 3); REQUIRE(i == list.end());
+}
+
+//============================================================================
 // size
 
 TEST_CASE( "skip_list/empty list has size zero", "" )

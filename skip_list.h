@@ -289,6 +289,7 @@ public:
     node_type       *insert(const value_type &value, node_type *hint = 0);
     void             remove(node_type *value);
     void             remove_all();
+    void             remove_between(node_type *first, node_type *last);
     void             swap(skip_list_impl &other);
 
     static unsigned  random_level();
@@ -304,6 +305,13 @@ private:
     node_type  *head;
     node_type  *tail;
     size_type   item_count;
+    
+    static size_type nodes_between(node_type *first, node_type *last)
+    {
+        size_type count = 0;
+        while (first != last) { ++count; first = first->next[0]; }
+        return count;
+    }
 };
     
 } // namespace detail
@@ -771,9 +779,17 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::erase(const_iterator first, const_iterator last)
 {
-    assert_that(first.parent == this);
-    assert_that(last.parent == this);
-    not_implemented_yet();
+    assert_that(first.get_parent() == this);
+    assert_that(last.get_parent() == this);
+
+    if (first != last)
+    {
+        node_type *first_node = const_cast<node_type*>(first.get_node());
+        node_type *last_node  = const_cast<node_type*>(last.get_node()->prev[0]);
+        impl.remove_between(first_node, last_node);
+    }
+    
+    return iterator(this, const_cast<node_type*>(last.get_node()));
 }
 
 template <class T, class Compare, class Allocator>
@@ -1016,6 +1032,32 @@ skip_list_impl<T,Compare,Allocator>::remove_all()
     {
         remove(front());
     }
+}
+
+template <class T, class Compare, class Allocator>
+inline
+void 
+skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type *last)
+{
+    assert_that(first != head);
+    assert_that(first != tail);
+    assert_that(last != head);
+    assert_that(last != tail);
+    
+    for (unsigned l = 0; l < max_levels; ++l)
+    {
+        node_type *prev = first->prev[l];
+        node_type *next = last->next[l];
+        assert_that(prev);
+        assert_that(next);
+
+        prev->next[l] = next;
+        next->prev[l] = prev;
+    }
+    
+    size_type distance = nodes_between(first, last);
+    item_count -= distance;
+    // TODO: delete nodes
 }
 
 /// Generate a stream of levels, probabilstically chosen.
