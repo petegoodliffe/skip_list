@@ -434,15 +434,38 @@ TEST_CASE( "skip_list/erase/iterator/three item list/end", "" )
 //============================================================================
 // erasing by range
 
+TEST_CASE( "vector/erase/iterator/three item list/start", "" )
+{
+    // This is a sanity check, to prove what's below is right
+    std::vector<int> list; list.push_back(1); list.push_back(2); list.push_back(3); list.push_back(4);
+    
+    list.erase(list.begin(), ----list.end());
+    REQUIRE(list.size() == 2);
+    
+    std::vector<int>::iterator i = list.begin();
+    REQUIRE(*i++ == 3); REQUIRE(*i++ == 4); REQUIRE(i == list.end());
+}
+
+TEST_CASE( "skip_list/erase/iterator/three item list/start", "" )
+{
+    skip_list<int> list; list.insert(1); list.insert(2); list.insert(3); list.insert(4);
+    
+    list.erase(list.begin(), ----list.end());
+    REQUIRE(list.size() == 2);
+    
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i++ == 3); REQUIRE(*i++ == 4); REQUIRE(i == list.end());
+}
+
 TEST_CASE( "skip_list/erase/iterator/three item list/middle", "" )
 {
     skip_list<int> list; list.insert(1); list.insert(2); list.insert(3); list.insert(4);
     
     list.erase(++list.begin(), ----list.end());
-    REQUIRE(list.size() == 2);
+    REQUIRE(list.size() == 3);
     
     skip_list<int>::iterator i = list.begin();
-    REQUIRE(*i++ == 2); REQUIRE(*i++ == 3); REQUIRE(i == list.end());
+    REQUIRE(*i++ == 1); REQUIRE(*i++ == 3); REQUIRE(*i++ == 4); REQUIRE(i == list.end());
 }
 
 //============================================================================

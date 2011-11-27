@@ -308,7 +308,7 @@ private:
     
     static size_type nodes_between(node_type *first, node_type *last)
     {
-        size_type count = 0;
+        size_type count = 1;
         while (first != last) { ++count; first = first->next[0]; }
         return count;
     }
@@ -750,7 +750,7 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::erase(const value_type &value)
 {
     node_type *node = impl.find(value);
-    if (node && node->value == value)
+    if (impl.is_valid(node) && node->value == value)
     {
         impl.remove(node);
         return 1;
