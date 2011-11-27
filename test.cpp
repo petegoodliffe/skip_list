@@ -645,7 +645,6 @@ TEST_CASE( "skip_list/assign/populated list", "" )
     REQUIRE(*i == 67); ++i; REQUIRE(i == list.end());
 }
 
-
 //============================================================================
 // operator=
 
@@ -664,7 +663,6 @@ TEST_CASE( "skip_list/operator=/assignment copies data", "" )
     REQUIRE(*i1 == 45); REQUIRE(*i2 == 45); ++i1; ++i2; REQUIRE(i1 != source.end());
     REQUIRE(*i1 == 67); REQUIRE(*i2 == 67); ++i1; ++i2; REQUIRE(i1 == source.end());
 }
-
 
 TEST_CASE( "skip_list/operator=/assignment returns assignee", "" )
 {
@@ -685,6 +683,70 @@ TEST_CASE( "skip_list/operator=/assignment still maintains seprate lists", "" )
     skip_list<int> assignee;
     assignee = source;
 
+    source.insert(0);
+    
+    REQUIRE(source.size() == 5);
+    REQUIRE(assignee.size() == 4);
+}
+
+//============================================================================
+// copy ctor
+
+TEST_CASE( "skip_list/copy ctor/copy copies data", "" )
+{
+    skip_list<int> source;
+    source.assign(assign_source_data, assign_source_data_end);
+    
+    skip_list<int> assignee(source);
+    
+    skip_list<int>::iterator i1 = source.begin();
+    skip_list<int>::iterator i2 = assignee.begin();
+    REQUIRE(*i1 == 12); REQUIRE(*i2 == 12); ++i1; ++i2; REQUIRE(i1 != source.end());
+    REQUIRE(*i1 == 34); REQUIRE(*i2 == 34); ++i1; ++i2; REQUIRE(i1 != source.end());
+    REQUIRE(*i1 == 45); REQUIRE(*i2 == 45); ++i1; ++i2; REQUIRE(i1 != source.end());
+    REQUIRE(*i1 == 67); REQUIRE(*i2 == 67); ++i1; ++i2; REQUIRE(i1 == source.end());
+}
+
+TEST_CASE( "skip_list/ocopy ctor/copy still maintains seprate lists", "" )
+{
+    skip_list<int> source;
+    source.assign(assign_source_data, assign_source_data_end);
+    
+    skip_list<int> assignee(source);
+    
+    source.insert(0);
+    
+    REQUIRE(source.size() == 5);
+    REQUIRE(assignee.size() == 4);
+}
+
+//============================================================================
+// copy ctor with allocator
+
+TEST_CASE( "skip_list/copy ctor with allocator/copy copies data", "" )
+{
+    skip_list<int> source;
+    source.assign(assign_source_data, assign_source_data_end);
+
+    std::allocator<int> alloc;
+    skip_list<int> assignee(source, alloc);
+    
+    skip_list<int>::iterator i1 = source.begin();
+    skip_list<int>::iterator i2 = assignee.begin();
+    REQUIRE(*i1 == 12); REQUIRE(*i2 == 12); ++i1; ++i2; REQUIRE(i1 != source.end());
+    REQUIRE(*i1 == 34); REQUIRE(*i2 == 34); ++i1; ++i2; REQUIRE(i1 != source.end());
+    REQUIRE(*i1 == 45); REQUIRE(*i2 == 45); ++i1; ++i2; REQUIRE(i1 != source.end());
+    REQUIRE(*i1 == 67); REQUIRE(*i2 == 67); ++i1; ++i2; REQUIRE(i1 == source.end());
+}
+
+TEST_CASE( "skip_list/ocopy ctor with allocator/copy still maintains seprate lists", "" )
+{
+    skip_list<int> source;
+    source.assign(assign_source_data, assign_source_data_end);
+    
+    std::allocator<int> alloc;
+    skip_list<int> assignee(source, alloc);
+    
     source.insert(0);
     
     REQUIRE(source.size() == 5);

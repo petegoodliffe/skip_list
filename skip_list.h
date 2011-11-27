@@ -437,7 +437,7 @@ inline
 skip_list<T,Compare,Allocator>::skip_list(InputIterator first, InputIterator last, const Allocator &alloc_)
 :   impl(alloc_)
 {
-    not_implemented_yet();
+    assign(first, last);
 }
 
 template <class T, class Compare, class Allocator>
@@ -445,7 +445,7 @@ inline
 skip_list<T,Compare,Allocator>::skip_list(const skip_list &other)
 :   impl(other.get_allocator())
 {    
-    not_implemented_yet();
+    assign(other.begin(), other.end());
 }
 
 template <class T, class Compare, class Allocator>
@@ -453,7 +453,7 @@ inline
 skip_list<T,Compare,Allocator>::skip_list(const skip_list &other, const Allocator &alloc_)
 :   impl(alloc_)
 {
-    not_implemented_yet();
+    assign(other.begin(), other.end());
 }
 
 // C++11
