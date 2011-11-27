@@ -841,8 +841,7 @@ template <class T, class Compare, class Allocator>
 inline
 bool operator==(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
-    not_implemented_yet();
-    return false;
+    return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
 template <class T, class Compare, class Allocator>
@@ -856,32 +855,28 @@ template <class T, class Compare, class Allocator>
 inline
 bool operator<(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
-    not_implemented_yet();
-    return false;
+    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
 template <class T, class Compare, class Allocator>
 inline
 bool operator<=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
-    not_implemented_yet();
-    return false;
+    return !(rhs < lhs);
 }
 
 template <class T, class Compare, class Allocator>
 inline
 bool operator>(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
-    not_implemented_yet();
-    return false;
+    return rhs < lhs;
 }
 
 template <class T, class Compare, class Allocator>
 inline
 bool operator>=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
-    not_implemented_yet();
-    return false;
+    return !(lhs < rhs);
 }
     
 } // namespace goodliffe
