@@ -809,7 +809,7 @@ TEST_CASE( "skip_list/clear/object lifetime", "" )
 
 #include "get_time.h"
 
-TEST_CASE( "skip_list/performance", "" )
+TEST_CASE( "skip_list/performance/insert by value", "" )
 {
     std::vector<int> data;
     for (int n = 0; n < 10000; ++n)
@@ -835,5 +835,40 @@ TEST_CASE( "skip_list/performance", "" )
         
         long elapsed = end-start;
         fprintf(stderr, "skip_list insert by value: %ld\n", elapsed);
+    }
+}
+
+TEST_CASE( "skip_list/performance/iterate through", "" )
+{
+    std::vector<int> data;
+    for (int n = 0; n < 10000; ++n)
+        data.push_back(rand());
+    
+    {
+        std::set<int> set;
+        for (std::vector<int>::iterator i = data.begin(); i != data.end(); ++i)
+            set.insert(*i);
+        
+        long start = get_time_ms();
+        for (unsigned n = 0 ; n < 100; ++n)
+        for (std::set<int>::iterator i = set.begin(); i != set.end(); ++i);
+        long end = get_time_ms();
+        
+        long elapsed = end-start;
+        fprintf(stderr, "std::set iterate forwards: %ld\n", elapsed);
+    }
+    
+    {
+        skip_list<int> list;
+        for (std::vector<int>::iterator i = data.begin(); i != data.end(); ++i)
+            list.insert(*i);
+    
+        long start = get_time_ms();
+        for (unsigned n = 0 ; n < 100; ++n)
+        for (skip_list<int>::iterator i = list.begin(); i != list.end(); ++i);
+        long end = get_time_ms();
+        
+        long elapsed = end-start;
+        fprintf(stderr, "skip_list iterator forwards: %ld\n", elapsed);
     }
 }
