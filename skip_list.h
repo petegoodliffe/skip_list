@@ -848,7 +848,7 @@ template <class T, class Compare, class Allocator>
 inline
 bool operator!=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
 {
-    return !operator=(lhs, rhs);
+    return !operator==(lhs, rhs);
 }
 
 template <class T, class Compare, class Allocator>

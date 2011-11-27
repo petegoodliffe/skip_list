@@ -959,6 +959,38 @@ TEST_CASE( "skip_list/clear/several item list", "" )
 }
 
 //============================================================================
+// list comparison
+
+TEST_CASE( "skip_list/comparison/two empty lists", "" )
+{
+    skip_list<int> l1, l2;
+    
+    REQUIRE(l1 == l2);      REQUIRE(l2 == l1);
+    REQUIRE_FALSE(l1 != l2); REQUIRE_FALSE(l2 != l1);
+    
+    REQUIRE_FALSE(l1 < l2); REQUIRE_FALSE(l2 < l1);
+    REQUIRE_FALSE(l1 > l2); REQUIRE_FALSE(l2 > l1);
+
+    REQUIRE(l1 <= l2); REQUIRE(l2 <= l1);
+    REQUIRE(l1 >= l2); REQUIRE(l2 >= l1);
+}
+
+TEST_CASE( "skip_list/comparison/one empty list", "" )
+{
+    skip_list<int> l1, l2;
+    l1.insert(1);
+    
+    REQUIRE(l1 != l2);       REQUIRE(l2 != l1);
+    REQUIRE_FALSE(l1 == l2); REQUIRE_FALSE(l2 == l1);
+    
+    REQUIRE_FALSE(l1 < l2); REQUIRE(l2 < l1);
+    REQUIRE(l1 > l2);       REQUIRE_FALSE(l2 > l1);
+    
+    REQUIRE_FALSE(l1 <= l2); REQUIRE(l2 <= l1);
+    REQUIRE(l1 >= l2);       REQUIRE_FALSE(l2 >= l1);
+}
+
+//============================================================================
 // lifetime of objects in the container
 
 struct Counter
