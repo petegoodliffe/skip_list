@@ -480,6 +480,33 @@ TEST_CASE( "skip_list/size of list after erase", "" )
 }
 
 //============================================================================
+// insert with hint
+
+TEST_CASE( "skip_list/insert-hint/bad", "" )
+{
+    skip_list<int> list;
+    list.insert(10);
+    list.insert(20);
+    skip_list<int>::iterator hint = list.insert(30).first;
+    REQUIRE(list.size() == 3);
+    
+    list.insert(hint, 15);
+    REQUIRE(list.size() == 4);
+}
+
+TEST_CASE( "skip_list/insert-hint/good", "" )
+{
+    skip_list<int> list;
+    list.insert(10);
+    skip_list<int>::iterator hint = list.insert(20).first;
+    list.insert(30);
+
+    skip_list<int>::iterator i = list.insert(hint, 25);
+    REQUIRE(list.size() == 4);
+    REQUIRE(*i == 25);
+}
+
+//============================================================================
 // random level selection
 
 TEST_CASE( "skip_list/inserting one item returned from begin()", "" )

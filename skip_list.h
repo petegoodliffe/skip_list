@@ -276,7 +276,7 @@ public:
     node_type       *one_past_end()                        { return tail; }
     const node_type *one_past_end() const                  { return tail; }
     node_type       *find(const value_type &value) const;
-    node_type       *insert(const value_type &value);
+    node_type       *insert(const value_type &value, node_type *hint = 0);
     void             remove(node_type *value);
     void             remove_all();
 
@@ -683,11 +683,20 @@ inline
 typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::insert(const_iterator hint, const value_type &value)
 {
-    assert_that(hint.parent == this);
-    // TODO - try to optimse lookup using this
-    (void) hint;
-    return insert(value);
-    not_implemented_yet();
+    assert_that(hint.get_parent() == this);
+    
+    const node_type *hint_node = hint.get_node();
+    const node_type *previous  = hint_node->prev[0];
+    if (impl.is_valid(previous))
+    {
+        if (previous->value > value)
+        {
+            // bad hint, resort to "normal" insert
+            return iterator(this,impl.insert(value));
+        }
+    }
+
+    return iterator(this,impl.insert(value,const_cast<node_type*>(hint_node)));
 }
 
 //C++11iterator insert const_iterator pos, value_type &&value);
@@ -906,7 +915,7 @@ skip_list_impl<T,Compare,Allocator>::find(const value_type &value) const
 template <class T, class Compare, class Allocator>
 inline
 typename skip_list_impl<T,Compare,Allocator>::node_type*
-skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
+skip_list_impl<T,Compare,Allocator>::insert(const value_type &value, node_type *hint)
 {
     const unsigned level = new_level();
 
@@ -920,7 +929,7 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value)
         new_node->prev[n] = head;
     }
 
-    node_type *insert_point = head;
+    node_type *insert_point = hint ? hint : head;
     for (unsigned l = levels; l; )
     {
         --l;
