@@ -175,7 +175,7 @@ public:
     //======================================================================
     // lookup
 
-    bool           contains(const value_type &value) const { return count(value); }
+    bool           contains(const value_type &value) const { return count(value) != 0; }
     size_type      count(const value_type &value) const;
 
     iterator       find(const value_type &value);

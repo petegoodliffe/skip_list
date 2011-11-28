@@ -3,6 +3,9 @@
 // Copyright (c) 2011 Pete Goodliffe. All rights reserved
 //============================================================================
 
+// MSVS quietens warnings
+#pragma warning (disable : 4068 ) /* disable unknown pragma warnings */
+
 #include "skip_list.h"
 
 #define CATCH_CONFIG_MAIN
