@@ -237,6 +237,7 @@ namespace std
 #ifdef SKIP_LIST_DIAGNOSTICS
 
 void pg_assertion_break();
+inline
 void pg_assertion_break() { fprintf(stderr, "BREAK HERE\n"); }
 #include <cassert>
 #include <stdio.h>
