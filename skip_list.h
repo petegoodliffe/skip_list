@@ -917,9 +917,9 @@ template <class T, class Compare, class Allocator>
 inline
 skip_list_impl<T,Compare,Allocator>::~skip_list_impl()
 {
+    remove_all();
     node_allocator(alloc).deallocate(head, 1);
     node_allocator(alloc).deallocate(tail, 1);
-    remove_all();
 }
 
 template <class T, class Compare, class Allocator>
