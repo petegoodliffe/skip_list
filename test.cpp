@@ -1191,3 +1191,36 @@ TEST_CASE( "skip_list/performance/iterate through", "" )
         fprintf(stderr, "skip_list iterator forwards: %ld\n", elapsed);
     }
 }
+TEST_CASE( "skip_list/performance/find", "" )
+{
+    std::vector<int> data;
+    for (int n = 0; n < 10000; ++n) data.push_back(rand());
+    
+    {
+        std::set<int> set;
+        for (std::vector<int>::iterator i = data.begin(); i != data.end(); ++i)
+            set.insert(*i);
+        
+        long start = get_time_ms();
+        for (int n = 0 ; n < 10000; ++n)
+            (void)set.find(n);
+        long end = get_time_ms();
+        
+        long elapsed = end-start;
+        fprintf(stderr, "std::set iterate forwards: %ld\n", elapsed);
+    }
+    
+    {
+        skip_list<int> list;
+        for (std::vector<int>::iterator i = data.begin(); i != data.end(); ++i)
+            list.insert(*i);
+        
+        long start = get_time_ms();
+        for (int n = 0 ; n < 100; ++n)
+            (void)list.find(n);
+        long end = get_time_ms();
+        
+        long elapsed = end-start;
+        fprintf(stderr, "skip_list iterator forwards: %ld\n", elapsed);
+    }
+}
