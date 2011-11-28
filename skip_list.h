@@ -1052,9 +1052,18 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
         next->prev[l] = prev;
     }
     
-    size_type distance = nodes_between(first, last);
-    item_count -= distance;
-    // TODO: delete nodes
+    //size_type distance = nodes_between(first, last);
+    //item_count -= distance;
+    
+    const node_type *one_past_end = last->next[0];
+    while (first != one_past_end)
+    {
+        node_type *next = first->next[0];
+        alloc.destroy(&first->value);
+        node_allocator(alloc).deallocate(first, 1u);
+        item_count--;
+        first = next;
+    }
 }
 
 /// Generate a stream of levels, probabilstically chosen.
