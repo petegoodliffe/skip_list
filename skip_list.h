@@ -193,7 +193,8 @@ public:
     //   * unique
     //   * sort
     
-    void dump() const { impl.dump(); }
+    template <typename STREAM>
+    void dump(STREAM &stream) const { impl.dump(stream); }
 
 private:
     friend class iterator;
@@ -296,7 +297,9 @@ public:
 
     static unsigned  random_level();
     unsigned         new_level();
-    void             dump() const;
+
+    template <typename STREAM>
+    void dump(STREAM &stream) const;
 
 private:
     skip_list_impl(const skip_list_impl &other);
@@ -1113,13 +1116,14 @@ void skip_list_impl<T,Compare,Allocator>::swap(skip_list_impl &other)
 
 // for diagnostics only
 template <class T, class Compare, class Allocator>
+template <class STREAM>
 inline
-void skip_list_impl<T,Compare,Allocator>::dump() const
+void skip_list_impl<T,Compare,Allocator>::dump(STREAM &s) const
 {
-    printf("skip_list(levels=%u)\n", levels);
+    s << "skip_list(levels=" << levels << ")\n";
     for (unsigned l = 0; l < levels; ++l)
     {
-        printf("  [%u] ", l);
+        s << "  [" << l << "] ";
         const node_type *n = head;
         while (n)
         {
@@ -1129,13 +1133,13 @@ void skip_list_impl<T,Compare,Allocator>::dump() const
             {
                 if (next->prev[l] == n) prev_ok = true;
             }
-            printf("%d%s %s",
-                   n->value.get_int(),
-                   next ? ">":"|",
-                   prev_ok?"<":"X");
+            s << n->value
+              << (next ? ">":"|")
+              << " "
+              << (prev_ok?"<":"X");
             n = next;
         }
-        printf("\n");
+        s << "\n";
     }
 }
 
