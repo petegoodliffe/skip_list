@@ -43,6 +43,8 @@ namespace detail
 ///     * better random generator
 ///     * make "multi" list version
 ///
+/// Talk about: efficiency, iterator invalidation.
+///
 /// Following the freaky STL container names, this might be better named
 /// unique_sorted_list or sorted_list, or somesuch.
 ///

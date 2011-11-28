@@ -1094,6 +1094,8 @@ TEST_CASE( "skip_list/clear/object lifetime", "" )
     REQUIRE(Counter::count == 0);
 }
 
+// TODO: lifetime of erase
+
 //============================================================================
 // performance test
 //============================================================================
