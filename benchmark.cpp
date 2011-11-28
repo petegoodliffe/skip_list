@@ -419,25 +419,26 @@ TEST_CASE( "skip_list/benchmarks", "" )
     benchmarks.push_back(Allocation());                 Progress();
     
     fprintf(stderr, "\n\n");
-    fprintf(stderr, "+===============================+===========+========+========+========+\n");
-    fprintf(stderr, "|                    test title | skip_list |    set | vector |   list |\n");
-    fprintf(stderr, "+-------------------------------+-----------+--------+--------+--------+\n");
+    fprintf(stderr, "+===============================+===========+========+========+========+=========+=========+=========+\n");
+    fprintf(stderr, "|                    test title | skip_list |    set | vector |   list |    set%% | vector%% |   list%% |\n");
+    fprintf(stderr, "+-------------------------------+-----------+--------+--------+--------+---------+---------+---------+\n");
 
     for (size_t n = 0; n < benchmarks.size(); ++n)
     {
         Benchmark &b = benchmarks[n];
-        fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld |\n",
-                b.name.c_str(),
-                b.ms_skip_list,
-                b.ms_set, b.ms_vector, b.ms_list);
         int set_pc    = int(b.ms_skip_list * 100 / b.ms_set);
         int list_pc   = int(b.ms_skip_list * 100 / b.ms_list);
         int vector_pc = int(b.ms_skip_list * 100 / b.ms_vector);
-        fprintf(stderr, "|%30s | %9s | %5d%% | %5d%% | %5d%% |\n",
-                " ",
-                " ",
+        fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld | %6d%% | %6d%% | %6d%% |\n",
+                b.name.c_str(),
+                b.ms_skip_list,
+                b.ms_set, b.ms_vector, b.ms_list,
                 set_pc, vector_pc, list_pc);
+        //fprintf(stderr, "|%30s | %9s | %5d%% | %5d%% | %5d%% |\n",
+        //        " ",
+        //        " ",
+        //        set_pc, vector_pc, list_pc);
     }
-    fprintf(stderr, "+===============================+===========+========+========+========+\n");
+    fprintf(stderr, "+===============================+===========+========+========+========+=========+=========+=========+\n");
     fprintf(stderr, "\n");
 }
