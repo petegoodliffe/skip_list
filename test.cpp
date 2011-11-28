@@ -40,15 +40,15 @@ bool operator!=(const Struct &lhs, const Struct &rhs)
 //============================================================================
 
 template <typename T = int>
-struct TestingAllocator : Struct
+struct MockAllocator : Struct
 {
-    TestingAllocator() : Struct() {}
+    MockAllocator() : Struct() {}
     template <class OTHER>
-    TestingAllocator(OTHER &) : Struct() {}
-    TestingAllocator(int i, float f) : Struct(i,f) {}
+    MockAllocator(OTHER &) : Struct() {}
+    MockAllocator(int i, float f) : Struct(i,f) {}
 
     template <typename OTHER>
-    struct rebind { typedef TestingAllocator<OTHER> other; };
+    struct rebind { typedef MockAllocator<OTHER> other; };
     
     typedef size_t    size_type;
     typedef ptrdiff_t difference_type;
@@ -82,12 +82,12 @@ TEST_CASE( "skip_list/can be constructed and destroyed", "" )
 TEST_CASE( "skip_list/default construction gets default allocator", "" )
 {
     REQUIRE(skip_list<int>().get_allocator() == std::allocator<int>());
-    REQUIRE((skip_list<int,std::less<int>,TestingAllocator<int> >().get_allocator()) == TestingAllocator<int>());
+    REQUIRE((skip_list<int,std::less<int>,MockAllocator<int> >().get_allocator()) == MockAllocator<int>());
 }
 
 TEST_CASE( "skip_list/construction with allocator returns copy of that allocator", "" )
 {
-    REQUIRE((skip_list<int,std::less<int>,TestingAllocator<int> >(TestingAllocator<int>(10,4)).get_allocator()) == TestingAllocator<int>(10,4));
+    REQUIRE((skip_list<int,std::less<int>,MockAllocator<int> >(MockAllocator<int>(10,4)).get_allocator()) == MockAllocator<int>(10,4));
 }
 
 TEST_CASE( "skip_list/constructed list returns empty()", "" )

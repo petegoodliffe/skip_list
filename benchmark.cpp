@@ -53,6 +53,52 @@ void FillWithReverseOrderedData(size_t size, std::vector<int> &data);
 
 //============================================================================
 
+int allocator_bytes_allocated = 0;
+int allocator_objects_constructed = 0;
+
+template <typename T = int>
+struct TestingAllocator : public std::allocator<T>
+{
+    TestingAllocator() {}
+    template <class OTHER>
+    TestingAllocator(OTHER &other) : alloc(other.alloc) {}
+    
+    template <typename OTHER>
+    struct rebind { typedef TestingAllocator<OTHER> other; };
+    
+    typedef size_t    size_type;
+    typedef ptrdiff_t difference_type;
+    typedef T&        reference;
+    typedef const T&  const_reference;
+    typedef T*        pointer;
+    typedef const T*  const_pointer;
+    
+    pointer allocate(size_type n, std::allocator<void>::const_pointer hint=0)
+    {
+        allocator_bytes_allocated += sizeof(T)*n;
+        return std::allocator<T>::allocate(n,hint);
+    }
+    void deallocate(pointer p, size_type n)
+    {
+        allocator_bytes_allocated -= sizeof(T)*n;
+        return std::allocator<T>::deallocate(p,n);
+    }
+    void construct(pointer p, const_reference val)
+    {
+        allocator_objects_constructed++;
+        return std::allocator<T>::construct(p, val);
+    }
+    void destroy(pointer p)
+    {
+        allocator_objects_constructed--;
+        return std::allocator<T>::destroy(p);
+    }
+    
+    std::allocator<T> alloc;
+};
+
+//============================================================================
+
 long TimeExecutionOf(const boost::function<void()> &f)
 {
     const long start = get_time_ms();
@@ -302,6 +348,58 @@ Benchmark Find()
     return benchmark;
 }
 
+
+Benchmark Allocation();
+Benchmark Allocation()
+{
+    std::vector<int> data;
+    FillWithRandomData(10000, data);
+    
+    Benchmark benchmark("allcoations");
+    
+    /*
+    std::set<int>    std_set(data.begin(), data.end());
+    std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
+    std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
+    skip_list<int>   skip_list(data.begin(), data.end());
+    */
+
+    {
+        allocator_bytes_allocated     = 0;
+        allocator_objects_constructed = 0;
+        std::set<int,std::less<int>,TestingAllocator<int> > std_set(data.begin(), data.end());
+        benchmark.ms_set = allocator_bytes_allocated;
+    }
+    REQUIRE(allocator_bytes_allocated == 0);
+    //REQUIRE(allocator_objects_constructed == 0);
+
+    {
+        allocator_bytes_allocated     = 0;
+        allocator_objects_constructed = 0;
+        std::list<int,TestingAllocator<int> > std_list(data.begin(), data.end());
+        benchmark.ms_list = allocator_bytes_allocated;
+    }
+    REQUIRE(allocator_bytes_allocated == 0);
+    
+    {
+        allocator_bytes_allocated     = 0;
+        allocator_objects_constructed = 0;
+        std::vector<int,TestingAllocator<int> > std_vector(data.begin(), data.end());
+        benchmark.ms_vector = allocator_bytes_allocated;
+    }
+    REQUIRE(allocator_bytes_allocated == 0);
+    
+    {
+        allocator_bytes_allocated     = 0;
+        allocator_objects_constructed = 0;
+        skip_list<int,std::less<int>,TestingAllocator<int> > skip_list(data.begin(), data.end());
+        benchmark.ms_skip_list = allocator_bytes_allocated;
+    }
+    REQUIRE(allocator_bytes_allocated == 0);
+
+    return benchmark;
+}
+
 //============================================================================
 
 void Progress();
@@ -318,6 +416,7 @@ TEST_CASE( "skip_list/benchmarks", "" )
     benchmarks.push_back(IterateForwards());            Progress();
     benchmarks.push_back(IterateBackwards());           Progress();
     benchmarks.push_back(Find());                       Progress();
+    benchmarks.push_back(Allocation());                 Progress();
     
     fprintf(stderr, "\n\n");
     fprintf(stderr, "+===============================+===========+========+========+========+\n");
@@ -331,6 +430,13 @@ TEST_CASE( "skip_list/benchmarks", "" )
                 b.name.c_str(),
                 b.ms_skip_list,
                 b.ms_set, b.ms_vector, b.ms_list);
+        int set_pc    = int(b.ms_skip_list * 100 / b.ms_set);
+        int list_pc   = int(b.ms_skip_list * 100 / b.ms_list);
+        int vector_pc = int(b.ms_skip_list * 100 / b.ms_vector);
+        fprintf(stderr, "|%30s | %9s | %5d%% | %5d%% | %5d%% |\n",
+                " ",
+                " ",
+                set_pc, vector_pc, list_pc);
     }
     fprintf(stderr, "+===============================+===========+========+========+========+\n");
     fprintf(stderr, "\n");
