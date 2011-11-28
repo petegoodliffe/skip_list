@@ -203,22 +203,22 @@ private:
 };
 
 template <class T, class Compare, class Allocator>
-bool operator==(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
+bool operator==(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs);
 
 template <class T, class Compare, class Allocator>
-bool operator!=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
+bool operator!=(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs);
 
 template <class T, class Compare, class Allocator>
-bool operator<(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
+bool operator<(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs);
 
 template <class T, class Compare, class Allocator>
-bool operator<=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
+bool operator<=(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs);
 
 template <class T, class Compare, class Allocator>
-bool operator>(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
+bool operator>(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs);
 
 template <class T, class Compare, class Allocator>
-bool operator>=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs);
+bool operator>=(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs);
     
 } // namespace goodliffe
 
@@ -841,42 +841,42 @@ skip_list<T,Compare,Allocator>::find(const value_type &value) const
 
 template <class T, class Compare, class Allocator>
 inline
-bool operator==(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
+bool operator==(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs)
 {
     return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
 template <class T, class Compare, class Allocator>
 inline
-bool operator!=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
+bool operator!=(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs)
 {
     return !operator==(lhs, rhs);
 }
 
 template <class T, class Compare, class Allocator>
 inline
-bool operator<(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
+bool operator<(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs)
 {
     return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
 template <class T, class Compare, class Allocator>
 inline
-bool operator<=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
+bool operator<=(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs)
 {
     return !(rhs < lhs);
 }
 
 template <class T, class Compare, class Allocator>
 inline
-bool operator>(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
+bool operator>(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs)
 {
     return rhs < lhs;
 }
 
 template <class T, class Compare, class Allocator>
 inline
-bool operator>=(skip_list<T,Compare,Allocator> &lhs, skip_list<T,Compare,Allocator> &rhs)
+bool operator>=(const skip_list<T,Compare,Allocator> &lhs, const skip_list<T,Compare,Allocator> &rhs)
 {
     return !(lhs < rhs);
 }
