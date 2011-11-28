@@ -450,7 +450,6 @@ template <class T, class Compare, class Allocator>
 inline
 skip_list<T,Compare,Allocator>::~skip_list()
 {
-    clear();
 }
 
 template <class T, class Compare, class Allocator>
