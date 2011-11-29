@@ -1067,6 +1067,7 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
     assert_that(last != head);
     assert_that(last != tail);
 
+#if 1
     // TODO: put back faster version
     last = last->next[0];
     while (first != last)
@@ -1075,7 +1076,36 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
         remove(first);
         first = next;
     }
+#else
     
+    // find level of "first"
+    const unsigned    level = level_of(first);
+    node_type * const prev  = first-prev;
+
+    node_type *cur = prev;
+    for (unsigned l = 0; l < level; ++l)
+    {
+        // is this always the case?
+        prev->next[l] = last;
+    }
+
+
+/*
+    node_type *cur = head;
+    for (unsigned l = levels; l; )
+    {
+        --l;
+        while (cur->next[l] != tail && cur->next[l]->value <= node->value)
+        {
+            if (cur->next[l] == node)
+            {
+                cur->next[l] = node->next[l];
+                break;
+            }
+            cur = cur->next[l];
+        }
+    }
+*/
     /*
     for (unsigned l = 0; l < max_levels; ++l)
     {
@@ -1091,7 +1121,7 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
     
     //size_type distance = nodes_between(first, last);
     //item_count -= distance;
-    
+*/    
     const node_type *one_past_end = last->next[0];
     while (first != one_past_end)
     {
@@ -1100,7 +1130,8 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
         node_allocator(alloc).deallocate(first, 1u);
         item_count--;
         first = next;
-    }*/
+    }
+#endif
 }
 
 /// Generate a stream of levels, probabilstically chosen.
