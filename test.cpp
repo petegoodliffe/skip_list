@@ -557,10 +557,14 @@ TEST_CASE( "skip_list/erase/iterator/three item list/start", "" )
     
     skip_list<int>::iterator i = list.begin();
     REQUIRE(*i++ == 3); REQUIRE(*i++ == 4); REQUIRE(i == list.end());
+    
+    skip_list<int>::reverse_iterator ri = list.rbegin();
+    REQUIRE(*ri++ == 4); REQUIRE(*ri++ == 3); REQUIRE(ri == list.rend());
 }
 
 TEST_CASE( "vector/erase/iterator/three item list/middle", "" )
 {
+    // sanity check
     std::vector<int> list; list.push_back(1); list.push_back(2); list.push_back(3); list.push_back(4);
     
     list.erase(++list.begin(), ----list.end());
@@ -568,6 +572,9 @@ TEST_CASE( "vector/erase/iterator/three item list/middle", "" )
     
     std::vector<int>::iterator i = list.begin();
     REQUIRE(*i++ == 1); REQUIRE(*i++ == 3); REQUIRE(*i++ == 4); REQUIRE(i == list.end());
+    
+    std::vector<int>::reverse_iterator ri = list.rbegin();
+    REQUIRE(*ri++ == 4); REQUIRE(*ri++ == 3); REQUIRE(*ri++ == 1); REQUIRE(ri == list.rend());
 }
 
 TEST_CASE( "skip_list/erase/iterator/three item list/middle", "" )
@@ -579,6 +586,23 @@ TEST_CASE( "skip_list/erase/iterator/three item list/middle", "" )
     
     skip_list<int>::iterator i = list.begin();
     REQUIRE(*i++ == 1); REQUIRE(*i++ == 3); REQUIRE(*i++ == 4); REQUIRE(i == list.end());
+    
+    skip_list<int>::reverse_iterator ri = list.rbegin();
+    REQUIRE(*ri++ == 4); REQUIRE(*ri++ == 3); REQUIRE(*ri++ == 1); REQUIRE(ri == list.rend());
+}
+
+TEST_CASE( "skip_list/erase/iterator/three item list/end", "" )
+{
+    skip_list<int> list; list.insert(1); list.insert(2); list.insert(3); list.insert(4);
+    
+    list.erase(++++list.begin(), list.end());
+    REQUIRE(list.size() == 2);
+
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i++ == 1); REQUIRE(*i++ == 2); REQUIRE(i == list.end());
+    
+    skip_list<int>::reverse_iterator ri = list.rbegin();
+    REQUIRE(*ri++ == 2); REQUIRE(*ri++ == 1); REQUIRE(ri == list.rend());
 }
 
 //============================================================================
