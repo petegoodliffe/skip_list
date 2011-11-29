@@ -1247,3 +1247,53 @@ TEST_CASE( "skip_list/erase/iterator/object lifetime", "" )
     }
     REQUIRE(Counter::count == 0);
 }
+
+//============================================================================
+// the mother of all comparison tests
+
+template <typename C1, typename C2>
+inline
+bool CheckEquality(const C1 &c1, const C2 &c2)
+{
+    if (c1.size() != c2.size()) return false;
+    if (!std::equal(c1.begin(), c1.end(), c2.begin())) return false;
+    if (!std::equal(c1.rbegin(), c1.rend(), c2.rbegin())) return false;
+    return true;
+}
+
+TEST_CASE( "skip_list/comparison with vector", "" )
+{
+    std::set<int> s;
+    skip_list<int> l;
+    
+    for (unsigned repeats = 0; repeats < 5; ++repeats)
+    {
+        for (unsigned n = 0; n < 400; ++n)
+        {
+            int value = rand();
+            s.insert(value);
+            l.insert(value);
+        }
+        
+        REQUIRE(CheckEquality(s, l));
+        
+        unsigned erase_from   = unsigned(rand()) % unsigned(s.size()/3);
+        unsigned erase_length = unsigned(rand()) % unsigned(s.size()/3);
+        
+        REQUIRE((erase_from+erase_length) <= s.size());
+        
+        std::set<int>::iterator  si_from = s.begin();
+        skip_list<int>::iterator li_from = l.begin();
+        std::advance(si_from, erase_from);
+        std::advance(li_from, erase_from);
+        
+        std::set<int>::iterator  si_to = si_from;
+        skip_list<int>::iterator li_to = li_from;
+        std::advance(si_to, erase_length);
+        std::advance(li_to, erase_length);
+        
+        s.erase(si_from, si_to);
+        l.erase(li_from, li_to);
+        
+        REQUIRE(CheckEquality(s, l));
+    }}
