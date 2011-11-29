@@ -707,20 +707,11 @@ skip_list<T,Compare,Allocator>::insert(const_iterator hint, const value_type &va
     
     const node_type *hint_node = hint.get_node();
     const node_type *previous  = hint_node->prev;
-    if (impl.is_valid(previous))
-    {
-        if (previous->value > value)
-        {
-            // bad hint, resort to "normal" insert
-            return iterator(this,impl.insert(value));
-        }
-    }
+    
+    if (!impl.is_valid(previous) || value < previous->value)
+        return iterator(this,impl.insert(value)); // bad hint, resort to "normal" insert
     else
-    {
-        hint_node = 0;
-    }
-
-    return iterator(this,impl.insert(value,const_cast<node_type*>(hint_node)));
+        return iterator(this,impl.insert(value,const_cast<node_type*>(hint_node)));
 }
 
 //C++11iterator insert const_iterator pos, value_type &&value);
