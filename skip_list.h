@@ -962,12 +962,8 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value, node_type *
     node_type *new_node = node_allocator(alloc).allocate(1, (void*)0);
     alloc.construct(&new_node->value, value);
     
-    // TODO: This probably doesn't matter
-    {
-        for (unsigned n = 0; n < max_levels; ++n)
-            new_node->next[n] = tail;
-        new_node->prev = head;
-    }
+    for (unsigned n = 0; n < max_levels; ++n)
+        new_node->next[n] = tail;
 
     node_type *insert_point = hint ? hint : head;
     for (unsigned l = levels; l; )
