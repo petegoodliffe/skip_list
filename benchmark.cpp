@@ -355,7 +355,7 @@ Benchmark Allocation()
     std::vector<int> data;
     FillWithRandomData(10000, data);
     
-    Benchmark benchmark("allcoations");
+    Benchmark benchmark("allocations");
     
     /*
     std::set<int>    std_set(data.begin(), data.end());
