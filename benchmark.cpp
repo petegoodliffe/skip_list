@@ -269,7 +269,7 @@ Benchmark IterateForwards()
     std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
     skip_list<int>   skip_list(data.begin(), data.end());
     
-    Benchmark benchmark("interate forwards");    
+    Benchmark benchmark("iterate forwards");    
     
     benchmark.ms_set        = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::set<int> >, &std_set));
     benchmark.ms_list       = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::list<int> >, &std_list));
