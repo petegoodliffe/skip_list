@@ -270,7 +270,7 @@ public:
     struct node_type
     {
         node_type *next[max_levels];
-        node_type *prev[max_levels];
+        node_type *prev;
         T          value;
     };
     
@@ -311,7 +311,7 @@ private:
     node_type  *head;
     node_type  *tail;
     size_type   item_count;
-    
+
     static size_type nodes_between(node_type *first, node_type *last)
     {
         size_type count = 1;
@@ -353,7 +353,7 @@ public:
         { self_type old(*this); operator++(); return old; }
 
     self_type &operator--()
-        { node = node->prev[0]; return *this; }
+        { node = node->prev; return *this; }
     self_type operator--(int) // postdecrement
         { self_type old(*this); operator--(); return old; }
     
@@ -410,7 +410,7 @@ public:
         { self_type old(*this); operator++(); return old; }
 
     self_type &operator--()
-        { node = node->prev[0]; return *this; }
+        { node = node->prev; return *this; }
     self_type operator--(int) // postdecrement
         { self_type old(*this); operator--(); return old; }
     
@@ -523,7 +523,7 @@ inline
 typename skip_list<T,Compare,Allocator>::reference
 skip_list<T,Compare,Allocator>::front()
 {
-    assert_that(impl.size() != 0);
+    assert_that(!empty());
     return impl.front()->value;
 }
 
@@ -532,7 +532,7 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reference
 skip_list<T,Compare,Allocator>::front() const
 {
-    assert_that(impl.size() != 0);
+    assert_that(!empty());
     return impl.front()->value;
 }
 
@@ -541,7 +541,8 @@ inline
 typename skip_list<T,Compare,Allocator>::reference
 skip_list<T,Compare,Allocator>::back()
 {
-    return impl.one_past_end()->prev[0]->value;
+    assert_that(!empty());
+    return impl.one_past_end()->prev->value;
 }
 
 template <class T, class Compare, class Allocator>
@@ -549,7 +550,8 @@ inline
 typename skip_list<T,Compare,Allocator>::const_reference
 skip_list<T,Compare,Allocator>::back() const
 {
-    return impl.one_past_end()->prev[0]->value;
+    assert_that(!empty());
+    return impl.one_past_end()->prev->value;
 }
 
 //==============================================================================
@@ -692,6 +694,11 @@ inline
 typename skip_list<T,Compare,Allocator>::insert_by_value_result
 skip_list<T,Compare,Allocator>::insert(const value_type &value)
 {
+    // TODO: remove this and check precomdition in insert()
+    node_type *search = impl.find(value);
+    if (impl.is_valid(search) && search->value == value)
+        return std::make_pair(end(), false);
+
     node_type *node = impl.insert(value);
     return std::make_pair(iterator(this, node), impl.is_valid(node));
 }
@@ -704,7 +711,7 @@ skip_list<T,Compare,Allocator>::insert(const_iterator hint, const value_type &va
     assert_that(hint.get_parent() == this);
     
     const node_type *hint_node = hint.get_node();
-    const node_type *previous  = hint_node->prev[0];
+    const node_type *previous  = hint_node->prev;
     if (impl.is_valid(previous))
     {
         if (previous->value > value)
@@ -790,7 +797,7 @@ skip_list<T,Compare,Allocator>::erase(const_iterator first, const_iterator last)
     if (first != last)
     {
         node_type *first_node = const_cast<node_type*>(first.get_node());
-        node_type *last_node  = const_cast<node_type*>(last.get_node()->prev[0]);
+        node_type *last_node  = const_cast<node_type*>(last.get_node()->prev);
         impl.remove_between(first_node, last_node);
     }
     
@@ -911,10 +918,10 @@ skip_list_impl<T,Compare,Allocator>::skip_list_impl(const Allocator &alloc_)
     for (unsigned n = 0; n < max_levels; n++)
     {
         head->next[n] = tail;
-        head->prev[n] = 0;
         tail->next[n] = 0;
-        tail->prev[n] = head;
     }
+    head->prev = 0;
+    tail->prev = head;
 }
 
 template <class T, class Compare, class Allocator>
@@ -960,11 +967,11 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value, node_type *
     node_type *new_node = node_allocator(alloc).allocate(1, (void*)0);
     alloc.construct(&new_node->value, value);
     
-    // This probably doesn't matter
-    for (unsigned n = 0; n < max_levels; ++n)
+    // TODO: This probably doesn't matter
     {
-        new_node->next[n] = tail;
-        new_node->prev[n] = head;
+        for (unsigned n = 0; n < max_levels; ++n)
+            new_node->next[n] = tail;
+        new_node->prev = head;
     }
 
     node_type *insert_point = hint ? hint : head;
@@ -981,23 +988,28 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value, node_type *
         
             new_node->next[l]     = next;
             insert_point->next[l] = new_node;
-            new_node->prev[l]     = insert_point;
-            next->prev[l]         = new_node;
-            
-            if (next != tail && next->value == value)
-            {
-                ++item_count;
-                remove(new_node);
-                return tail;
-            }
         }
     }
+    
+    // By the time we get here, insert_point is the level 0 node immediately
+    // preceding new_node
+    node_type *next = new_node->next[0];
+    assert_that(next);
+    new_node->prev = insert_point;
+    next->prev = new_node;
 
     ++item_count;
+
+    if (next != tail && next->value == value)
+    {
+        assert_that(false);
+        remove(new_node);
+        new_node = next;
+    }
     
     return new_node;
 }
-    
+
 template <class T, class Compare, class Allocator>
 inline
 void
@@ -1005,15 +1017,24 @@ skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
 {
     assert_that(node != head);
     assert_that(node != tail);
+    assert_that(node->next[0]);
 
-    for (unsigned l = 0; l < max_levels; ++l)
+    node->next[0]->prev = node->prev;
+    
+    // patch up all next pointers
+    node_type *cur = head;
+    for (unsigned l = levels; l; )
     {
-        node_type *prev = node->prev[l];
-        node_type *next = node->next[l];
-        assert_that(prev);
-        assert_that(next);
-        prev->next[l] = next;
-        next->prev[l] = prev;
+        --l;
+        while (cur->next[l] != tail && cur->next[l]->value <= node->value)
+        {
+            if (cur->next[l] == node)
+            {
+                cur->next[l] = node->next[l];
+                break;
+            }
+            cur = cur->next[l];
+        }
     }
 
     alloc.destroy(&node->value);
@@ -1027,11 +1048,19 @@ inline
 void
 skip_list_impl<T,Compare,Allocator>::remove_all()
 {
-    // TODO: optimse
-    while (item_count)
+    node_type *node = head->next[0];
+    while (node != tail)
     {
-        remove(front());
+        node_type *next = node->next[0];
+        alloc.destroy(&node->value);
+        node_allocator(alloc).deallocate(node, 1u);
+        node = next;
     }
+
+    for (unsigned l = 0; l < max_levels; ++l)
+        head->next[l] = tail;
+    tail->prev = head;
+    item_count = 0;
 }
 
 template <class T, class Compare, class Allocator>
@@ -1043,17 +1072,28 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
     assert_that(first != tail);
     assert_that(last != head);
     assert_that(last != tail);
+
+    // TODO: put back faster version
+    last = last->next[0];
+    while (first != last)
+    {
+        node_type *next = first->next[0];
+        remove(first);
+        first = next;
+    }
     
+    /*
     for (unsigned l = 0; l < max_levels; ++l)
     {
-        node_type *prev = first->prev[l];
         node_type *next = last->next[l];
-        assert_that(prev);
         assert_that(next);
 
         prev->next[l] = next;
         next->prev[l] = prev;
     }
+    // TODO
+    node_type *prev = first->prev;
+    assert_that(prev);
     
     //size_type distance = nodes_between(first, last);
     //item_count -= distance;
@@ -1066,7 +1106,7 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
         node_allocator(alloc).deallocate(first, 1u);
         item_count--;
         first = next;
-    }
+    }*/
 }
 
 /// Generate a stream of levels, probabilstically chosen.
@@ -1121,7 +1161,7 @@ template <class STREAM>
 inline
 void skip_list_impl<T,Compare,Allocator>::dump(STREAM &s) const
 {
-    s << "skip_list(levels=" << levels << ")\n";
+    s << "skip_list(size="<<item_count<<",levels=" << levels << ")\n";
     for (unsigned l = 0; l < levels; ++l)
     {
         s << "  [" << l << "] ";
@@ -1132,12 +1172,19 @@ void skip_list_impl<T,Compare,Allocator>::dump(STREAM &s) const
             bool prev_ok = false;
             if (next)
             {
-                if (next->prev[l] == n) prev_ok = true;
+                if (next->prev == n) prev_ok = true;
             }
-            s << n->value
-              << (next ? ">":"|")
-              << " "
-              << (prev_ok?"<":"X");
+            if (is_valid(n))
+                s << n->value;
+            else
+                s << "*";
+            
+            if (n != tail)
+            {
+                s << (next ? ">":"|")
+                  << " "
+                  << (prev_ok?"<":"X");
+            }
             n = next;
         }
         s << "\n";
