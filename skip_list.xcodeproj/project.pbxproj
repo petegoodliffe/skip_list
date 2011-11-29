@@ -121,7 +121,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests\n\"${TARGET_BUILD_DIR}/${TARGETNAME}\"\n";
+			shellScript = "# Run the unit tests\n\"${TARGET_BUILD_DIR}/${TARGETNAME}\" #|| true\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
