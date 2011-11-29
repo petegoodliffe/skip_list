@@ -694,11 +694,6 @@ inline
 typename skip_list<T,Compare,Allocator>::insert_by_value_result
 skip_list<T,Compare,Allocator>::insert(const value_type &value)
 {
-    // TODO: remove this and check precomdition in insert()
-    node_type *search = impl.find(value);
-    if (impl.is_valid(search) && search->value == value)
-        return std::make_pair(end(), false);
-
     node_type *node = impl.insert(value);
     return std::make_pair(iterator(this, node), impl.is_valid(node));
 }
@@ -1002,9 +997,8 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value, node_type *
 
     if (next != tail && next->value == value)
     {
-        assert_that(false);
         remove(new_node);
-        new_node = next;
+        new_node = tail;
     }
     
     return new_node;
