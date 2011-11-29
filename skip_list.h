@@ -159,7 +159,7 @@ public:
     //C++11iterator insert(const_iterator hint, const value_type &&value);
 
     template <class InputIterator>
-    iterator insert(InputIterator first, InputIterator last);
+    void insert(InputIterator first, InputIterator last);
 
     //C++11iterator insert(const_iterator pos, std::initializer_list<value_type> ilist);
     // C++11 emplace
@@ -728,24 +728,14 @@ skip_list<T,Compare,Allocator>::insert(const_iterator hint, const value_type &va
 template <class T, class Compare, class Allocator>
 template <class InputIterator>
 inline
-typename skip_list<T,Compare,Allocator>::iterator
+void
 skip_list<T,Compare,Allocator>::insert(InputIterator first, InputIterator last)
 {
     iterator last_inserted = end();
     while (first != last)
     {
-        if (last_inserted != end() && *first < *last_inserted)
-        {
-            last_inserted = end();
-        }
         last_inserted = insert(last_inserted, *first++);
     }
-    
-    // return one-beyond the last inserted item
-    if (last_inserted != end())
-        ++last_inserted;
-
-    return last_inserted;
 }
 
 //C++11iterator insert(const_iterator pos, std::initializer_list<value_type> ilist);

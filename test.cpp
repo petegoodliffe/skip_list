@@ -683,8 +683,8 @@ TEST_CASE( "skip_list/insert-hint/good", "" )
 //============================================================================
 // random level selection
 
-TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
-{/*
+TEST_CASE( "skip_list/random level algorithm", "" )
+{
     skip_list_impl<int> list;
     std::vector<unsigned> levels(skip_list_impl<int>::max_levels, 0);
     for (unsigned n = 0; n < 10000; ++n)
@@ -700,7 +700,7 @@ TEST_CASE( "skip_list/inserting one item returned from begin()", "" )
     {
         if (levels[n+1]) break;
         REQUIRE(levels[n] > levels[n+1]);
-    }*/
+    }
 }
 
 //============================================================================
@@ -966,22 +966,12 @@ TEST_CASE( "skip_list/insert(iter,iter)/empty list", "" )
     REQUIRE(*i == 67); ++i; REQUIRE(i == list.end());
 }
 
-TEST_CASE( "skip_list/insert(iter,iter)/returns iterator following last inserted element", "" )
-{
-    skip_list<int> list;
-    skip_list<int>::iterator i = list.insert(assign_source_data, assign_source_data_end);
-    
-    REQUIRE(i != list.end()); // magic because the list of inserted items is out of order!
-    REQUIRE(*i == 34);
-}
-
 TEST_CASE( "skip_list/insert(iter,iter)/empty list, empty range", "" )
 {
     skip_list<int> list;
-    skip_list<int>::iterator i = list.insert(assign_source_data, assign_source_data);
+    list.insert(assign_source_data, assign_source_data);
     
     REQUIRE(list.size() == 0);
-    REQUIRE(i == list.end());
 }
 
 TEST_CASE( "skip_list/insert(iter,iter)/populated list, empty range", "" )
@@ -989,10 +979,9 @@ TEST_CASE( "skip_list/insert(iter,iter)/populated list, empty range", "" )
     skip_list<int> list;
     list.insert(0);
     list.insert(1000);
-    skip_list<int>::iterator i = list.insert(assign_source_data, assign_source_data);
+    list.insert(assign_source_data, assign_source_data);
     
     REQUIRE(list.size() == 2);
-    REQUIRE(i == list.end());
 }
 
 TEST_CASE( "skip_list/insert(iter,iter)/populated list, insert range", "" )
@@ -1000,11 +989,8 @@ TEST_CASE( "skip_list/insert(iter,iter)/populated list, insert range", "" )
     skip_list<int> list;
     list.insert(0);
     list.insert(1000);
-    skip_list<int>::iterator i = list.insert(assign_source_data, assign_source_data_end);
-    
+    list.insert(assign_source_data, assign_source_data_end);
     REQUIRE(list.size() == 6);
-    REQUIRE(i != list.end());
-    REQUIRE(*i == 34); // as above - because source list is out-of-order
 }
 
 //============================================================================
