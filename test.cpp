@@ -377,6 +377,105 @@ TEST_CASE( "skip_list/erase/last item", "" )
 }
 
 //============================================================================
+// iteration
+
+TEST_CASE( "skip_list/iterator/empty list", "" )
+{
+    skip_list<int> list;
+    
+    REQUIRE(list.begin() == list.end());
+    REQUIRE(list.cbegin() == list.cend());
+    REQUIRE(list.rbegin() == list.rend());
+    REQUIRE(list.crbegin() == list.crend());
+}
+
+TEST_CASE( "skip_list/iterator/non-const converts to const", "" )
+{
+    skip_list<int> list;
+    
+    REQUIRE(list.begin() == list.cbegin());
+    REQUIRE(list.cbegin() == list.begin());
+    REQUIRE(list.rbegin() == list.crbegin());
+    REQUIRE(list.crbegin() == list.rbegin());
+}
+
+TEST_CASE( "skip_list/iterator/one item/forwards", "" )
+{
+    skip_list<int> list;
+    list.insert(1);
+    
+    REQUIRE(list.begin() != list.end());
+    REQUIRE(list.cbegin() != list.cend());
+    REQUIRE(list.begin() != list.cend());
+    
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i++ == 1);
+    REQUIRE(i == list.end());
+}
+
+TEST_CASE( "skip_list/iterator/one item/reverse", "" )
+{
+    skip_list<int> list;
+    list.insert(1);
+    
+    REQUIRE(list.rbegin() != list.rend());
+    REQUIRE(list.crbegin() != list.crend());
+    REQUIRE(list.rbegin() != list.crend());
+    
+    skip_list<int>::reverse_iterator i = list.rbegin();
+    REQUIRE(*i++ == 1);
+    REQUIRE(i == list.rend());
+}
+
+TEST_CASE( "skip_list/iterator/three item/forward", "" )
+{
+    skip_list<int> list;
+    list.insert(1); list.insert(2); list.insert(3);
+
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i++ == 1);
+    REQUIRE(*i++ == 2);
+    REQUIRE(*i++ == 3);
+    REQUIRE(i == list.end());
+}
+
+TEST_CASE( "skip_list/iterator/three item/forward/preincrement", "" )
+{
+    skip_list<int> list;
+    list.insert(1); list.insert(2); list.insert(3);
+    
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(*++i == 2);
+    REQUIRE(*++i == 3);
+    ++i; // can't dererence end() :-)
+    REQUIRE(i == list.end());
+}
+
+TEST_CASE( "skip_list/iterator/three item/reverse", "" )
+{
+    skip_list<int> list;
+    list.insert(1); list.insert(2); list.insert(3);
+    
+    skip_list<int>::reverse_iterator i = list.rbegin();
+    REQUIRE(*i++ == 3);
+    REQUIRE(*i++ == 2);
+    REQUIRE(*i++ == 1);
+    REQUIRE(i == list.rend());
+}
+
+TEST_CASE( "skip_list/iterator/three item/forward/reverse/preincrement", "" )
+{
+    skip_list<int> list;
+    list.insert(1); list.insert(2); list.insert(3);
+    
+    skip_list<int>::reverse_iterator i = list.rbegin();
+    REQUIRE(*++i == 2);
+    REQUIRE(*++i == 1);
+    ++i; // can't dererence rend() :-)
+    REQUIRE(i == list.rend());
+}
+
+//============================================================================
 // erasing by iterator
 
 TEST_CASE( "skip_list/erase/iterator/empy list/end", "" )
