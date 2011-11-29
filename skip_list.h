@@ -298,6 +298,7 @@ public:
 
     static unsigned  random_level();
     unsigned         new_level();
+    unsigned         level_of(node_type *node) const;
 
     template <typename STREAM>
     void dump(STREAM &stream) const;
@@ -1032,6 +1033,28 @@ skip_list_impl<T,Compare,Allocator>::remove_all()
         head->next[l] = tail;
     tail->prev = head;
     item_count = 0;
+}
+
+template <class T, class Compare, class Allocator>
+inline
+unsigned 
+skip_list_impl<T,Compare,Allocator>::level_of(node_type *node) const
+{
+    node_type *cur = head;
+    for (unsigned l = levels; l; )
+    {
+        --l;
+        while (cur->next[l] != tail && cur->next[l]->value <= node->value)
+        {
+            if (cur->next[l] == node)
+            {
+                return l;
+            }
+            cur = cur->next[l];
+        }
+    }
+    assert_that(false);
+    return 0;
 }
 
 template <class T, class Compare, class Allocator>
