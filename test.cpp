@@ -1282,4 +1282,22 @@ TEST_CASE( "skip_list/comparison with vector", "" )
         l.erase(li_from, li_to);
         
         REQUIRE(CheckEquality(s, l));
-    }}
+    }
+}
+
+//============================================================================
+// things that should not be compilable
+
+TEST_CASE( "skip_list/insert(iter,iter)/populated list, insert range", "" )
+{
+    skip_list<int> list;
+    const skip_list<int> &clist = list;
+    list.insert(0);
+    
+    // Uncomment these lines to check they don't compile!
+
+    // Iterators should not be assignable-thoughable
+    //*list.begin() = 1; REQUIRE(list.front() == 1);
+    //*clist.begin() = 1; REQUIRE(list.front() == 1);
+    //*list.cbegin() = 1; REQUIRE(list.front() == 1);
+}

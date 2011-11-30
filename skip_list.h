@@ -334,8 +334,8 @@ class skip_list<T,Compare,Allocator>::iterator
     : public std::iterator<std::bidirectional_iterator_tag,
                            typename skip_list<T,Compare,Allocator>::value_type,
                            typename skip_list<T,Compare,Allocator>::difference_type,
-                           typename skip_list<T,Compare,Allocator>::pointer,
-                           typename skip_list<T,Compare,Allocator>::reference>
+                           typename skip_list<T,Compare,Allocator>::const_pointer,
+                           typename skip_list<T,Compare,Allocator>::const_reference>
 {
 public:
     typedef skip_list<T,Compare,Allocator>              parent_type;
@@ -361,8 +361,8 @@ public:
     //size_type operator-(const self_type &other) const
     //    { return index - other.index; }
     
-    reference operator*()  { return node->value; }
-    pointer   operator->() { return node->value; }
+    const_reference operator*()  { return node->value; }
+    const_pointer   operator->() { return node->value; }
     
     bool operator==(const self_type &other) const
         { return parent == other.parent && node == other.node; }
