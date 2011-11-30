@@ -695,7 +695,7 @@ TEST_CASE( "skip_list_level_generator/random level algorithm", "" )
         REQUIRE(random < unsigned(skip_list_level_generator<32>::num_levels));
         levels[random]++;
     }
-    //for (unsigned n = 0; n < skip_list<int>::max_levels; ++n)
+    //for (unsigned n = 0; n < skip_list_level_generator<32>::num_levels; ++n)
     //    fprintf(stderr, "Level[%u]=%u\n", n, levels[n]);
     
     for (unsigned n = 0; n < skip_list_level_generator<32>::num_levels-1; ++n)
