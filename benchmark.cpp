@@ -420,7 +420,7 @@ TEST_CASE( "skip_list/benchmarks", "" )
     
     fprintf(stderr, "\n\n");
     fprintf(stderr, "+===============================+===========+========+========+========+=========+=========+=========+\n");
-    fprintf(stderr, "|                    test title | skip_list |    set | vector |   list |    set%% | vector%% |   list%% |\n");
+    fprintf(stderr, "|                    test title | skip_list |    set | vector |   list |>   set%% | vector%% |   list%% |\n");
     fprintf(stderr, "+-------------------------------+-----------+--------+--------+--------+---------+---------+---------+\n");
 
     for (size_t n = 0; n < benchmarks.size(); ++n)
@@ -429,7 +429,7 @@ TEST_CASE( "skip_list/benchmarks", "" )
         int set_pc    = b.ms_set    ? int(b.ms_skip_list * 100 / b.ms_set)      : 0;
         int list_pc   = b.ms_list   ? int(b.ms_skip_list * 100 / b.ms_list)     : 0;
         int vector_pc = b.ms_vector ? int(b.ms_skip_list * 100 / b.ms_vector)   : 0;
-        fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld | %6d%% | %6d%% | %6d%% |\n",
+        fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld |>%6d%% | %6d%% | %6d%% |\n",
                 b.name.c_str(),
                 b.ms_skip_list,
                 b.ms_set, b.ms_vector, b.ms_list,
