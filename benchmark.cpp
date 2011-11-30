@@ -425,8 +425,8 @@ Benchmark RandomUse()
 {
     Benchmark benchmark("general use");
     
-    static const unsigned repeats     = 5;
-    static const unsigned insert_size = 400;
+    static const unsigned repeats     = 15;
+    static const unsigned insert_size = 4000;
 
     std::vector<int> insert[repeats];
     unsigned         erase_from[repeats];
@@ -436,8 +436,8 @@ Benchmark RandomUse()
     {
         FillWithRandomData(insert_size, insert[n]);
         
-        erase_from[n]   = unsigned(rand()) % unsigned(insert_size*(n+1)/3);
-        erase_length[n] = unsigned(rand()) % unsigned(insert_size*(n+1)/3);
+        erase_from[n]   = unsigned(rand()) % unsigned(insert_size*((n/2)+1)/3);
+        erase_length[n] = unsigned(rand()) % unsigned(insert_size*((n/2)+1)/3);
     }
 
     benchmark.set       = TimeExecutionOf(boost::bind(&RandomUse<std::set<int> >,    repeats, insert, erase_from, erase_length));
