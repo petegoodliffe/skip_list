@@ -35,15 +35,15 @@ TEST_CASE( "skip_list/benchmark/smoketest", "" )
 struct Benchmark
 {
     std::string name;
-    long        ms_vector;
-    long        ms_set;
-    long        ms_list;
-    long        ms_skip_list;
+    long        vector;
+    long        set;
+    long        list;
+    long        skip_list;
     
     Benchmark()
-        : name(), ms_vector(-1), ms_set(-1), ms_list(-1), ms_skip_list(-1) {}
+        : name(), vector(-1), set(-1), list(-1), skip_list(-1) {}
     Benchmark(const std::string &name_)
-        : name(name_), ms_vector(-1), ms_set(-1), ms_list(-1), ms_skip_list(-1) {}
+        : name(name_), vector(-1), set(-1), list(-1), skip_list(-1) {}
 };
 
 long TimeExecutionOf(const boost::function<void()> &f);
@@ -218,10 +218,10 @@ Benchmark InsertData(std::vector<int> &data, const std::string &name)
 
     Benchmark benchmark("insert data: "+name);    
 
-    benchmark.ms_set        = TimeExecutionOf(boost::bind(&InsertByValue<std::set<int> >, &data, &std_set));
-    benchmark.ms_list       = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::list<int> >, &data, &std_list));
-    benchmark.ms_vector     = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::vector<int> >, &data, &std_vector));
-    benchmark.ms_skip_list  = TimeExecutionOf(boost::bind(&InsertByValue<goodliffe::skip_list<int> >, &data, &skip_list));
+    benchmark.set        = TimeExecutionOf(boost::bind(&InsertByValue<std::set<int> >, &data, &std_set));
+    benchmark.list       = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::list<int> >, &data, &std_list));
+    benchmark.vector     = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::vector<int> >, &data, &std_vector));
+    benchmark.skip_list  = TimeExecutionOf(boost::bind(&InsertByValue<goodliffe::skip_list<int> >, &data, &skip_list));
     
     REQUIRE(std_list.size() == data.size());
     REQUIRE(std_set.size()  == data.size());
@@ -271,38 +271,11 @@ Benchmark IterateForwards()
     
     Benchmark benchmark("iterate forwards");    
     
-    benchmark.ms_set        = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::set<int> >, &std_set));
-    benchmark.ms_list       = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::list<int> >, &std_list));
-    benchmark.ms_vector     = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::vector<int> >, &std_vector));
-    benchmark.ms_skip_list  = TimeExecutionOf(boost::bind(&IterateForwardsThrough<goodliffe::skip_list<int> >, &skip_list));
-    /*
-    {
-        std::set<int> set(data.begin(), data.end());
-        for (std::vector<int>::iterator i = data.begin(); i != data.end(); ++i)
-            set.insert(*i);
-        
-        long start = get_time_ms();
-        for (unsigned n = 0 ; n < 100; ++n)
-            for (std::set<int>::iterator i = std_set.begin(); i != std_set.end(); ++i);
-        long end = get_time_ms();
-        
-        long elapsed = end-start;
-        fprintf(stderr, "std::set iterate forwards: %ld\n", elapsed);
-    }
-    
-    {
-        goodliffe::skip_list<int> list(data.begin(), data.end());
-        for (std::vector<int>::iterator i = data.begin(); i != data.end(); ++i)
-            list.insert(*i);
-        
-        long start = get_time_ms();
-        for (unsigned n = 0 ; n < 100; ++n)
-            for (goodliffe::skip_list<int>::iterator i = skip_list.begin(); i != skip_list.end(); ++i);
-        long end = get_time_ms();
-        
-        long elapsed = end-start;
-        fprintf(stderr, "skip_list iterator forwards: %ld\n", elapsed);
-    }*/
+    benchmark.set        = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::set<int> >, &std_set));
+    benchmark.list       = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::list<int> >, &std_list));
+    benchmark.vector     = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::vector<int> >, &std_vector));
+    benchmark.skip_list  = TimeExecutionOf(boost::bind(&IterateForwardsThrough<goodliffe::skip_list<int> >, &skip_list));
+
     return benchmark;
 }
 
@@ -319,10 +292,10 @@ Benchmark IterateBackwards()
     
     Benchmark benchmark("interate backwards");    
     
-    benchmark.ms_set        = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::set<int> >, &std_set));
-    benchmark.ms_list       = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::list<int> >, &std_list));
-    benchmark.ms_vector     = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::vector<int> >, &std_vector));
-    benchmark.ms_skip_list  = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<goodliffe::skip_list<int> >, &skip_list));
+    benchmark.set        = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::set<int> >, &std_set));
+    benchmark.list       = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::list<int> >, &std_list));
+    benchmark.vector     = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::vector<int> >, &std_vector));
+    benchmark.skip_list  = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<goodliffe::skip_list<int> >, &skip_list));
 
     return benchmark;
 }
@@ -340,10 +313,10 @@ Benchmark Find()
     
     Benchmark benchmark("find");    
     
-    benchmark.ms_set        = TimeExecutionOf(boost::bind(&Find<std::set<int> >, &std_set));
-    benchmark.ms_list       = TimeExecutionOf(boost::bind(&FindManually<std::list<int> >, &std_list));
-    benchmark.ms_vector     = TimeExecutionOf(boost::bind(&FindManually<std::vector<int> >, &std_vector));
-    benchmark.ms_skip_list  = TimeExecutionOf(boost::bind(&Find<goodliffe::skip_list<int> >, &skip_list));
+    benchmark.set        = TimeExecutionOf(boost::bind(&Find<std::set<int> >, &std_set));
+    benchmark.list       = TimeExecutionOf(boost::bind(&FindManually<std::list<int> >, &std_list));
+    benchmark.vector     = TimeExecutionOf(boost::bind(&FindManually<std::vector<int> >, &std_vector));
+    benchmark.skip_list  = TimeExecutionOf(boost::bind(&Find<goodliffe::skip_list<int> >, &skip_list));
     
     return benchmark;
 }
@@ -356,28 +329,21 @@ Benchmark Allocation()
     FillWithRandomData(10000, data);
     
     Benchmark benchmark("allocations");
-    
-    /*
-    std::set<int>    std_set(data.begin(), data.end());
-    std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
-    std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
-    skip_list<int>   skip_list(data.begin(), data.end());
-    */
 
     {
         allocator_bytes_allocated     = 0;
         allocator_objects_constructed = 0;
         std::set<int,std::less<int>,TestingAllocator<int> > std_set(data.begin(), data.end());
-        benchmark.ms_set = allocator_bytes_allocated;
+        benchmark.set = allocator_bytes_allocated;
     }
     REQUIRE(allocator_bytes_allocated == 0);
-    //REQUIRE(allocator_objects_constructed == 0);
+    REQUIRE(allocator_objects_constructed == 0);
 
     {
         allocator_bytes_allocated     = 0;
         allocator_objects_constructed = 0;
         std::list<int,TestingAllocator<int> > std_list(data.begin(), data.end());
-        benchmark.ms_list = allocator_bytes_allocated;
+        benchmark.list = allocator_bytes_allocated;
     }
     REQUIRE(allocator_bytes_allocated == 0);
     
@@ -385,7 +351,7 @@ Benchmark Allocation()
         allocator_bytes_allocated     = 0;
         allocator_objects_constructed = 0;
         std::vector<int,TestingAllocator<int> > std_vector(data.begin(), data.end());
-        benchmark.ms_vector = allocator_bytes_allocated;
+        benchmark.vector = allocator_bytes_allocated;
     }
     REQUIRE(allocator_bytes_allocated == 0);
     
@@ -393,7 +359,7 @@ Benchmark Allocation()
         allocator_bytes_allocated     = 0;
         allocator_objects_constructed = 0;
         skip_list<int,std::less<int>,TestingAllocator<int> > skip_list(data.begin(), data.end());
-        benchmark.ms_skip_list = allocator_bytes_allocated;
+        benchmark.skip_list = allocator_bytes_allocated;
     }
     REQUIRE(allocator_bytes_allocated == 0);
 
@@ -426,13 +392,13 @@ TEST_CASE( "skip_list/benchmarks", "" )
     for (size_t n = 0; n < benchmarks.size(); ++n)
     {
         Benchmark &b = benchmarks[n];
-        int set_pc    = b.ms_set    ? int(b.ms_skip_list * 100 / b.ms_set)      : 0;
-        int list_pc   = b.ms_list   ? int(b.ms_skip_list * 100 / b.ms_list)     : 0;
-        int vector_pc = b.ms_vector ? int(b.ms_skip_list * 100 / b.ms_vector)   : 0;
+        int set_pc    = b.set    ? int(b.skip_list * 100 / b.set)      : 0;
+        int list_pc   = b.list   ? int(b.skip_list * 100 / b.list)     : 0;
+        int vector_pc = b.vector ? int(b.skip_list * 100 / b.vector)   : 0;
         fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld |>%6d%% | %6d%% | %6d%% |\n",
                 b.name.c_str(),
-                b.ms_skip_list,
-                b.ms_set, b.ms_vector, b.ms_list,
+                b.skip_list,
+                b.set, b.vector, b.list,
                 set_pc, vector_pc, list_pc);
         //fprintf(stderr, "|%30s | %9s | %5d%% | %5d%% | %5d%% |\n",
         //        " ",
