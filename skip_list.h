@@ -329,12 +329,11 @@ private:
     typedef typename Allocator::template rebind<node_type>::other  node_allocator;
     typedef typename Allocator::template rebind<node_type*>::other node_list_allocator;
     
-    // TODO: also construct data item in place
     node_type *allocate_node(unsigned level)
     {
         node_type *node = node_allocator(alloc).allocate(1, (void*)0);
-        node->level = level;
         node->next  = node_list_allocator(alloc).allocate(level+1, (void*)0);
+        node->level = level;
         return node;
     }
     void deallocate_node(node_type *node)
@@ -969,12 +968,6 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value, node_type *
     assert_that(new_node);
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
-    
-    // this should NOT be required (again)
-    {
-        for (unsigned n = 0; n <= level; ++n)
-            new_node->next[n] = tail;
-    }
 
     node_type *insert_point = hint ? hint          : head;
     unsigned   l            = hint ? hint->level+1 : levels;
@@ -982,7 +975,7 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value, node_type *
     while (l)
     {
         --l;
-        //assert_that(l <= insert_point->level);
+        assert_that(l <= insert_point->level);
         while (insert_point->next[l] != tail && insert_point->next[l]->value < value)
         {
             insert_point = insert_point->next[l];
@@ -1050,7 +1043,6 @@ skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
 
     alloc.destroy(&node->value);
     deallocate_node(node);
-    //node_allocator(alloc).deallocate(node, 1u);
 
     item_count--;
 }
@@ -1066,7 +1058,6 @@ skip_list_impl<T,Compare,Allocator>::remove_all()
         node_type *next = node->next[0];
         alloc.destroy(&node->value);
         deallocate_node(node);
-        //node_allocator(alloc).deallocate(node, 1u);
         node = next;
     }
 
