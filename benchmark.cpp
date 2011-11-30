@@ -321,7 +321,6 @@ Benchmark Find()
     return benchmark;
 }
 
-
 Benchmark Allocation();
 Benchmark Allocation()
 {
@@ -367,6 +366,89 @@ Benchmark Allocation()
 }
 
 //============================================================================
+// the mother of all comparison tests converted into a benchmark
+
+template <typename CONTAINER>
+void InsertIntInOrder(CONTAINER &container, int value)
+{
+    if (container.empty())
+        container.push_back(value);
+    else
+    {
+        typename CONTAINER::iterator insert = container.begin();
+        while (insert != container.end() && *insert < value)
+            ++insert;
+        container.insert(insert, value);
+    }
+}
+
+template <typename CONTAINER>
+void AddInt(CONTAINER &c, int value)
+    { c.insert(value); }
+template<>
+void AddInt<std::vector<int> >(std::vector<int> &c, int value)
+    { InsertIntInOrder(c, value); }
+template<>
+void AddInt<std::list<int> >(std::list<int> &c, int value)
+    { InsertIntInOrder(c, value); }
+
+template <typename CONTAINER>
+void RandomUse(unsigned total_repeats, const std::vector<int> *insert, const unsigned *erase_from, const unsigned *erase_length);
+
+template <typename CONTAINER>
+void RandomUse(unsigned total_repeats, const std::vector<int> *insert, const unsigned *erase_from, const unsigned *erase_length)
+{
+    CONTAINER s;
+    
+    for (unsigned repeats = 0; repeats < total_repeats; ++repeats)
+    {
+        for (unsigned n = 0; n < insert[repeats].size(); ++n)
+        {
+            AddInt<CONTAINER>(s, insert[repeats][n]);
+            //s.insert(insert[repeats][n]);
+        }
+        
+        REQUIRE((erase_from[repeats]+erase_length[repeats]) <= s.size());
+        
+        typename CONTAINER::iterator  si_from = s.begin();
+        std::advance(si_from, erase_from[repeats]);
+        
+        typename CONTAINER::iterator  si_to = si_from;
+        std::advance(si_to, erase_length[repeats]);
+        
+        s.erase(si_from, si_to);
+    }
+}
+
+Benchmark RandomUse();
+Benchmark RandomUse()
+{
+    Benchmark benchmark("general use");
+    
+    static const unsigned repeats     = 5;
+    static const unsigned insert_size = 400;
+
+    std::vector<int> insert[repeats];
+    unsigned         erase_from[repeats];
+    unsigned         erase_length[repeats];
+
+    for (unsigned n = 0; n < repeats; ++n)
+    {
+        FillWithRandomData(insert_size, insert[n]);
+        
+        erase_from[n]   = unsigned(rand()) % unsigned(insert_size*(n+1)/3);
+        erase_length[n] = unsigned(rand()) % unsigned(insert_size*(n+1)/3);
+    }
+
+    benchmark.set       = TimeExecutionOf(boost::bind(&RandomUse<std::set<int> >,    repeats, insert, erase_from, erase_length));
+    benchmark.vector    = TimeExecutionOf(boost::bind(&RandomUse<std::vector<int> >, repeats, insert, erase_from, erase_length));
+    benchmark.list      = TimeExecutionOf(boost::bind(&RandomUse<std::list<int> >,   repeats, insert, erase_from, erase_length));
+    benchmark.skip_list = TimeExecutionOf(boost::bind(&RandomUse<skip_list<int> >,   repeats, insert, erase_from, erase_length));
+
+    return benchmark;
+}
+
+//============================================================================
 
 void Progress();
 void Progress() { fprintf(stderr, "."); }
@@ -383,6 +465,7 @@ TEST_CASE( "skip_list/benchmarks", "" )
     benchmarks.push_back(IterateBackwards());           Progress();
     benchmarks.push_back(Find());                       Progress();
     benchmarks.push_back(Allocation());                 Progress();
+    benchmarks.push_back(RandomUse());                  Progress();
     
     fprintf(stderr, "\n\n");
     fprintf(stderr, "+===============================+===========+========+========+========+=========+=========+=========+\n");
@@ -392,9 +475,9 @@ TEST_CASE( "skip_list/benchmarks", "" )
     for (size_t n = 0; n < benchmarks.size(); ++n)
     {
         Benchmark &b = benchmarks[n];
-        int set_pc    = b.set    ? int(b.skip_list * 100 / b.set)      : 0;
-        int list_pc   = b.list   ? int(b.skip_list * 100 / b.list)     : 0;
-        int vector_pc = b.vector ? int(b.skip_list * 100 / b.vector)   : 0;
+        int set_pc    = b.set    >0 ? int(b.skip_list * 100 / b.set)      : 0;
+        int list_pc   = b.list   >0 ? int(b.skip_list * 100 / b.list)     : 0;
+        int vector_pc = b.vector >0 ? int(b.skip_list * 100 / b.vector)   : 0;
         fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld |>%6d%% | %6d%% | %6d%% |\n",
                 b.name.c_str(),
                 b.skip_list,
