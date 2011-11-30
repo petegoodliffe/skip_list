@@ -683,24 +683,34 @@ TEST_CASE( "skip_list/insert-hint/good", "" )
 //============================================================================
 // random level selection
 
-TEST_CASE( "skip_list/random level algorithm", "" )
+TEST_CASE( "skip_list_level_generator/random level algorithm", "" )
 {
-    skip_list_impl<int> list;
-    std::vector<unsigned> levels(skip_list_impl<int>::max_levels, 0);
+    using goodliffe::detail::skip_list_level_generator;
+
+    skip_list_level_generator<32> list;
+    std::vector<unsigned> levels(skip_list_level_generator<32>::num_levels, 0);
     for (unsigned n = 0; n < 10000; ++n)
     {
-        unsigned random = list.random_level();
-        REQUIRE(random < unsigned(skip_list_impl<int>::max_levels));
+        unsigned random = list.new_level();
+        REQUIRE(random < unsigned(skip_list_level_generator<32>::num_levels));
         levels[random]++;
     }
     //for (unsigned n = 0; n < skip_list<int>::max_levels; ++n)
     //    fprintf(stderr, "Level[%u]=%u\n", n, levels[n]);
     
-    for (unsigned n = 0; n < skip_list_impl<int>::max_levels-1; ++n)
+    for (unsigned n = 0; n < skip_list_level_generator<32>::num_levels-1; ++n)
     {
         if (levels[n+1]) break;
         REQUIRE(levels[n] > levels[n+1]);
     }
+}
+
+TEST_CASE( "skip_list_level_generator/compilation errors", "" )
+{
+    goodliffe::detail::skip_list_level_generator<33> list;
+
+    // This should not run if uncommented!
+    //list.new_level();
 }
 
 //============================================================================

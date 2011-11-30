@@ -19,9 +19,14 @@ namespace goodliffe {
 /// Internal namespace for impementation of skip list data structure
 namespace detail
 {
+    template <unsigned NumLevels>
+    class skip_list_level_generator;
+
     template <typename T,
               typename Compare   = std::less<T>,
-              typename Allocator = std::allocator<T> >
+              typename Allocator = std::allocator<T>,
+              unsigned NumLevels = 32,
+              typename LevelGenerator = skip_list_level_generator<NumLevels> >
     class skip_list_impl;
 }
 
@@ -260,18 +265,31 @@ void pg_assertion_break() { fprintf(stderr, "**** place a breakpoint at pg_asser
 
 namespace goodliffe {
 namespace detail {
+
+/// Generate a stream of levels, probabilstically chosen.
+/// With a probability of 1/2, return 0.
+/// With 1/4 probability, return 1.
+/// With 1/8 probability, return 2.
+/// And so forth.
+template <unsigned NumLevels>
+class skip_list_level_generator
+{
+public:
+    static const unsigned num_levels = NumLevels;
+    unsigned new_level();
+};
         
 /// Internal implementation of skip_list data structure and methods for
 /// modifying it.
 ///
-/// Not for "public" modification.
+/// Not for "public" access.
 ///
 /// @internal
-template <typename T, typename Compare, typename Allocator>
+template <typename T, typename Compare, typename Allocator,
+          unsigned NumLevels, typename LevelGenerator>
 class skip_list_impl
 {
 public:
-    enum { max_levels = 33 };
 
     struct node_type
     {
@@ -283,6 +301,10 @@ public:
 
     typedef T                             value_type;
     typedef typename Allocator::size_type size_type;
+    typedef Allocator                     allocator_type;
+    typedef LevelGenerator                generator_type;
+
+    static const unsigned num_levels = NumLevels;
 
     skip_list_impl(const Allocator &alloc = Allocator());
     ~skip_list_impl();
@@ -302,7 +324,6 @@ public:
     void             remove_between(node_type *first, node_type *last);
     void             swap(skip_list_impl &other);
 
-    static unsigned  random_level();
     unsigned         new_level();
     unsigned         level_of(node_type *node) const;
 
@@ -313,12 +334,14 @@ private:
     skip_list_impl(const skip_list_impl &other);
     skip_list_impl &operator=(const skip_list_impl &other);
 
-    Allocator   alloc;
-    unsigned    levels;
-    node_type  *head;
-    node_type  *tail;
-    size_type   item_count;
+    allocator_type  alloc;
+    generator_type  generator;
+    unsigned        levels;
+    node_type      *head;
+    node_type      *tail;
+    size_type       item_count;
 
+    // TODO - can probably be removed
     static size_type nodes_between(node_type *first, node_type *last)
     {
         size_type count = 1;
@@ -905,16 +928,16 @@ void std::swap(goodliffe::skip_list<T,Compare,Allocator> &lhs, goodliffe::skip_l
 namespace goodliffe {
 namespace detail {
 
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
-skip_list_impl<T,Compare,Allocator>::skip_list_impl(const Allocator &alloc_)
+skip_list_impl<T,Compare,Allocator,ML,LG>::skip_list_impl(const Allocator &alloc_)
 :   alloc(alloc_),
     levels(0),
-    head(allocate_node(max_levels-1)),
-    tail(allocate_node(max_levels-1)),
+    head(allocate_node(num_levels)),
+    tail(allocate_node(num_levels)),
     item_count(0)
 {
-    for (unsigned n = 0; n < max_levels; n++)
+    for (unsigned n = 0; n < num_levels; n++)
     {
         head->next[n] = tail;
         tail->next[n] = 0;
@@ -923,26 +946,26 @@ skip_list_impl<T,Compare,Allocator>::skip_list_impl(const Allocator &alloc_)
     tail->prev = head;
 }
 
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
-skip_list_impl<T,Compare,Allocator>::~skip_list_impl()
+skip_list_impl<T,Compare,Allocator,ML,LG>::~skip_list_impl()
 {
     remove_all();
     deallocate_node(head);
     deallocate_node(tail);
 }
 
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
-Allocator skip_list_impl<T,Compare,Allocator>::get_allocator() const
+Allocator skip_list_impl<T,Compare,Allocator,ML,LG>::get_allocator() const
 {
     return alloc;
 }
 
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
-typename skip_list_impl<T,Compare,Allocator>::node_type *
-skip_list_impl<T,Compare,Allocator>::find(const value_type &value) const
+typename skip_list_impl<T,Compare,Allocator,ML,LG>::node_type *
+skip_list_impl<T,Compare,Allocator,ML,LG>::find(const value_type &value) const
 {
     // TODO: == <=
 
@@ -957,10 +980,10 @@ skip_list_impl<T,Compare,Allocator>::find(const value_type &value) const
     return search;
 }
 
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
-typename skip_list_impl<T,Compare,Allocator>::node_type*
-skip_list_impl<T,Compare,Allocator>::insert(const value_type &value, node_type *hint)
+typename skip_list_impl<T,Compare,Allocator,ML,LG>::node_type*
+skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_type *hint)
 {
     const unsigned level = new_level();
 
@@ -1011,10 +1034,10 @@ skip_list_impl<T,Compare,Allocator>::insert(const value_type &value, node_type *
     return new_node;
 }
 
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
 void
-skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
+skip_list_impl<T,Compare,Allocator,ML,LG>::remove(node_type *node)
 {
     assert_that(node != head);
     assert_that(node != tail);
@@ -1023,6 +1046,7 @@ skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
     node->next[0]->prev = node->prev;
     
     // patch up all next pointers
+    // TODO; pull this form "node"
     node_type *cur = head;
     unsigned level = 0;
     for (unsigned l = levels; l; )
@@ -1047,10 +1071,10 @@ skip_list_impl<T,Compare,Allocator>::remove(node_type *node)
     item_count--;
 }
 
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
 void
-skip_list_impl<T,Compare,Allocator>::remove_all()
+skip_list_impl<T,Compare,Allocator,ML,LG>::remove_all()
 {
     node_type *node = head->next[0];
     while (node != tail)
@@ -1061,16 +1085,17 @@ skip_list_impl<T,Compare,Allocator>::remove_all()
         node = next;
     }
 
-    for (unsigned l = 0; l < max_levels; ++l)
+    for (unsigned l = 0; l < num_levels; ++l)
         head->next[l] = tail;
     tail->prev = head;
     item_count = 0;
 }
 
-template <class T, class Compare, class Allocator>
+// TODO: this might be removable, if it's not used in remove_between
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
 unsigned 
-skip_list_impl<T,Compare,Allocator>::level_of(node_type *node) const
+skip_list_impl<T,Compare,Allocator,ML,LG>::level_of(node_type *node) const
 {
     node_type *cur = head;
     for (unsigned l = levels; l; )
@@ -1090,10 +1115,10 @@ skip_list_impl<T,Compare,Allocator>::level_of(node_type *node) const
     return 0;
 }
 
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
 void 
-skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type *last)
+skip_list_impl<T,Compare,Allocator,ML,LG>::remove_between(node_type *first, node_type *last)
 {
     assert_that(first != head);
     assert_that(first != tail);
@@ -1122,7 +1147,6 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
         prev->next[l] = last;
     }
 
-
 /*
     node_type *cur = head;
     for (unsigned l = levels; l; )
@@ -1140,7 +1164,7 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
     }
 */
     /*
-    for (unsigned l = 0; l < max_levels; ++l)
+    for (unsigned l = 0; l < num_levels; ++l)
     {
         node_type *next = last->next[l];
         assert_that(next);
@@ -1167,31 +1191,11 @@ skip_list_impl<T,Compare,Allocator>::remove_between(node_type *first, node_type 
 #endif
 }
 
-/// Generate a stream of levels, probabilstically chosen.
-/// With a probability of 1/2, return 0.
-/// With 1/4 probability, return 1.
-/// With 1/8 probability, return 2.
-/// And so forth.
-/// TODO: Consider making this a template method
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
-unsigned skip_list_impl<T,Compare,Allocator>::random_level()
-{
-    // The number of 1-bits before we encounter the first 0-bit is the level of
-    /// the node. Since R is 32-bit, the level can be at most 32.
-    unsigned level = 0;
-    for (unsigned number = unsigned(rand()); (number & 1) == 1; number >>= 1)
-    {
-        level++;
-    }
-    return level;
-}
-
-template <class T, class Compare, class Allocator>
-inline
-unsigned skip_list_impl<T,Compare,Allocator>::new_level()
+unsigned skip_list_impl<T,Compare,Allocator,ML,LG>::new_level()
 {    
-    unsigned level = random_level();
+    unsigned level = generator.new_level();
     if (level >= levels)
     {
         level = levels;
@@ -1200,9 +1204,9 @@ unsigned skip_list_impl<T,Compare,Allocator>::new_level()
     return level;
 }
 
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
-void skip_list_impl<T,Compare,Allocator>::swap(skip_list_impl &other)
+void skip_list_impl<T,Compare,Allocator,ML,LG>::swap(skip_list_impl &other)
 {
     using std::swap;
 
@@ -1214,10 +1218,10 @@ void skip_list_impl<T,Compare,Allocator>::swap(skip_list_impl &other)
 }
 
 // for diagnostics only
-template <class T, class Compare, class Allocator>
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
 template <class STREAM>
 inline
-void skip_list_impl<T,Compare,Allocator>::dump(STREAM &s) const
+void skip_list_impl<T,Compare,Allocator,ML,LG>::dump(STREAM &s) const
 {
     s << "skip_list(size="<<item_count<<",levels=" << levels << ")\n";
     for (unsigned l = 0; l < levels; ++l)
@@ -1248,6 +1252,25 @@ void skip_list_impl<T,Compare,Allocator>::dump(STREAM &s) const
         }
         s << "\n";
     }
+}
+
+//==============================================================================
+#pragma mark - skip_list_level_generator
+
+template <unsigned ML>
+inline
+unsigned skip_list_level_generator<ML>::new_level()
+{
+    // The number of 1-bits before we encounter the first 0-bit is the level of
+    /// the node. Since R is 32-bit, the level can be at most 32.
+    assert_that(num_levels < 33);
+
+    unsigned level = 0;
+    for (unsigned number = unsigned(rand()); (number & 1) == 1; number >>= 1)
+    {
+        level++;
+    }
+    return level;
 }
 
 } // namespace detail
