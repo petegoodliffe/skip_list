@@ -426,9 +426,9 @@ TEST_CASE( "skip_list/benchmarks", "" )
     for (size_t n = 0; n < benchmarks.size(); ++n)
     {
         Benchmark &b = benchmarks[n];
-        int set_pc    = int(b.ms_skip_list * 100 / b.ms_set);
-        int list_pc   = int(b.ms_skip_list * 100 / b.ms_list);
-        int vector_pc = int(b.ms_skip_list * 100 / b.ms_vector);
+        int set_pc    = b.ms_set    ? int(b.ms_skip_list * 100 / b.ms_set)      : 0;
+        int list_pc   = b.ms_list   ? int(b.ms_skip_list * 100 / b.ms_list)     : 0;
+        int vector_pc = b.ms_vector ? int(b.ms_skip_list * 100 / b.ms_vector)   : 0;
         fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld | %6d%% | %6d%% | %6d%% |\n",
                 b.name.c_str(),
                 b.ms_skip_list,
