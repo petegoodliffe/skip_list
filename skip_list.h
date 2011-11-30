@@ -232,7 +232,9 @@ namespace std
 //==============================================================================
 #pragma mark - diagnostics
 
+#ifdef DEBUG
 #define SKIP_LIST_DIAGNOSTICS 1
+#endif
 
 #ifdef SKIP_LIST_DIAGNOSTICS
 
