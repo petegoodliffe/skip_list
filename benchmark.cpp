@@ -290,7 +290,7 @@ Benchmark IterateBackwards()
     std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
     skip_list<int>   skip_list(data.begin(), data.end());
     
-    Benchmark benchmark("interate backwards");    
+    Benchmark benchmark("iterate backwards");    
     
     benchmark.set        = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::set<int> >, &std_set));
     benchmark.list       = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::list<int> >, &std_list));
@@ -453,11 +453,17 @@ Benchmark RandomUse()
 void Progress();
 void Progress() { fprintf(stderr, "."); }
 
+#ifdef DEBUG
+const char *build_type = "Debug";
+#else
+const char *build_type = "Release";
+#endif
+
 TEST_CASE( "skip_list/benchmarks", "" )
 {
     std::vector<Benchmark> benchmarks;
 
-    fprintf(stderr, "\nTesting");                       Progress();
+    fprintf(stderr, "\nTesting(%s)", build_type);       Progress();
     benchmarks.push_back(InsertRandomOrderedData());    Progress();
     benchmarks.push_back(InsertOrderedData());          Progress();
     benchmarks.push_back(InsertReverseOrderedData());   Progress();
