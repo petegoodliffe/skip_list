@@ -1300,4 +1300,6 @@ TEST_CASE( "skip_list/insert(iter,iter)/populated list, insert range", "" )
     //*list.begin() = 1; REQUIRE(list.front() == 1);
     //*clist.begin() = 1; REQUIRE(list.front() == 1);
     //*list.cbegin() = 1; REQUIRE(list.front() == 1);
+    
+    (void) clist;
 }
