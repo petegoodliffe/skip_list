@@ -9,6 +9,7 @@
 #include <functional> // for std::less
 #include <iterator>   // for std::reverse_iterator
 #include <utility>    // for std::pair
+#include <cmath>      // for std::frand
 
 //==============================================================================
 #pragma mark - detail
@@ -19,6 +20,8 @@ namespace goodliffe {
 /// Internal namespace for impementation of skip list data structure
 namespace detail
 {
+    template <unsigned NumLevels>
+    class bit_based_skip_list_level_generator;
     template <unsigned NumLevels>
     class skip_list_level_generator;
 
@@ -41,17 +44,16 @@ namespace detail
 /// TODO:
 ///     * C++11: noexcept decls
 ///     * C++11: move operations
-///     * possibly optimse prev ptrs (not many, just one)
 ///     * rationalise requirements on contained type
 ///     * use the Compare
-///     * all not_implemented_yet methods
-///     * better random generator
 ///     * make "multi" list version
 ///
-/// Talk about: efficiency, iterator invalidation.
+/// Document:
+///     * efficiency of operations (big-O notation)
+///     * iterator invalidation
 ///
 /// Following the freaky STL container names, this might be better named
-/// unique_sorted_list or sorted_list, or somesuch.
+/// unique_sorted_list or sorted_list, or somesuch other drivel.
 ///
 /// @param T         Template type for kind of object held in the container.
 /// @param Compare   Template type describing the ordering comparator.
@@ -273,6 +275,14 @@ namespace detail {
 /// And so forth.
 template <unsigned NumLevels>
 class skip_list_level_generator
+{
+public:
+    static const unsigned num_levels = NumLevels;
+    unsigned new_level();
+};
+
+template <unsigned NumLevels>
+class bit_based_skip_list_level_generator
 {
 public:
     static const unsigned num_levels = NumLevels;
@@ -1259,7 +1269,7 @@ void skip_list_impl<T,Compare,Allocator,ML,LG>::dump(STREAM &s) const
 
 template <unsigned ML>
 inline
-unsigned skip_list_level_generator<ML>::new_level()
+unsigned bit_based_skip_list_level_generator<ML>::new_level()
 {
     // The number of 1-bits before we encounter the first 0-bit is the level of
     /// the node. Since R is 32-bit, the level can be at most 32.
@@ -1271,6 +1281,15 @@ unsigned skip_list_level_generator<ML>::new_level()
         level++;
     }
     return level;
+}
+
+template <unsigned ML>
+inline
+unsigned skip_list_level_generator<ML>::new_level()
+{
+    float f = float(std::rand())/float(RAND_MAX);
+    unsigned level = unsigned(std::log(f)/std::log(0.5));
+    return level < num_levels ? level : num_levels;
 }
 
 } // namespace detail

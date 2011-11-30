@@ -708,6 +708,7 @@ TEST_CASE( "skip_list_level_generator/random level algorithm", "" )
 TEST_CASE( "skip_list_level_generator/compilation errors", "" )
 {
     goodliffe::detail::skip_list_level_generator<33> list;
+    (void)list;
 
     // This should not run if uncommented!
     //list.new_level();
