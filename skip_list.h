@@ -44,9 +44,7 @@ namespace detail
 /// TODO:
 ///     * C++11: noexcept decls
 ///     * C++11: move operations
-///     * rationalise requirements on contained type
-///     * use the Compare
-///     * make "multi" list version
+///     * make "multi" skip_list version
 ///
 /// Document:
 ///     * efficiency of operations (big-O notation)
