@@ -1323,11 +1323,19 @@ struct Value
     int value;
 };
 
+struct LessValue
+{
+    bool operator()(const Value &lhs, const Value &rhs)
+        { return lhs.value < rhs.value; }
+};
+
+/*
 bool operator<(const Value &lhs, const Value &rhs);
 bool operator<(const Value &lhs, const Value &rhs)
 {
     return lhs.value < rhs.value;
 }
+*/
 
 TEST_CASE( "skip_list/Value sanity test", "" )
 {
@@ -1337,10 +1345,13 @@ TEST_CASE( "skip_list/Value sanity test", "" )
     
     b.value = 20;
     
-    REQUIRE(a < b);
-    REQUIRE_FALSE(b < a);
-    
+    REQUIRE(LessValue()(a, b));
+    REQUIRE_FALSE(LessValue()(a, a));
+    REQUIRE_FALSE(LessValue()(b, a));
+
     // These will not compile
+    //REQUIRE(a < b);
+    //REQUIRE_FALSE(b < a);
     //REQUIRE(a <= b);
     //REQUIRE(a > b);
     //REQUIRE(a >= b);
@@ -1352,12 +1363,12 @@ TEST_CASE( "skip_list/type requirements (only <)", "" )
     const Value b = {0};
     const Value values[] = {{10},{20},{30}};
 
-    skip_list<Value> list;
+    skip_list<Value, LessValue> list;
     
     list.insert(a);
     list.erase(a);
 
-    skip_list<Value> list2(list);
+    skip_list<Value, LessValue> list2(list);
     list2.clear();
     
     list.assign(values, values+3);
