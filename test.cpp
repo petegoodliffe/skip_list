@@ -1302,17 +1302,17 @@ TEST_CASE( "skip_list/comparison with vector", "" )
 TEST_CASE( "detail/are_equivalent", "" )
 {
     using namespace goodliffe::detail;
-    REQUIRE(are_equivalent(10, 10));
-    REQUIRE_FALSE(are_equivalent(10, 11));
-    REQUIRE_FALSE(are_equivalent(11, 10));
+    REQUIRE(are_equivalent<std::less<int> >(10, 10));
+    REQUIRE_FALSE(are_equivalent<std::less<int> >(10, 11));
+    REQUIRE_FALSE(are_equivalent<std::less<int> >(11, 10));
 }
 
 TEST_CASE( "detail/less_than_or_equal", "" )
 {
     using namespace goodliffe::detail;
-    REQUIRE(less_than_or_equal(10, 10));
-    REQUIRE(less_than_or_equal(10, 11));
-    REQUIRE_FALSE(less_than_or_equal(10, 9));
+    REQUIRE(less_than_or_equal<std::less<int> >(10, 10));
+    REQUIRE(less_than_or_equal<std::less<int> >(10, 11));
+    REQUIRE_FALSE(less_than_or_equal<std::less<int> >(10, 9));
 }
 
 //============================================================================
