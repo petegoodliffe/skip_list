@@ -376,6 +376,18 @@ private:
     }
 };
 
+template <typename T>
+bool are_equivalent(const T &lhs, const T &rhs)
+{
+    return !(lhs < rhs) && !(rhs < lhs);
+}
+
+template <typename T>
+bool less_than_or_equal(const T &lhs, const T &rhs)
+{
+    return !(rhs < lhs);
+}
+
 } // namespace detail
 } // namespace goodliffe
 
@@ -794,7 +806,7 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::erase(const value_type &value)
 {
     node_type *node = impl.find(value);
-    if (impl.is_valid(node) && node->value == value)
+    if (impl.is_valid(node) && detail::are_equivalent(node->value, value))
     {
         impl.remove(node);
         return 1;
@@ -853,7 +865,7 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::count(const value_type &value) const
 {
     const node_type *node = impl.find(value);
-    return impl.is_valid(node) && node->value == value;
+    return impl.is_valid(node) && detail::are_equivalent(node->value, value);
 }
 
 template <class T, class Compare, class Allocator>
@@ -862,7 +874,7 @@ typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::find(const value_type &value)
 {
     node_type *node = impl.find(value);
-    return impl.is_valid(node) && node->value == value
+    return impl.is_valid(node) && detail::are_equivalent(node->value, value)
         ? iterator(this, node)
         : end();
 }
@@ -873,7 +885,7 @@ typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::find(const value_type &value) const
 {
     const node_type *node = impl.find(value);
-    return impl.is_valid(node) && node->value == value
+    return impl.is_valid(node) && detail::are_equivalent(node->value, value)
         ? const_iterator(this, node)
         : end();
 }
@@ -977,15 +989,16 @@ inline
 typename skip_list_impl<T,Compare,Allocator,ML,LG>::node_type *
 skip_list_impl<T,Compare,Allocator,ML,LG>::find(const value_type &value) const
 {
-    // TODO: == <=
-
     // I could have a const and non-const overload, but this is simpler
     node_type *search = const_cast<node_type*>(head);
     for (unsigned l = levels; l; )
     {
         --l;
-        while (search->next[l] != tail && search->next[l]->value <= value)
+        while (search->next[l] != tail
+               && detail::less_than_or_equal(search->next[l]->value, value))
+        {
             search = search->next[l];
+        }
     }
     return search;
 }
@@ -1035,7 +1048,7 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
 
     ++item_count;
 
-    if (next != tail && next->value == value)
+    if (next != tail && detail::are_equivalent(next->value, value))
     {
         remove(new_node);
         new_node = tail;
@@ -1056,14 +1069,15 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove(node_type *node)
     node->next[0]->prev = node->prev;
     
     // patch up all next pointers
-    // TODO; pull this form "node"
+    // TODO: pull this from "node" instead
     node_type *cur = head;
     unsigned level = 0;
     for (unsigned l = levels; l; )
     {
         --l;
         assert_that(l < cur->level);
-        while (cur->next[l] != tail && cur->next[l]->value <= node->value)
+        while (cur->next[l] != tail
+               && detail::less_than_or_equal(cur->next[l]->value, node->value))
         {
             if (cur->next[l] == node)
             {

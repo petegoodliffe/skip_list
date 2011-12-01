@@ -1297,6 +1297,89 @@ TEST_CASE( "skip_list/comparison with vector", "" )
 }
 
 //============================================================================
+// checking requirements on type
+
+TEST_CASE( "detail/are_equivalent", "" )
+{
+    using namespace goodliffe::detail;
+    REQUIRE(are_equivalent(10, 10));
+    REQUIRE_FALSE(are_equivalent(10, 11));
+    REQUIRE_FALSE(are_equivalent(11, 10));
+}
+
+TEST_CASE( "detail/less_than_or_equal", "" )
+{
+    using namespace goodliffe::detail;
+    REQUIRE(less_than_or_equal(10, 10));
+    REQUIRE(less_than_or_equal(10, 11));
+    REQUIRE_FALSE(less_than_or_equal(10, 9));
+}
+
+//============================================================================
+// checking requirements on type
+
+struct Value
+{
+    int value;
+};
+
+bool operator<(const Value &lhs, const Value &rhs);
+bool operator<(const Value &lhs, const Value &rhs)
+{
+    return lhs.value < rhs.value;
+}
+
+TEST_CASE( "skip_list/Value sanity test", "" )
+{
+    const Value a = {10};
+
+    Value b = a; // assignment works
+    
+    b.value = 20;
+    
+    REQUIRE(a < b);
+    REQUIRE_FALSE(b < a);
+    
+    // These will not compile
+    //REQUIRE(a <= b);
+    //REQUIRE(a > b);
+    //REQUIRE(a >= b);
+}
+
+TEST_CASE( "skip_list/type requirements (only <)", "" )
+{
+    const Value a = {10};
+    const Value b = {0};
+    const Value values[] = {{10},{20},{30}};
+
+    skip_list<Value> list;
+    
+    list.insert(a);
+    list.erase(a);
+
+    skip_list<Value> list2(list);
+    list2.clear();
+    
+    list.assign(values, values+3);
+    REQUIRE(list.count(a) == 1);
+    REQUIRE(list.count(b) == 0);
+
+    REQUIRE(list.contains(a));
+    REQUIRE_FALSE(list.contains(b));
+
+    REQUIRE(list.find(a) != list.end());
+    REQUIRE(list.find(b) == list.end());
+
+    list2.insert(values, values+3);
+    
+    std::swap(list, list2);
+    
+    list2.erase(++list2.begin(), list2.end());
+    REQUIRE(list2.size() == 1);
+    REQUIRE_FALSE(list2.empty());
+}
+
+//============================================================================
 // things that should not be compilable
 
 TEST_CASE( "skip_list/insert(iter,iter)/populated list, insert range", "" )
