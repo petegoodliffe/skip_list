@@ -20,6 +20,12 @@ Following the freaky STL container names, this container might be better named
 unique_sorted_list or sorted_list, or somesuch other drivel. In the interests of
 clarity, and my own sanity, I have called it skip_list.
 
+    skip_list<int> list;
+    list.insert(1);
+    list.insert(2);
+    list.insert(3);
+    std::copy(list.begin(), list.end(), std::ostream_iterator<int>(std::cout, "\n"));
+
 
 Performance
 -----------------
