@@ -17,6 +17,12 @@
 #include <boost/bind.hpp>
 #include <boost/ref.hpp>
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/sequenced_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/random_access_index.hpp>
+#include <boost/multi_index/identity.hpp>
+
 #if BENCHMARK_WITH_MAIN
 #define CATCH_CONFIG_MAIN
 #endif 
@@ -32,18 +38,34 @@ TEST_CASE( "skip_list/benchmark/smoketest", "" )
 
 //============================================================================
 
+// Defines a multi_index_container with a list-like index and an ordered index
+typedef boost::multi_index_container
+    <
+        int,
+        boost::multi_index::indexed_by
+        <
+            boost::multi_index::sequenced<>,                                           // list-like index, order unimportant (perhaps get rid of this)
+            boost::multi_index::random_access<>,                                       // random access view, kept in ordered_non_unique sequence
+            boost::multi_index::ordered_non_unique<boost::multi_index::identity<int> > // events in time order
+        >
+    >
+    multi_index;
+
+//============================================================================
+
 struct Benchmark
 {
     std::string name;
     long        vector;
     long        set;
     long        list;
+    long        multi;
     long        skip_list;
     
     Benchmark()
-        : name(), vector(-1), set(-1), list(-1), skip_list(-1) {}
+        : name(), vector(-1), set(-1), list(-1), multi(-1), skip_list(-1) {}
     Benchmark(const std::string &name_)
-        : name(name_), vector(-1), set(-1), list(-1), skip_list(-1) {}
+        : name(name_), vector(-1), set(-1), list(-1), multi(-1), skip_list(-1) {}
 };
 
 long TimeExecutionOf(const boost::function<void()> &f);
@@ -165,6 +187,15 @@ void InsertByValueAtRightPlace(const std::vector<int> *data, CONTAINER *containe
         }
     }
 }
+void InsertIntoMultiIndex(const std::vector<int> *data, multi_index *container);
+void InsertIntoMultiIndex(const std::vector<int> *data, multi_index *container)
+{
+    for (std::vector<int>::const_iterator i = data->begin(); i != data->end(); ++i)
+    {
+        multi_index::nth_index<0>::type::iterator inserted0 = container->get<0>().push_back(*i).first;
+        container->get<1>().iterator_to(*inserted0);
+    }
+}
 template <typename CONTAINER>
 void PushBack(const std::vector<int> *data, CONTAINER *container)
 {
@@ -183,13 +214,16 @@ void IterateBackwardsThrough(CONTAINER *container)
     for (unsigned n = 0; n < 100; ++n)
         for (typename CONTAINER::reverse_iterator i = container->rbegin(); i != container->rend(); ++i);
 }
+
+//============================================================================
+
 template <typename CONTAINER>
 void Find(const CONTAINER *container)
 {
     for (int n = 0 ; n < int(container->size()); ++n)
     {
         typename CONTAINER::const_iterator insert = container->find(n);
-        REQUIRE(std::distance(container->begin(), insert) == n);
+        //REQUIRE(std::distance(container->begin(), insert) == n);
     }
 }
 template <typename CONTAINER>
@@ -200,7 +234,16 @@ void FindManually(const CONTAINER *container)
         typename CONTAINER::const_iterator insert = container->begin();
         while (insert != container->end() && *insert < n)
             ++insert;
-        REQUIRE(std::distance(container->begin(), insert) == n);
+        //REQUIRE(std::distance(container->begin(), insert) == n);
+    }
+}
+void FindFromMultiIndex(multi_index *container);
+void FindFromMultiIndex(multi_index *container)
+{
+    for (int n = 0 ; n < int(container->size()); ++n)
+    {
+        multi_index::nth_index<2>::type::iterator insert = container->get<2>().find(n);
+        //REQUIRE(std::distance(, insert) == n);
     }
 }
 
@@ -214,6 +257,7 @@ Benchmark InsertData(std::vector<int> &data, const std::string &name)
     std::set<int>    std_set;
     std::list<int>   std_list;
     std::vector<int> std_vector;
+    multi_index      multi;
     skip_list<int>   skip_list;
 
     Benchmark benchmark("insert data: "+name);    
@@ -221,6 +265,7 @@ Benchmark InsertData(std::vector<int> &data, const std::string &name)
     benchmark.set        = TimeExecutionOf(boost::bind(&InsertByValue<std::set<int> >, &data, &std_set));
     benchmark.list       = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::list<int> >, &data, &std_list));
     benchmark.vector     = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::vector<int> >, &data, &std_vector));
+    benchmark.multi      = TimeExecutionOf(boost::bind(&InsertIntoMultiIndex, &data, &multi));
     benchmark.skip_list  = TimeExecutionOf(boost::bind(&InsertByValue<goodliffe::skip_list<int> >, &data, &skip_list));
     
     REQUIRE(std_list.size() == data.size());
@@ -267,6 +312,7 @@ Benchmark IterateForwards()
     std::set<int>    std_set(data.begin(), data.end());
     std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
     std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
+    multi_index      multi(std_set.begin(), std_set.end()); // use set to ensure order;
     skip_list<int>   skip_list(data.begin(), data.end());
     
     Benchmark benchmark("iterate forwards");    
@@ -274,6 +320,7 @@ Benchmark IterateForwards()
     benchmark.set        = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::set<int> >, &std_set));
     benchmark.list       = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::list<int> >, &std_list));
     benchmark.vector     = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::vector<int> >, &std_vector));
+    benchmark.multi      = TimeExecutionOf(boost::bind(&IterateForwardsThrough<multi_index >, &multi));
     benchmark.skip_list  = TimeExecutionOf(boost::bind(&IterateForwardsThrough<goodliffe::skip_list<int> >, &skip_list));
 
     return benchmark;
@@ -288,6 +335,7 @@ Benchmark IterateBackwards()
     std::set<int>    std_set(data.begin(), data.end());
     std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
     std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
+    multi_index      multi(std_set.begin(), std_set.end()); // use set to ensure order;
     skip_list<int>   skip_list(data.begin(), data.end());
     
     Benchmark benchmark("iterate backwards");    
@@ -295,6 +343,7 @@ Benchmark IterateBackwards()
     benchmark.set        = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::set<int> >, &std_set));
     benchmark.list       = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::list<int> >, &std_list));
     benchmark.vector     = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::vector<int> >, &std_vector));
+    benchmark.multi      = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<multi_index>, &multi));
     benchmark.skip_list  = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<goodliffe::skip_list<int> >, &skip_list));
 
     return benchmark;
@@ -310,16 +359,33 @@ Benchmark Find()
     std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
     std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
     skip_list<int>   skip_list(data.begin(), data.end());
-    
+    multi_index      multi(std_set.begin(), std_set.end()); // use set to ensure order;
+
+    multi.get<1>().rearrange(multi.get<2>().begin()); // keep random access in order
+
     Benchmark benchmark("find");    
     
     benchmark.set        = TimeExecutionOf(boost::bind(&Find<std::set<int> >, &std_set));
     benchmark.list       = TimeExecutionOf(boost::bind(&FindManually<std::list<int> >, &std_list));
     benchmark.vector     = TimeExecutionOf(boost::bind(&FindManually<std::vector<int> >, &std_vector));
+    benchmark.multi      = TimeExecutionOf(boost::bind(&FindFromMultiIndex, &multi));
     benchmark.skip_list  = TimeExecutionOf(boost::bind(&Find<goodliffe::skip_list<int> >, &skip_list));
     
     return benchmark;
 }
+
+typedef boost::multi_index_container
+    <
+        int,
+        boost::multi_index::indexed_by
+        <
+            boost::multi_index::sequenced<>,                                           // list-like index, order unimportant (perhaps get rid of this)
+            boost::multi_index::random_access<>,                                       // random access view, kept in ordered_non_unique sequence
+            boost::multi_index::ordered_non_unique<boost::multi_index::identity<int> > // events in time order
+        >,
+        TestingAllocator<int>
+    >
+    multi_index_allocator;
 
 Benchmark Allocation();
 Benchmark Allocation()
@@ -353,7 +419,15 @@ Benchmark Allocation()
         benchmark.vector = allocator_bytes_allocated;
     }
     REQUIRE(allocator_bytes_allocated == 0);
-    
+
+    {
+        allocator_bytes_allocated     = 0;
+        allocator_objects_constructed = 0;
+        multi_index_allocator multi(data.begin(), data.end());
+        benchmark.multi = allocator_bytes_allocated;
+    }
+    REQUIRE(allocator_bytes_allocated == 0);
+
     {
         allocator_bytes_allocated     = 0;
         allocator_objects_constructed = 0;
@@ -391,6 +465,12 @@ void AddInt<std::vector<int> >(std::vector<int> &c, int value)
 template<>
 void AddInt<std::list<int> >(std::list<int> &c, int value)
     { InsertIntInOrder(c, value); }
+template<>
+void AddInt<multi_index>(multi_index &c, int value)
+{
+    multi_index::nth_index<0>::type::iterator inserted0 = c.get<0>().push_back(value).first;
+    c.get<1>().iterator_to(*inserted0);
+}
 
 template <typename CONTAINER>
 void RandomUse(unsigned total_repeats, const std::vector<int> *insert, const unsigned *erase_from, const unsigned *erase_length);
@@ -443,6 +523,7 @@ Benchmark RandomUse()
     benchmark.set       = TimeExecutionOf(boost::bind(&RandomUse<std::set<int> >,    repeats, insert, erase_from, erase_length));
     benchmark.vector    = TimeExecutionOf(boost::bind(&RandomUse<std::vector<int> >, repeats, insert, erase_from, erase_length));
     benchmark.list      = TimeExecutionOf(boost::bind(&RandomUse<std::list<int> >,   repeats, insert, erase_from, erase_length));
+    benchmark.multi     = TimeExecutionOf(boost::bind(&RandomUse<multi_index>,       repeats, insert, erase_from, erase_length));
     benchmark.skip_list = TimeExecutionOf(boost::bind(&RandomUse<skip_list<int> >,   repeats, insert, erase_from, erase_length));
 
     return benchmark;
@@ -474,9 +555,9 @@ TEST_CASE( "skip_list/benchmarks", "" )
     benchmarks.push_back(RandomUse());                  Progress();
     
     fprintf(stderr, "\n\n");
-    fprintf(stderr, "+===============================+===========+========+========+========+=========+=========+=========+\n");
-    fprintf(stderr, "|                    test title | skip_list |    set | vector |   list |>   set%% | vector%% |   list%% |\n");
-    fprintf(stderr, "+-------------------------------+-----------+--------+--------+--------+---------+---------+---------+\n");
+    fprintf(stderr, "+===============================+===========+========+========+========+========+=========+=========+=========++=========+\n");
+    fprintf(stderr, "|                    test title | skip_list |    set | vector |   list |  multi |>   set%% | vector%% |   list%% |  multi%% |\n");
+    fprintf(stderr, "+-------------------------------+-----------+--------+--------+--------+--------+---------+---------+---------+---------+\n");
 
     for (size_t n = 0; n < benchmarks.size(); ++n)
     {
@@ -484,16 +565,16 @@ TEST_CASE( "skip_list/benchmarks", "" )
         int set_pc    = b.set    >0 ? int(b.skip_list * 100 / b.set)      : 0;
         int list_pc   = b.list   >0 ? int(b.skip_list * 100 / b.list)     : 0;
         int vector_pc = b.vector >0 ? int(b.skip_list * 100 / b.vector)   : 0;
-        fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld |>%6d%% | %6d%% | %6d%% |\n",
+        int multi_pc =  b.multi  >0 ? int(b.skip_list * 100 / b.multi)    : 0;
+        fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld | %6ld |>%6d%% | %6d%% | %6d%% | %6d%% |\n",
                 b.name.c_str(),
-                b.skip_list,
-                b.set, b.vector, b.list,
-                set_pc, vector_pc, list_pc);
+                b.skip_list, b.set, b.vector, b.list, b.multi,
+                set_pc, vector_pc, list_pc, multi_pc);
         //fprintf(stderr, "|%30s | %9s | %5d%% | %5d%% | %5d%% |\n",
         //        " ",
         //        " ",
         //        set_pc, vector_pc, list_pc);
     }
-    fprintf(stderr, "+===============================+===========+========+========+========+=========+=========+=========+\n");
+    fprintf(stderr, "+===============================+===========+========+========+========+========+=========+=========+=========+=========+\n");
     fprintf(stderr, "\n");
 }

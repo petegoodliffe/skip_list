@@ -1076,9 +1076,8 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove(node_type *node)
     assert_that(node->next[0]);
 
     node->next[0]->prev = node->prev;
-    
+
     // patch up all next pointers
-    // TODO: pull this from "node" instead
     node_type *cur = head;
     unsigned level = 0;
     for (unsigned l = levels; l; )
