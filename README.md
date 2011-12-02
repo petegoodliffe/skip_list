@@ -38,11 +38,12 @@ Compatibility
 -----------------
 
 I have tested this container on:
+
 * Mac OS using Xcode 4.2
 * Windows using Visual Studio 2008
 * Linux using gcc 4.4
 
-I have not yet provided C++11 "move" operations.
+I have not yet provided C++11 "move" or initializer_list operations.
 
 
 Useage notes
