@@ -268,8 +268,11 @@ Benchmark InsertData(std::vector<int> &data, const std::string &name)
     benchmark.multi      = TimeExecutionOf(boost::bind(&InsertIntoMultiIndex, &data, &multi));
     benchmark.skip_list  = TimeExecutionOf(boost::bind(&InsertByValue<goodliffe::skip_list<int> >, &data, &skip_list));
     
-    REQUIRE(std_list.size() == data.size());
-    REQUIRE(std_set.size()  == data.size());
+    REQUIRE(std_list.size()     == data.size());
+    REQUIRE(std_set.size()      == data.size());
+    REQUIRE(std_vector.size()   == data.size());
+    REQUIRE(multi.size()        == data.size());
+    REQUIRE(skip_list.size()    == data.size());
 
     // Sanity test
     //REQUIRE(ContainerIsInOrder(std_set));
@@ -280,34 +283,34 @@ Benchmark InsertData(std::vector<int> &data, const std::string &name)
     return benchmark;
 }
 
-Benchmark InsertRandomOrderedData();
-Benchmark InsertRandomOrderedData()
+Benchmark InsertRandomData(unsigned size);
+Benchmark InsertRandomData(unsigned size)
 {
     std::vector<int> data;
-    FillWithRandomData(10000, data);
+    FillWithRandomData(size, data);
     return InsertData(data, "random order");
 }
 
-Benchmark InsertOrderedData();
-Benchmark InsertOrderedData()
+Benchmark InsertOrderedData(unsigned size);
+Benchmark InsertOrderedData(unsigned size)
 {
     std::vector<int> data;
-    FillWithOrderedData(10000, data);
+    FillWithOrderedData(size, data);
     return InsertData(data, "ordered");
 }
 
-Benchmark InsertReverseOrderedData();
-Benchmark InsertReverseOrderedData()
+Benchmark InsertReverseOrderedData(unsigned size);
+Benchmark InsertReverseOrderedData(unsigned size)
 {
     std::vector<int> data;
-    FillWithReverseOrderedData(10000, data);
+    FillWithReverseOrderedData(size, data);
     return InsertData(data, "reverse");
 }
-Benchmark IterateForwards();
-Benchmark IterateForwards()
+Benchmark IterateForwards(unsigned size);
+Benchmark IterateForwards(unsigned size)
 {
     std::vector<int> data;
-    FillWithRandomData(10000, data);
+    FillWithRandomData(size, data);
     
     std::set<int>    std_set(data.begin(), data.end());
     std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
@@ -326,11 +329,11 @@ Benchmark IterateForwards()
     return benchmark;
 }
 
-Benchmark IterateBackwards();
-Benchmark IterateBackwards()
+Benchmark IterateBackwards(unsigned size);
+Benchmark IterateBackwards(unsigned size)
 {
     std::vector<int> data;
-    FillWithRandomData(10000, data);
+    FillWithRandomData(size, data);
 
     std::set<int>    std_set(data.begin(), data.end());
     std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
@@ -349,11 +352,11 @@ Benchmark IterateBackwards()
     return benchmark;
 }
 
-Benchmark Find();
-Benchmark Find()
+Benchmark Find(unsigned size);
+Benchmark Find(unsigned size)
 {
     std::vector<int> data;
-    FillWithOrderedData(10000, data);
+    FillWithOrderedData(size, data);
     
     std::set<int>    std_set(data.begin(), data.end());
     std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
@@ -387,11 +390,11 @@ typedef boost::multi_index_container
     >
     multi_index_allocator;
 
-Benchmark Allocation();
-Benchmark Allocation()
+Benchmark Allocation(unsigned size);
+Benchmark Allocation(unsigned size)
 {
     std::vector<int> data;
-    FillWithRandomData(10000, data);
+    FillWithRandomData(size, data);
     
     Benchmark benchmark("allocations");
 
@@ -488,25 +491,30 @@ void RandomUse(unsigned total_repeats, const std::vector<int> *insert, const uns
             //s.insert(insert[repeats][n]);
         }
         
-        REQUIRE((erase_from[repeats]+erase_length[repeats]) <= s.size());
+        unsigned efrom   = erase_from[repeats];
+        unsigned elength = erase_length[repeats];
+        if (efrom >= s.size())        efrom   = unsigned(s.size())/2;
+        if (efrom+elength > s.size()) elength = unsigned(s.size())-efrom;
+
+        REQUIRE((efrom+elength) <= s.size());
         
         typename CONTAINER::iterator  si_from = s.begin();
-        std::advance(si_from, erase_from[repeats]);
+        std::advance(si_from, efrom);
         
         typename CONTAINER::iterator  si_to = si_from;
-        std::advance(si_to, erase_length[repeats]);
+        std::advance(si_to, elength);
         
         s.erase(si_from, si_to);
     }
 }
 
-Benchmark RandomUse();
-Benchmark RandomUse()
+Benchmark RandomUse(unsigned insert_size);
+Benchmark RandomUse(unsigned insert_size)
 {
     Benchmark benchmark("general use");
     
     static const unsigned repeats     = 15;
-    static const unsigned insert_size = 4000;
+    //static const unsigned insert_size = 4000;
 
     std::vector<int> insert[repeats];
     unsigned         erase_from[repeats];
@@ -540,19 +548,20 @@ const char *build_type = "Debug";
 const char *build_type = "Release";
 #endif
 
-TEST_CASE( "skip_list/benchmarks", "" )
+void RunBenchmarks(unsigned size);
+void RunBenchmarks(unsigned size)
 {
     std::vector<Benchmark> benchmarks;
 
-    fprintf(stderr, "\nTesting(%s)", build_type);       Progress();
-    benchmarks.push_back(InsertRandomOrderedData());    Progress();
-    benchmarks.push_back(InsertOrderedData());          Progress();
-    benchmarks.push_back(InsertReverseOrderedData());   Progress();
-    benchmarks.push_back(IterateForwards());            Progress();
-    benchmarks.push_back(IterateBackwards());           Progress();
-    benchmarks.push_back(Find());                       Progress();
-    benchmarks.push_back(Allocation());                 Progress();
-    benchmarks.push_back(RandomUse());                  Progress();
+    fprintf(stderr, "\nTesting(%d,%s)", size, build_type);  Progress();
+    benchmarks.push_back(InsertRandomData(size));           Progress();
+    benchmarks.push_back(InsertOrderedData(size));          Progress();
+    benchmarks.push_back(InsertReverseOrderedData(size));   Progress();
+    benchmarks.push_back(IterateForwards(size));            Progress();
+    benchmarks.push_back(IterateBackwards(size));           Progress();
+    benchmarks.push_back(Find(size));                       Progress();
+    benchmarks.push_back(Allocation(size));                 Progress();
+    benchmarks.push_back(RandomUse(size*0.4));              Progress();
     
     fprintf(stderr, "\n\n");
     fprintf(stderr, "+===============================+===========+========+========+========+========+=========+=========+=========++=========+\n");
@@ -577,4 +586,12 @@ TEST_CASE( "skip_list/benchmarks", "" )
     }
     fprintf(stderr, "+===============================+===========+========+========+========+========+=========+=========+=========+=========+\n");
     fprintf(stderr, "\n");
+}
+
+TEST_CASE( "skip_list/benchmarks", "" )
+{
+    for (unsigned size = 10; size < 10001; size *= 10)
+    {
+        RunBenchmarks(size);
+    }
 }
