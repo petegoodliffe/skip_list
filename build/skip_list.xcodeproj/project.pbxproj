@@ -44,13 +44,13 @@
 
 /* Begin PBXFileReference section */
 		C16AEE9C147FA3A100E7977A /* tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tests; sourceTree = BUILT_PRODUCTS_DIR; };
-		C16AEEB3147FA40400E7977A /* catch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = catch.hpp; sourceTree = "<group>"; };
+		C16AEEB3147FA40400E7977A /* catch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = catch.hpp; path = ../tests/catch.hpp; sourceTree = "<group>"; };
 		C16AEEB4147FA40400E7977A /* skip_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = skip_list.h; sourceTree = "<group>"; };
-		C16AEEB5147FA40400E7977A /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
-		C16AEEC314838FF700E7977A /* benchmark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = benchmark.cpp; sourceTree = "<group>"; };
+		C16AEEB5147FA40400E7977A /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test.cpp; path = ../tests/test.cpp; sourceTree = "<group>"; };
+		C16AEEC314838FF700E7977A /* benchmark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = benchmark.cpp; path = ../tests/benchmark.cpp; sourceTree = "<group>"; };
 		C176E0581487917200D90461 /* benchmarks */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = benchmarks; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1DF2EB81488D4BD002DDB47 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
-		C1E1E06D1482C2B40071FEB1 /* get_time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = get_time.h; sourceTree = "<group>"; };
+		C1E1E06D1482C2B40071FEB1 /* get_time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = get_time.h; path = ../tests/get_time.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,12 +74,7 @@
 		C16AEE91147FA3A100E7977A = {
 			isa = PBXGroup;
 			children = (
-				C1DF2EB81488D4BD002DDB47 /* README.md */,
-				C16AEEC314838FF700E7977A /* benchmark.cpp */,
-				C1E1E06D1482C2B40071FEB1 /* get_time.h */,
-				C16AEEB3147FA40400E7977A /* catch.hpp */,
-				C16AEEB4147FA40400E7977A /* skip_list.h */,
-				C16AEEB5147FA40400E7977A /* test.cpp */,
+				C1DF2ECF1488E735002DDB47 /* Source */,
 				C16AEE9D147FA3A100E7977A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -91,6 +86,29 @@
 				C176E0581487917200D90461 /* benchmarks */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C1DF2ECD1488E71B002DDB47 /* tests */ = {
+			isa = PBXGroup;
+			children = (
+				C1E1E06D1482C2B40071FEB1 /* get_time.h */,
+				C16AEEB3147FA40400E7977A /* catch.hpp */,
+				C16AEEC314838FF700E7977A /* benchmark.cpp */,
+				C16AEEB5147FA40400E7977A /* test.cpp */,
+			);
+			name = tests;
+			path = build;
+			sourceTree = "<group>";
+		};
+		C1DF2ECF1488E735002DDB47 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				C16AEEB4147FA40400E7977A /* skip_list.h */,
+				C1DF2EB81488D4BD002DDB47 /* README.md */,
+				C1DF2ECD1488E71B002DDB47 /* tests */,
+			);
+			name = Source;
+			path = ..;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -290,6 +308,7 @@
 					"$(inherited)",
 					"BENCHMARK_WITH_MAIN=1",
 				);
+				HEADER_SEARCH_PATHS = $PROJECT_DIR/..;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -301,6 +320,7 @@
 					"$(inherited)",
 					"BENCHMARK_WITH_MAIN=1",
 				);
+				HEADER_SEARCH_PATHS = $PROJECT_DIR/..;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

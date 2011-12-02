@@ -1,7 +1,7 @@
 a.out
 boost
 
-build
+build/build
 *.mode1v3
 *.pbxuser
 .DS_Store
@@ -11,5 +11,5 @@ project.xcworkspace
 *.ncb
 *.suo
 *.vcproj.*.user
-Debug
-Release
+build/Debug
+build/Release
