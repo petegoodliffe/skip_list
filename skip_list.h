@@ -333,7 +333,6 @@ public:
     void             swap(skip_list_impl &other);
 
     unsigned         new_level();
-    unsigned         level_of(node_type *node) const;
 
     template <typename STREAM>
     void dump(STREAM &stream) const;
@@ -1121,31 +1120,6 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove_all()
         head->next[l] = tail;
     tail->prev = head;
     item_count = 0;
-}
-
-// TODO: this might be removable, if it's not used in remove_between
-template <class T, class Compare, class Allocator, unsigned ML, class LG>
-inline
-unsigned 
-skip_list_impl<T,Compare,Allocator,ML,LG>::level_of(node_type *node) const
-{
-    node_type *cur = head;
-    for (unsigned l = levels; l; )
-    {
-        --l;
-        assert_that(l < cur->level);
-        while (cur->next[l] != tail
-               && detail::less_than_or_equal<Compare>(cur->next[l]->value, node->value))
-        {
-            if (cur->next[l] == node)
-            {
-                return l;
-            }
-            cur = cur->next[l];
-        }
-    }
-    assert_that(false);
-    return 0;
 }
 
 template <class T, class Compare, class Allocator, unsigned ML, class LG>
