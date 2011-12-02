@@ -1300,13 +1300,13 @@ TEST_CASE( "skip_list/comparison with vector", "" )
 //============================================================================
 // checking constructs based on Compare functor
 
-TEST_CASE( "detail/are_equivalent", "" )
+TEST_CASE( "detail/equivalent", "" )
 {
     using namespace goodliffe::detail;
     std::less<int> less_than;
-    REQUIRE(are_equivalent(10, 10, less_than));
-    REQUIRE_FALSE(are_equivalent(10, 11,less_than));
-    REQUIRE_FALSE(are_equivalent(11, 10, less_than));
+    REQUIRE(equivalent(10, 10, less_than));
+    REQUIRE_FALSE(equivalent(10, 11,less_than));
+    REQUIRE_FALSE(equivalent(11, 10, less_than));
 }
 
 TEST_CASE( "detail/less_than_or_equal", "" )
