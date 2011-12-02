@@ -28,14 +28,14 @@ clarity, and my own sanity, I have called it skip_list.
 
 
 Performance
------------------
+-----------
 
 In the test set I include a simple benchmarking test comparing the skip_list against
 other STL data structures for working with an ordered set of data.
 
 
 Compatibility
------------------
+-------------
 
 I have tested this container on:
 
@@ -46,8 +46,8 @@ I have tested this container on:
 I have not yet provided C++11 "move" or initializer_list operations.
 
 
-Useage notes
------------------
+Usage notes
+-----------
 
 The only file you really care about looking at is "skip_list.h". Everything else in
 this directory is supporting gumph. To use this container in your project, just
@@ -57,15 +57,18 @@ In debug builds (if you #define DEBUG) then a number of diagnostcs are enabled
 in the container that may affect performance slightly.
 
 I use the Catch unit test framework to run my tests. The single-header version of
-this is included in the repository.
+this is included in the repository. [Catch]
 
 To compile the benchmarks, I make use of the Boost library. I don't include Boost
-in this repository. The easiest way to use Boost here is to copy to Boost header
+[Boost] in this repository. The easiest way to use Boost here is to copy to Boost header
 file directory (i.e the $BOOST_ROOT/boost directory) into this project directory.
+
+* [Catch] https://github.com/philsquared/Catch
+* [Boost] http://www.boost.org/
 
 
 Documentation
------------------
+-------------
 
 I've documented parts of the source in Doxygen syntax, but I've not gone
 to town with this.
