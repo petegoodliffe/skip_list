@@ -170,8 +170,8 @@ public:
     template <class InputIterator>
     void insert(InputIterator first, InputIterator last);
 
-    //C++11iterator insert(const_iterator pos, std::initializer_list<value_type> ilist);
-    // C++11 emplace
+    //C++11iterator insert(std::initializer_list<value_type> ilist);
+    //C++11emplace
 
     size_type erase(const value_type &value);
     iterator  erase(const_iterator position);
@@ -435,10 +435,7 @@ public:
         { node = node->prev; return *this; }
     self_type operator--(int) // postdecrement
         { self_type old(*this); operator--(); return old; }
-    
-    //size_type operator-(const self_type &other) const
-    //    { return index - other.index; }
-    
+
     const_reference operator*()  { return node->value; }
     const_pointer   operator->() { return node->value; }
     
@@ -452,9 +449,8 @@ public:
     bool operator!=(const const_type &other) const
         { return !operator==(other); }
 
-    // diagnostic
-    const parent_type *get_parent() const { return parent; }
-    const node_type   *get_node()   const { return node; }
+    const parent_type *get_parent() const { return parent; } ///< @internal
+    const node_type   *get_node()   const { return node; }   ///< @internal
 
 private:
     friend class const_iterator;
@@ -492,10 +488,7 @@ public:
         { node = node->prev; return *this; }
     self_type operator--(int) // postdecrement
         { self_type old(*this); operator--(); return old; }
-    
-    //size_type operator-(const self_type &other) const
-    //    { return index - other.index; }
-    
+
     const_reference operator*()  { return node->value; }
     const_pointer   operator->() { return node->value; }
     
@@ -508,10 +501,9 @@ public:
         { return parent == other.parent && node == other.node; }
     bool operator!=(const non_const_type &other) const
         { return !operator==(other); }
-    
-    // diagnostic
-    const parent_type *get_parent() const { return parent; }
-    const node_type   *get_node()   const { return node; }
+
+    const parent_type *get_parent() const { return parent; } ///< @internal
+    const node_type   *get_node()   const { return node; }   ///< @internal
 
 private:
     friend class iterator;
@@ -808,7 +800,7 @@ skip_list<T,Compare,Allocator>::insert(InputIterator first, InputIterator last)
     }
 }
 
-//C++11iterator insert(const_iterator pos, std::initializer_list<value_type> ilist);
+//C++11iterator insert(std::initializer_list<value_type> ilist);
 // C++11 emplace
 
 template <class T, class Compare, class Allocator>
