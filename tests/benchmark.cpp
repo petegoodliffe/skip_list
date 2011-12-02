@@ -278,7 +278,8 @@ Benchmark InsertData(std::vector<int> &data, const std::string &name)
     //REQUIRE(ContainerIsInOrder(std_set));
     //REQUIRE(ContainerIsInOrder(std_list));
     //REQUIRE(ContainerIsInOrder(std_vector));
-    //REQUIRE(ContainerIsInOrder(skip_list));
+    //REQUIRE(ContainerIsInOrder(skip_list));;
+    //REQUIRE(ContainerIsInOrder(multi));
 
     return benchmark;
 }
