@@ -534,7 +534,7 @@ Benchmark RandomUse()
 void Progress();
 void Progress() { fprintf(stderr, "."); }
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 const char *build_type = "Debug";
 #else
 const char *build_type = "Release";

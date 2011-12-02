@@ -241,7 +241,7 @@ namespace std
 //==============================================================================
 #pragma mark - diagnostics
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 #define SKIP_LIST_DIAGNOSTICS 1
 #endif
 
