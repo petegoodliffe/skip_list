@@ -374,17 +374,27 @@ private:
     }
 };
 
+#if 1
+
 template <typename Compare, typename T>
 bool are_equivalent(const T &lhs, const T &rhs)
-{
-    return !Compare()(lhs, rhs) && !Compare()(rhs, lhs);
-}
+    { return !Compare()(lhs, rhs) && !Compare()(rhs, lhs); }
 
 template <typename Compare, typename T>
 bool less_than_or_equal(const T &lhs, const T &rhs)
-{
-    return !Compare()(rhs, lhs);
-}
+    { return !Compare()(rhs, lhs); }
+
+#else
+
+template <typename Compare, typename T>
+bool are_equivalent(const T &lhs, const T &rhs)
+    { return lhs == rhs; }
+
+template <typename Compare, typename T>
+bool less_than_or_equal(const T &lhs, const T &rhs)
+    { return lhs <= rhs; }
+
+#endif
 
 } // namespace detail
 } // namespace goodliffe
