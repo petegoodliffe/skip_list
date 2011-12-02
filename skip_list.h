@@ -441,12 +441,12 @@ public:
     self_type &operator++()
         { node = node->next[0]; return *this; }
     self_type operator++(int) // postincrement
-        { self_type old(*this); operator++(); return old; }
+        { self_type old(*this); node = node->next[0]; return old; }
 
     self_type &operator--()
         { node = node->prev; return *this; }
     self_type operator--(int) // postdecrement
-        { self_type old(*this); operator--(); return old; }
+        { self_type old(*this); node = node->prev; return old; }
 
     const_reference operator*()  { return node->value; }
     const_pointer   operator->() { return node->value; }
@@ -494,12 +494,12 @@ public:
     self_type &operator++()
         { node = node->next[0]; return *this; }
     self_type operator++(int) // postincrement
-        { self_type old(*this); operator++(); return old; }
+        { self_type old(*this); node = node->next[0]; return old; }
 
     self_type &operator--()
         { node = node->prev; return *this; }
     self_type operator--(int) // postdecrement
-        { self_type old(*this); operator--(); return old; }
+        { self_type old(*this); node = node->prev; return old; }
 
     const_reference operator*()  { return node->value; }
     const_pointer   operator->() { return node->value; }
