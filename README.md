@@ -1,8 +1,8 @@
 skip_list
 =========
 
-* Pete Goodliffe
-* pete /at/ goodlfife.net
+Pete Goodliffe (pete /at/ goodlfife.net)
+
 
 This is an STL-style C++ skip list container; a reasonably fast ordered container.
 
@@ -31,8 +31,10 @@ other STL data structures for working with an ordered set of data.
 Compatibility
 -----------------
 
-I have tested this container on Mac OS using Xcode 4.2 and on Windows using
-Visual Studio 2008.
+I have tested this container on:
+* Mac OS using Xcode 4.2
+* Windows using Visual Studio 2008
+* Linux using gcc 4.4
 
 I have not yet provided C++11 "move" operations.
 

@@ -9,10 +9,11 @@
 #include <functional> // for std::less
 #include <iterator>   // for std::reverse_iterator
 #include <utility>    // for std::pair
-#include <cmath>      // for std::frand
+#include <cmath>      // for std::log
+#include <cstdlib>    // for std::rand
 
 //==============================================================================
-#pragma mark - detail
+#pragma mark - internal forward declarations
 
 namespace goodliffe {
 
@@ -32,9 +33,12 @@ namespace detail
               typename LevelGenerator = skip_list_level_generator<NumLevels> >
     class skip_list_impl;
 }
+}
 
 //==============================================================================
 #pragma mark - skip_list
+
+namespace goodliffe {
 
 /// An STL-style skip list container; a reasonably fast ordered container.
 ///
