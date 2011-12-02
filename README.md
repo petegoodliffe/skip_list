@@ -42,6 +42,10 @@ I have not yet provided C++11 "move" operations.
 Useage notes
 -----------------
 
+The only file you really care about looking at is "skip_list.h". Everything else in
+this directory is supporting gumph. To use this container in your project, just
+copy over that file.
+
 In debug builds (if you #define DEBUG) then a number of diagnostcs are enabled
 in the container that may affect performance slightly.
 

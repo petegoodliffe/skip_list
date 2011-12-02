@@ -8,15 +8,18 @@
 #if defined (WIN32) || defined (WIN64)
 #define NOMINMAX
 #include "windows.h"
-#else
+#elif defined(__APPLE__)
 #include <mach/mach_time.h>
+#else
+#include <sys/time.h>
+#include <unistd.h>
 #endif
 
 inline long get_time_ms()
 {
 #if defined (WIN32) || defined (WIN64)
     return GetTickCount();
-#else
+#elif defined(__APPLE__)
     //mach_timebase_info_data_t info;
     //kern_return_t err = mach_timebase_info( &info );
     static double conversion = 0.0;
@@ -33,5 +36,9 @@ inline long get_time_ms()
         }
     }
     return long(mach_absolute_time() * conversion);
+#else
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    return t.tv_sec * 1000 + t.tv_usec/1000; 
 #endif
 }
