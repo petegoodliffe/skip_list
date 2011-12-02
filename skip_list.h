@@ -314,6 +314,7 @@ public:
     typedef T                             value_type;
     typedef typename Allocator::size_type size_type;
     typedef Allocator                     allocator_type;
+    typedef Compare                       compare_type;
     typedef LevelGenerator                generator_type;
 
     static const unsigned num_levels = NumLevels;
@@ -341,6 +342,8 @@ public:
     template <typename STREAM>
     void dump(STREAM &stream) const;
 
+    compare_type less;
+
 private:
     skip_list_impl(const skip_list_impl &other);
     skip_list_impl &operator=(const skip_list_impl &other);
@@ -352,7 +355,7 @@ private:
     node_type      *tail;
     size_type       item_count;
 
-    // TODO - can probably be removed
+    // TODO: can probably be removed
     static size_type nodes_between(node_type *first, node_type *last)
     {
         size_type count = 1;
@@ -380,21 +383,21 @@ private:
 #if 1
 
 template <typename Compare, typename T>
-bool are_equivalent(const T &lhs, const T &rhs)
-    { return !Compare()(lhs, rhs) && !Compare()(rhs, lhs); }
+bool are_equivalent(const T &lhs, const T &rhs, const Compare &less)
+    { return !less(lhs, rhs) && !less(rhs, lhs); }
 
 template <typename Compare, typename T>
-bool less_than_or_equal(const T &lhs, const T &rhs)
-    { return !Compare()(rhs, lhs); }
+bool less_or_equal(const T &lhs, const T &rhs, const Compare &less)
+    { return !less(rhs, lhs); }
 
 #else
 
 template <typename Compare, typename T>
-bool are_equivalent(const T &lhs, const T &rhs)
+bool are_equivalent(const T &lhs, const T &rhs, Compare &less)
     { return lhs == rhs; }
 
 template <typename Compare, typename T>
-bool less_than_or_equal(const T &lhs, const T &rhs)
+bool less_or_equal(const T &lhs, const T &rhs, Compare &less)
     { return lhs <= rhs; }
 
 #endif
@@ -779,7 +782,7 @@ skip_list<T,Compare,Allocator>::insert(const_iterator hint, const value_type &va
     const node_type *hint_node = hint.get_node();
     const node_type *previous  = hint_node->prev;
     
-    if (!impl.is_valid(previous) || Compare()(value, previous->value))
+    if (!impl.is_valid(previous) || impl.less(value, previous->value))
         return iterator(this,impl.insert(value)); // bad hint, resort to "normal" insert
     else
         return iterator(this,impl.insert(value,const_cast<node_type*>(hint_node)));
@@ -809,7 +812,7 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::erase(const value_type &value)
 {
     node_type *node = impl.find(value);
-    if (impl.is_valid(node) && detail::are_equivalent<Compare>(node->value, value))
+    if (impl.is_valid(node) && detail::are_equivalent(node->value, value, impl.less))
     {
         impl.remove(node);
         return 1;
@@ -868,7 +871,7 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::count(const value_type &value) const
 {
     const node_type *node = impl.find(value);
-    return impl.is_valid(node) && detail::are_equivalent<Compare>(node->value, value);
+    return impl.is_valid(node) && detail::are_equivalent(node->value, value, impl.less);
 }
 
 template <class T, class Compare, class Allocator>
@@ -877,7 +880,7 @@ typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::find(const value_type &value)
 {
     node_type *node = impl.find(value);
-    return impl.is_valid(node) && detail::are_equivalent<Compare>(node->value, value)
+    return impl.is_valid(node) && detail::are_equivalent(node->value, value, impl.less)
         ? iterator(this, node)
         : end();
 }
@@ -888,7 +891,7 @@ typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::find(const value_type &value) const
 {
     const node_type *node = impl.find(value);
-    return impl.is_valid(node) && detail::are_equivalent<Compare>(node->value, value)
+    return impl.is_valid(node) && detail::are_equivalent(node->value, value, impl.less)
         ? const_iterator(this, node)
         : end();
 }
@@ -997,8 +1000,7 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::find(const value_type &value) const
     for (unsigned l = levels; l; )
     {
         --l;
-        while (search->next[l] != tail
-               && detail::less_than_or_equal<Compare>(search->next[l]->value, value))
+        while (search->next[l] != tail && detail::less_or_equal(search->next[l]->value, value, less))
         {
             search = search->next[l];
         }
@@ -1025,8 +1027,7 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
     {
         --l;
         assert_that(l <= insert_point->level);
-        while (insert_point->next[l] != tail
-               && Compare()(insert_point->next[l]->value, value))
+        while (insert_point->next[l] != tail && less(insert_point->next[l]->value, value))
         {
             insert_point = insert_point->next[l];
             assert_that(l <= insert_point->level);
@@ -1052,7 +1053,7 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
 
     ++item_count;
 
-    if (next != tail && detail::are_equivalent<Compare>(next->value, value))
+    if (next != tail && detail::are_equivalent(next->value, value, less))
     {
         remove(new_node);
         new_node = tail;
@@ -1080,7 +1081,7 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove(node_type *node)
         --l;
         assert_that(l < cur->level);
         while (cur->next[l] != tail
-               && detail::less_than_or_equal<Compare>(cur->next[l]->value, node->value))
+               && detail::less_or_equal(cur->next[l]->value, node->value, less))
         {
             if (cur->next[l] == node)
             {
@@ -1213,7 +1214,9 @@ void skip_list_impl<T,Compare,Allocator,ML,LG>::swap(skip_list_impl &other)
 {
     using std::swap;
 
-    swap(alloc,      other.alloc); // might throw? others shouldn't
+    swap(alloc,      other.alloc);
+    swap(less,       other.less);
+    swap(generator,  other.generator);
     swap(levels,     other.levels);
     swap(head,       other.head);
     swap(tail,       other.tail);

@@ -3,7 +3,7 @@
 // Copyright (c) 2011 Pete Goodliffe. All rights reserved
 //============================================================================
 
-// MSVS quietens warnings
+// MSVS: quietens warnings
 #pragma warning (disable : 4068 ) /* disable unknown pragma warnings */
 
 #include "skip_list.h"
@@ -1297,22 +1297,24 @@ TEST_CASE( "skip_list/comparison with vector", "" )
 }
 
 //============================================================================
-// checking requirements on type
+// checking constructs based on Compare functor
 
 TEST_CASE( "detail/are_equivalent", "" )
 {
     using namespace goodliffe::detail;
-    REQUIRE(are_equivalent<std::less<int> >(10, 10));
-    REQUIRE_FALSE(are_equivalent<std::less<int> >(10, 11));
-    REQUIRE_FALSE(are_equivalent<std::less<int> >(11, 10));
+    std::less<int> less_than;
+    REQUIRE(are_equivalent(10, 10, less_than));
+    REQUIRE_FALSE(are_equivalent(10, 11,less_than));
+    REQUIRE_FALSE(are_equivalent(11, 10, less_than));
 }
 
 TEST_CASE( "detail/less_than_or_equal", "" )
 {
     using namespace goodliffe::detail;
-    REQUIRE(less_than_or_equal<std::less<int> >(10, 10));
-    REQUIRE(less_than_or_equal<std::less<int> >(10, 11));
-    REQUIRE_FALSE(less_than_or_equal<std::less<int> >(10, 9));
+    std::less<int> less_than;
+    REQUIRE(less_or_equal(10, 10, less_than));
+    REQUIRE(less_or_equal(10, 11, less_than));
+    REQUIRE_FALSE(less_or_equal(10, 9, less_than));
 }
 
 //============================================================================
@@ -1325,7 +1327,7 @@ struct Value
 
 struct LessValue
 {
-    bool operator()(const Value &lhs, const Value &rhs)
+    bool operator()(const Value &lhs, const Value &rhs) const
         { return lhs.value < rhs.value; }
 };
 
