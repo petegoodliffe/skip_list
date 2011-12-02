@@ -380,23 +380,32 @@ private:
     }
 };
 
+//==============================================================================
+
 #if 1
 
 template <typename Compare, typename T>
-bool are_equivalent(const T &lhs, const T &rhs, const Compare &less)
+inline
+bool equivalent(const T &lhs, const T &rhs, const Compare &less)
     { return !less(lhs, rhs) && !less(rhs, lhs); }
 
 template <typename Compare, typename T>
+inline
 bool less_or_equal(const T &lhs, const T &rhs, const Compare &less)
     { return !less(rhs, lhs); }
 
 #else
 
+// These "simple" versions are left here for efficiency comparison with
+// the versions above.
+
 template <typename Compare, typename T>
-bool are_equivalent(const T &lhs, const T &rhs, Compare &less)
+inline
+bool equivalent(const T &lhs, const T &rhs, Compare &less)
     { return lhs == rhs; }
 
 template <typename Compare, typename T>
+inline
 bool less_or_equal(const T &lhs, const T &rhs, Compare &less)
     { return lhs <= rhs; }
 
@@ -572,7 +581,8 @@ Allocator skip_list<T,Compare,Allocator>::get_allocator() const
 
 template <class T, class Compare, class Allocator>
 inline
-skip_list<T,Compare,Allocator> &skip_list<T,Compare,Allocator>::operator=(const skip_list<T,Compare,Allocator> &other)
+skip_list<T,Compare,Allocator> &
+skip_list<T,Compare,Allocator>::operator=(const skip_list<T,Compare,Allocator> &other)
 {
     assign(other.begin(), other.end());
     return *this;
@@ -812,7 +822,7 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::erase(const value_type &value)
 {
     node_type *node = impl.find(value);
-    if (impl.is_valid(node) && detail::are_equivalent(node->value, value, impl.less))
+    if (impl.is_valid(node) && detail::equivalent(node->value, value, impl.less))
     {
         impl.remove(node);
         return 1;
@@ -871,7 +881,7 @@ typename skip_list<T,Compare,Allocator>::size_type
 skip_list<T,Compare,Allocator>::count(const value_type &value) const
 {
     const node_type *node = impl.find(value);
-    return impl.is_valid(node) && detail::are_equivalent(node->value, value, impl.less);
+    return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less);
 }
 
 template <class T, class Compare, class Allocator>
@@ -880,7 +890,7 @@ typename skip_list<T,Compare,Allocator>::iterator
 skip_list<T,Compare,Allocator>::find(const value_type &value)
 {
     node_type *node = impl.find(value);
-    return impl.is_valid(node) && detail::are_equivalent(node->value, value, impl.less)
+    return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
         ? iterator(this, node)
         : end();
 }
@@ -891,7 +901,7 @@ typename skip_list<T,Compare,Allocator>::const_iterator
 skip_list<T,Compare,Allocator>::find(const value_type &value) const
 {
     const node_type *node = impl.find(value);
-    return impl.is_valid(node) && detail::are_equivalent(node->value, value, impl.less)
+    return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
         ? const_iterator(this, node)
         : end();
 }
@@ -1053,7 +1063,7 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
 
     ++item_count;
 
-    if (next != tail && detail::are_equivalent(next->value, value, less))
+    if (next != tail && detail::equivalent(next->value, value, less))
     {
         remove(new_node);
         new_node = tail;
