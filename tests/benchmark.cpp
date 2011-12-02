@@ -140,9 +140,9 @@ bool operator!=(const TestingAllocator<T1>&, const TestingAllocator<T2>&)
 
 long TimeExecutionOf(const boost::function<void()> &f)
 {
-    const long start = get_time_ms();
+    const long start = get_time_us();
     f();
-    const long end = get_time_ms();
+    const long end = get_time_us();
     return end-start;
 }
 
@@ -587,9 +587,9 @@ void RunBenchmarks(unsigned size)
     benchmarks.push_back(RandomUse(unsigned(size*0.4)));    Progress();
     
     fprintf(stderr, "\n\n");
-    fprintf(stderr, "+===============================+===========+========+========+========+========+=========+=========+=========++=========+\n");
-    fprintf(stderr, "|                    test title | skip_list |    set | vector |   list |  multi |>   set%% | vector%% |   list%% |  multi%% |\n");
-    fprintf(stderr, "+-------------------------------+-----------+--------+--------+--------+--------+---------+---------+---------+---------+\n");
+    fprintf(stderr, "+===============================+===========+==========+==========+==========+==========+=========+=========+=========+=========+\n");
+    fprintf(stderr, "|                    test title | skip_list |      set |   vector |     list |    multi |>   set%% | vector%% |   list%% |  multi%% |\n");
+    fprintf(stderr, "+-------------------------------+-----------+----------+----------+----------+----------+---------+---------+---------+---------+\n");
 
     for (size_t n = 0; n < benchmarks.size(); ++n)
     {
@@ -598,7 +598,7 @@ void RunBenchmarks(unsigned size)
         int list_pc   = b.list   >0 ? int(b.skip_list * 100 / b.list)     : 0;
         int vector_pc = b.vector >0 ? int(b.skip_list * 100 / b.vector)   : 0;
         int multi_pc =  b.multi  >0 ? int(b.skip_list * 100 / b.multi)    : 0;
-        fprintf(stderr, "|%30s | %9ld | %6ld | %6ld | %6ld | %6ld |>%6d%% | %6d%% | %6d%% | %6d%% |\n",
+        fprintf(stderr, "|%30s | %9ld |%9ld |%9ld |%9ld |%9ld |>%6d%% | %6d%% | %6d%% | %6d%% |\n",
                 b.name.c_str(),
                 b.skip_list, b.set, b.vector, b.list, b.multi,
                 set_pc, vector_pc, list_pc, multi_pc);
@@ -607,7 +607,7 @@ void RunBenchmarks(unsigned size)
         //        " ",
         //        set_pc, vector_pc, list_pc);
     }
-    fprintf(stderr, "+===============================+===========+========+========+========+========+=========+=========+=========+=========+\n");
+    fprintf(stderr, "+===============================+===========+==========+==========+==========+==========+=========+=========+=========+=========+\n");
     fprintf(stderr, "\n");
 }
 

@@ -10,6 +10,8 @@
 #include "windows.h"
 #elif defined(__APPLE__)
 #include <mach/mach_time.h>
+#include <sys/time.h>
+#include <unistd.h>
 #else
 #include <sys/time.h>
 #include <unistd.h>
@@ -40,5 +42,17 @@ inline long get_time_ms()
     struct timeval t;
     gettimeofday(&t, NULL);
     return t.tv_sec * 1000 + t.tv_usec/1000; 
+#endif
+}
+
+inline long get_time_us()
+{
+#if defined (WIN32) || defined (WIN64)
+    // TODO: This sucks. We can all see that. :-)
+    return GetTickCount()*1000;
+#else
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    return t.tv_sec * 1000000 + t.tv_usec; 
 #endif
 }
