@@ -355,14 +355,6 @@ private:
     node_type      *tail;
     size_type       item_count;
 
-    // TODO: can probably be removed
-    static size_type nodes_between(node_type *first, node_type *last)
-    {
-        size_type count = 1;
-        while (first != last) { ++count; first = first->next[0]; }
-        return count;
-    }
-
     typedef typename Allocator::template rebind<node_type>::other  node_allocator;
     typedef typename Allocator::template rebind<node_type*>::other node_list_allocator;
     
@@ -1030,6 +1022,11 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
 
+#if SKIP_LIST_DIAGNOSTICS
+    for (unsigned l = 0; l < level; ++l)
+        new_node->next[l] = 0;
+#endif
+
     node_type *insert_point = hint ? hint          : head;
     unsigned   l            = hint ? hint->level+1 : levels;
 
@@ -1056,12 +1053,20 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
     
     // By the time we get here, insert_point is the level 0 node immediately
     // preceding new_node
+    assert_that(insert_point->next[0] == new_node);
     node_type *next = new_node->next[0];
     assert_that(next);
     new_node->prev = insert_point;
     next->prev = new_node;
 
     ++item_count;
+          
+#if SKIP_LIST_DIAGNOSTICS
+      for (unsigned n = 0; n < level; ++n)
+      {
+          assert_that(new_node->next[n] != 0);
+      }
+#endif
 
     if (next != tail && detail::equivalent(next->value, value, less))
     {
@@ -1085,7 +1090,6 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove(node_type *node)
 
     // patch up all next pointers
     node_type *cur = head;
-    unsigned level = 0;
     for (unsigned l = levels; l; )
     {
         --l;
@@ -1095,7 +1099,6 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove(node_type *node)
         {
             if (cur->next[l] == node)
             {
-                if (level == 0) level = l;
                 cur->next[l] = node->next[l];
                 break;
             }
@@ -1139,61 +1142,36 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove_between(node_type *first, node
     assert_that(last != head);
     assert_that(last != tail);
 
-#if 1
-    // TODO: put back faster version
-    last = last->next[0];
-    while (first != last)
-    {
-        node_type *next = first->next[0];
-        remove(first);
-        first = next;
-    }
-#else
-    
-    // find level of "first"
-    const unsigned    level = level_of(first);
-    node_type * const prev  = first-prev;
+    node_type       * const prev         = first->prev;
+    node_type       * const one_past_end = last->next[0];
+    const value_type       &first_value  = first->value;
+    const value_type       &last_value   = last->value;
 
-    node_type *cur = prev;
-    for (unsigned l = 0; l < level; ++l)
-    {
-        // is this always the case?
-        prev->next[l] = last;
-    }
+    // backwards pointer
+    one_past_end->prev = prev;    
 
-/*
+    // forwards pointer
     node_type *cur = head;
     for (unsigned l = levels; l; )
     {
         --l;
-        while (cur->next[l] != tail && cur->next[l]->value <= node->value)
+        assert_that(l < cur->level);
+        while (cur->next[l] != tail && less(cur->next[l]->value, first_value))
         {
-            if (cur->next[l] == node)
-            {
-                cur->next[l] = node->next[l];
-                break;
-            }
             cur = cur->next[l];
         }
+        if (cur->next[l] != tail
+            && detail::less_or_equal(cur->next[l]->value, last_value, less))
+        {
+            // patch up next[l] pointer
+            node_type *end = cur->next[l];
+            while (end != tail && detail::less_or_equal(end->value, last_value, less))
+                end = end->next[l];
+            cur->next[l] = end;
+        }
     }
-*/
-    /*
-    for (unsigned l = 0; l < num_levels; ++l)
-    {
-        node_type *next = last->next[l];
-        assert_that(next);
 
-        prev->next[l] = next;
-        next->prev[l] = prev;
-    }
-    // TODO
-    node_type *prev = first->prev;
-    assert_that(prev);
-    
-    //size_type distance = nodes_between(first, last);
-    //item_count -= distance;
-*/    
-    const node_type *one_past_end = last->next[0];
+    // now delete all the nodes between [first,last]
     while (first != one_past_end)
     {
         node_type *next = first->next[0];
@@ -1202,7 +1180,6 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove_between(node_type *first, node
         item_count--;
         first = next;
     }
-#endif
 }
 
 template <class T, class Compare, class Allocator, unsigned ML, class LG>

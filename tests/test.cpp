@@ -40,6 +40,8 @@ bool operator!=(const Struct &lhs, const Struct &rhs)
 
 //============================================================================
 
+/// Not a full implmentation, just enough to use as a template parameter
+/// in some simple tests.
 template <typename T = int>
 struct MockAllocator : Struct
 {
