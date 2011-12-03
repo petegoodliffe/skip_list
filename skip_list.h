@@ -21,10 +21,8 @@ namespace goodliffe {
 /// Internal namespace for impementation of skip list data structure
 namespace detail
 {
-    template <unsigned NumLevels>
-    class bit_based_skip_list_level_generator;
-    template <unsigned NumLevels>
-    class skip_list_level_generator;
+    template <unsigned NumLevels> class bit_based_skip_list_level_generator;
+    template <unsigned NumLevels> class skip_list_level_generator;
 
     template <typename T,
               typename Compare   = std::less<T>,
@@ -271,10 +269,10 @@ namespace goodliffe {
 namespace detail {
 
 /// Generate a stream of levels, probabilstically chosen.
-/// With a probability of 1/2, return 0.
-/// With 1/4 probability, return 1.
-/// With 1/8 probability, return 2.
-/// And so forth.
+/// - With a probability of 1/2, return 0.
+/// - With 1/4 probability, return 1.
+/// - With 1/8 probability, return 2.
+/// - And so forth.
 template <unsigned NumLevels>
 class skip_list_level_generator
 {
@@ -390,6 +388,8 @@ bool less_or_equal(const T &lhs, const T &rhs, const Compare &less)
 
 // These "simple" versions are left here for efficiency comparison with
 // the versions above.
+// There should be no appriciable difference in performance (at least, for
+// the built-in types).
 
 template <typename Compare, typename T>
 inline
@@ -1022,7 +1022,7 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
 
-#if SKIP_LIST_DIAGNOSTICS
+#if 0 && defined SKIP_LIST_DIAGNOSTICS
     for (unsigned l = 0; l < level; ++l)
         new_node->next[l] = 0;
 #endif
@@ -1061,7 +1061,7 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
 
     ++item_count;
           
-#if SKIP_LIST_DIAGNOSTICS
+#if 0 && defined SKIP_LIST_DIAGNOSTICS
       for (unsigned n = 0; n < level; ++n)
       {
           assert_that(new_node->next[n] != 0);
