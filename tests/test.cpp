@@ -1277,6 +1277,33 @@ TEST_CASE( "skip_list/erase/iterator/object lifetime", "" )
 //============================================================================
 // the mother of all comparison tests
 
+template <typename CONTAINER>
+bool CheckForwardIteration(const CONTAINER &container)
+{
+    REQUIRE_FALSE(container.empty());
+    int last_value = *container.begin();
+    for (typename CONTAINER::const_iterator i = ++container.begin(); i != container.end(); ++i)
+    {
+        //REQUIRE(*i > last_value);
+        if (*i < last_value) return false;
+        last_value = *i;
+    }
+    return true;
+}
+template <typename CONTAINER>
+bool CheckBackwardIteration(const CONTAINER &container)
+{
+    REQUIRE_FALSE(container.empty());
+    int last_value = *container.rbegin();
+    for (typename CONTAINER::const_reverse_iterator i = ++container.rbegin(); i != container.rend(); ++i)
+    {
+        //REQUIRE(*i < last_value);
+        if (*i > last_value) return false;
+        last_value = *i;
+    }
+    return true;
+}
+
 template <typename C1, typename C2>
 inline
 bool CheckEquality(const C1 &c1, const C2 &c2)
@@ -1302,6 +1329,8 @@ TEST_CASE( "skip_list/comparison with vector", "" )
         }
         
         REQUIRE(CheckEquality(s, l));
+        REQUIRE(CheckForwardIteration(l));
+        REQUIRE(CheckBackwardIteration(l));
         
         unsigned erase_from   = unsigned(rand()) % unsigned(s.size()/3);
         unsigned erase_length = unsigned(rand()) % unsigned(s.size()/3);
@@ -1322,6 +1351,8 @@ TEST_CASE( "skip_list/comparison with vector", "" )
         l.erase(li_from, li_to);
         
         REQUIRE(CheckEquality(s, l));
+        REQUIRE(CheckForwardIteration(l));
+        REQUIRE(CheckBackwardIteration(l));
     }
 }
 
