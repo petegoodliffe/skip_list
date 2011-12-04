@@ -12,8 +12,6 @@
 #include <cmath>      // for std::log
 #include <cstdlib>    // for std::rand
 
-#define SKIP_LIST_IMPL_DIAGNOSTICS 1
-
 //==============================================================================
 
 #ifdef _MSC_VER
@@ -247,6 +245,8 @@ namespace std
 
 //==============================================================================
 #pragma mark - diagnostics
+
+//#define SKIP_LIST_IMPL_DIAGNOSTICS 1
 
 #if defined(DEBUG) || defined(_DEBUG) || defined(SKIP_LIST_IMPL_DIAGNOSTICS)
 #define SKIP_LIST_DIAGNOSTICS 1
