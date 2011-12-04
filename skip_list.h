@@ -339,6 +339,7 @@ public:
 
     template <typename STREAM>
     void dump(STREAM &stream) const;
+    bool check() const;
 
     compare_type less;
 
@@ -1245,6 +1246,48 @@ void skip_list_impl<T,Compare,Allocator,ML,LG>::dump(STREAM &s) const
         }
         s << "\n";
     }
+}
+
+// for diagnostics only
+template <class T, class Compare, class Allocator, unsigned ML, class LG>
+inline
+bool skip_list_impl<T,Compare,Allocator,ML,LG>::check() const
+{
+    for (unsigned l = 0; l < levels; ++l)
+    {
+        unsigned count = 0;        
+        const node_type *n = head;
+        
+        while (n != tail)
+        {
+            // if level 0, we check prev pointers
+            if (l == 0 && n->next[l]->prev != n)
+            {
+                assert_that(false && "chain error");
+                return false;
+            }
+            // check values are in order
+            node_type *next = n->next[l];
+            if (n != head && next != tail)
+            {
+                if (!(less(n->value, next->value)))
+                {
+                    assert_that(false && "value order error");
+                    return false;
+                }
+            }
+            if (n != head)
+                ++count;
+            n = next;
+        }
+        
+        if (l == 0 && count != item_count)
+        {
+            assert_that(false && "item count error")
+            return false;
+        }
+    }
+    return true;
 }
 
 //==============================================================================
