@@ -1124,16 +1124,14 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove(node_type *node)
     for (unsigned l = levels; l; )
     {
         --l;
-        assert_that(l < cur->level);
-        while (cur->next[l] != tail
-               && detail::less_or_equal(cur->next[l]->value, node->value, less))
+        assert_that(l <= cur->level);
+        while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
         {
-            if (cur->next[l] == node)
-            {
-                cur->next[l] = node->next[l];
-                break;
-            }
             cur = cur->next[l];
+        }
+        if (cur->next[l] == node)
+        {
+            cur->next[l] = node->next[l];
         }
     }
 
