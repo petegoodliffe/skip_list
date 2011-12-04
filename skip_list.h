@@ -379,7 +379,7 @@ private:
         for (unsigned n = 0; n < level; ++n)
             node->next[n] = 0;
         node->magic = MAGIC_GOOD;
-#enidif
+#endif
         return node;
     }
     void deallocate_node(node_type *node)
