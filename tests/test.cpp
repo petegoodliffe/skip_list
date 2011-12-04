@@ -3,7 +3,10 @@
 // Copyright (c) 2011 Pete Goodliffe. All rights reserved
 //============================================================================
 
-//#define _SCL_SECURE_NO_WARNINGS
+// MSVS complains about using std::equal unless we define thiis.
+// It's a handy warning in the light of all the other evil you can
+// wreak with STL iterators. It's like a post to tie your jelly to.
+#define _SCL_SECURE_NO_WARNINGS
 
 #include "skip_list.h"
 
