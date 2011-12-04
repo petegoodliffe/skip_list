@@ -31,6 +31,13 @@ struct Struct
     Struct(int i_, float f_) : i(i_), f(f_) {}
 };
 
+template <class STREAM>
+inline
+STREAM &operator<<(STREAM &s, const Struct &v)
+    { /*s << v.i << "," << v.f;*/ return s; } // streaming ints and floats fails to compile on MSVS
+inline
+bool operator<(const Struct &lhs, const Struct &rhs)
+{ return lhs.i < rhs.i; }
 inline
 bool operator==(const Struct &lhs, const Struct &rhs)
     { return lhs.i == rhs.i && lhs.f == rhs.f; }
@@ -1166,6 +1173,10 @@ struct Counter
     bool operator<=(const Counter &rhs) const { return value <= rhs.value; }
 };
 
+template <class STREAM>
+STREAM &operator<<(STREAM &s, const Counter &c)
+    { s << "Counter"; return s; }
+
 int Counter::count = 0;
 
 TEST_CASE( "Counter/sanity test", "" )
@@ -1347,6 +1358,10 @@ struct LessValue
     bool operator()(const Value &lhs, const Value &rhs) const
         { return lhs.value < rhs.value; }
 };
+
+template <class STREAM>
+STREAM &operator<<(STREAM &s, const Value &v)
+    { s << v.value; return s; }
 
 /*
 bool operator<(const Value &lhs, const Value &rhs);
