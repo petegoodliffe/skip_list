@@ -325,6 +325,20 @@ TEST_CASE( "skip_list/can't insert same item twice", "" )
     REQUIRE(i == list.end());
 }
 
+TEST_CASE( "skip_list/impl/double insert middle value", "" )
+{
+    skip_list<int> list;
+    
+    list.insert(10);
+    list.insert(30);
+    list.insert(20);
+    REQUIRE(list.size() == 3);
+
+    skip_list<int>::insert_by_value_result r = list.insert(20);
+    REQUIRE(!r.second);
+    REQUIRE(list.size() == 3);
+}
+
 //============================================================================
 // erasing by value
 
