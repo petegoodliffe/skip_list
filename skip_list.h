@@ -1053,8 +1053,9 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
         new_node->next[l] = 0;
 #endif
 
-    node_type *insert_point = hint ? hint          : head;
-    unsigned   l            = hint ? hint->level+1 : levels;
+    const bool good_hint    = is_valid(hint) && hint->level == levels-1;
+    node_type *insert_point = good_hint ? hint        : head;
+    unsigned   l            = levels;
 
     while (l)
     {
