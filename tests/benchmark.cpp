@@ -283,9 +283,17 @@ Benchmark InsertData(std::vector<int> &data, const std::string &name)
     benchmark.skip_list  = TimeExecutionOf(boost::bind(&InsertByValue<goodliffe::skip_list<int> >, &data, &skip_list));
     
     REQUIRE(std_list.size()     == data.size());
-    REQUIRE(std_set.size()      == data.size());
     REQUIRE(std_vector.size()   == data.size());
     REQUIRE(multi.size()        == data.size());
+
+    {
+        // Remove duplcates from data, to allow size checks below to work correctly
+        sort(data.begin(), data.end());
+        std::vector<int>::iterator end = unique(data.begin(), data.end());
+        data.erase(end, data.end());
+    }
+    
+    REQUIRE(std_set.size()      == data.size());
     REQUIRE(skip_list.size()    == data.size());
 
     // Sanity test
