@@ -3,9 +3,7 @@
 // Copyright (c) 2011 Pete Goodliffe. All rights reserved
 //============================================================================
 
-// MSVS: quietens unnecessary warnings
-#pragma warning (disable : 4068 ) /* disable unknown pragma warnings */
-#define _SCL_SECURE_NO_WARNINGS
+//#define _SCL_SECURE_NO_WARNINGS
 
 #include "skip_list.h"
 

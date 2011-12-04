@@ -15,6 +15,13 @@
 #define SKIP_LIST_IMPL_DIAGNOSTICS 1
 
 //==============================================================================
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning (disable : 4068 ) /* disable unknown pragma warnings */
+#endif
+
+//==============================================================================
 #pragma mark - internal forward declarations
 
 namespace goodliffe {
@@ -1374,3 +1381,9 @@ unsigned skip_list_level_generator<ML>::new_level()
 
 } // namespace detail
 } // namespace goodliffe
+
+//==============================================================================
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
