@@ -809,8 +809,10 @@ skip_list<T,Compare,Allocator>::insert(const_iterator hint, const value_type &va
     
     const node_type *hint_node = hint.get_node();
     const node_type *previous  = hint_node->prev;
-    
-    if (!impl.is_valid(previous) || impl.less(value, previous->value))
+
+    // TODO, probably can tidy up
+    if (!impl.is_valid(previous) || impl.less(value, previous->value)
+        || (impl.is_valid(hint_node) && impl.less(value, hint_node->value)))
         return iterator(this,impl.insert(value)); // bad hint, resort to "normal" insert
     else
         return iterator(this,impl.insert(value,const_cast<node_type*>(hint_node)));
