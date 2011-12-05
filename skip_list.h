@@ -1054,13 +1054,8 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
 
-#if 0 && defined SKIP_LIST_DIAGNOSTICS
-    for (unsigned l = 0; l < level; ++l)
-        new_node->next[l] = 0;
-#endif
-
     const bool good_hint    = is_valid(hint) && hint->level == levels-1;
-    node_type *insert_point = good_hint ? hint        : head;
+    node_type *insert_point = good_hint ? hint : head;
     unsigned   l            = levels;
 
     while (l)
@@ -1075,7 +1070,6 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
         
         if (l <= level)
         {
-            assert_that(l <= insert_point->level);
             node_type *next = insert_point->next[l];
             assert_that(next);
         
@@ -1094,13 +1088,14 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::insert(const value_type &value, node_
 
     ++item_count;
           
-#if 0 && defined SKIP_LIST_DIAGNOSTICS
+#if defined SKIP_LIST_IMPL_DIAGNOSTICS
       for (unsigned n = 0; n < level; ++n)
       {
           assert_that(new_node->next[n] != 0);
       }
 #endif
 
+    // Do not allow repeated values in the list
     if (next != tail && detail::equivalent(next->value, value, less))
     {
         remove(new_node);
@@ -1193,7 +1188,7 @@ skip_list_impl<T,Compare,Allocator,ML,LG>::remove_between(node_type *first, node
     // backwards pointer
     one_past_end->prev = prev;    
 
-    // forwards pointer
+    // forwards pointers
     node_type *cur = head;
     for (unsigned l = levels; l; )
     {
@@ -1267,14 +1262,13 @@ template <class STREAM>
 inline
 void skip_list_impl<T,Compare,Allocator,ML,LG>::dump(STREAM &s) const
 {
-    s << "skip_list(size="<<item_count<<",levels=" << levels << ",head->level="<<head->level<<")\n";
+    s << "skip_list(size="<<item_count<<",levels=" << levels << ")\n";
     for (unsigned l = 0; l < levels; ++l)
     {
         s << "  [" << l << "]" ;
         const node_type *n = head;
         while (n)
         {
-            //s << "(" << n->level << ") ";
             assert_that(l <= n->level);
             const node_type *next = n->next[l];
             bool prev_ok = false;
@@ -1299,6 +1293,7 @@ void skip_list_impl<T,Compare,Allocator,ML,LG>::dump(STREAM &s) const
     }
 }
 
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
 // for diagnostics only
 template <class T, class Compare, class Allocator, unsigned ML, class LG>
 inline
@@ -1311,13 +1306,12 @@ bool skip_list_impl<T,Compare,Allocator,ML,LG>::check() const
 
         while (n != tail)
         {
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
             if (n->magic != MAGIC_GOOD)
             {
                 assert_that(false && "bad magic");
                 return false;
             }
-#endif
+
             // if level 0, we check prev pointers
             if (l == 0 && n->next[l]->prev != n)
             {
@@ -1347,6 +1341,7 @@ bool skip_list_impl<T,Compare,Allocator,ML,LG>::check() const
     }
     return true;
 }
+#endif
 
 //==============================================================================
 #pragma mark - skip_list_level_generator
