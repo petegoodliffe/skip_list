@@ -252,42 +252,70 @@ namespace std
 
 //==============================================================================
 
-namespace goodliffe
+namespace goodliffe {
+
+/// A random_access_skip_list is a skip_list variant that provides
+/// O(log N) random access.
+///
+/// That is, it provides relatively fast operator[]
+/// 
+/// This speed comes at the expense of a little extra storage within the
+/// data structure.
+template <typename T,
+          typename Compare        = std::less<T>,
+          typename Allocator      = std::allocator<T>,
+          unsigned NumLevels      = 32,
+          typename LevelGenerator = detail::skip_list_level_generator<NumLevels> >
+class random_access_skip_list :
+    public skip_list<T, Compare, Allocator, NumLevels, LevelGenerator>
 {
-    /// A random_access_skip_list is a skip_list variant that provides
-    /// O(log N) random access.
-    ///
-    /// That is, it provides relatively fast operator[]
-    template <typename T,
-              typename Compare        = std::less<T>,
-              typename Allocator      = std::allocator<T>,
-              unsigned NumLevels      = 32,
-              typename LevelGenerator = detail::skip_list_level_generator<NumLevels> >
-    class random_access_skip_list :
-        public skip_list<T, Compare, Allocator, NumLevels, LevelGenerator>
-    {
-    private:
-        typedef skip_list<T, Compare, Allocator, NumLevels, LevelGenerator>                  parent_type;
+private:
+    typedef skip_list<T, Compare, Allocator, NumLevels, LevelGenerator> parent_type;
 
-    public:
-        using typename parent_type::value_type;
-        using typename parent_type::allocator_type;
-        using typename parent_type::size_type;
-        using typename parent_type::difference_type;
-        using typename parent_type::reference;
-        using typename parent_type::const_reference;
-        using typename parent_type::pointer;
-        using typename parent_type::const_pointer;
-        using typename parent_type::compare;
-        
-        using typename parent_type::iterator;
-        using typename parent_type::const_iterator;
-        using typename parent_type::reverse_iterator;
-        using typename parent_type::const_reverse_iterator;
+public:
 
-        const_reference operator[](unsigned index) const;
-    };
-}
+    //======================================================================
+    // types
+
+    using typename parent_type::value_type;
+    using typename parent_type::allocator_type;
+    using typename parent_type::size_type;
+    using typename parent_type::difference_type;
+    using typename parent_type::reference;
+    using typename parent_type::const_reference;
+    using typename parent_type::pointer;
+    using typename parent_type::const_pointer;
+    using typename parent_type::compare;
+    
+    using typename parent_type::iterator;
+    using typename parent_type::const_iterator;
+    using typename parent_type::reverse_iterator;
+    using typename parent_type::const_reverse_iterator;
+    
+    //======================================================================
+    // lifetime management
+    
+    explicit random_access_skip_list(const Allocator &alloc = Allocator())
+        : parent_type(alloc) {}
+    
+    template <class InputIterator>
+    random_access_skip_list(InputIterator first, InputIterator last, const Allocator &alloc = Allocator())
+        : parent_type(first, last, alloc) {}
+    
+    random_access_skip_list(const random_access_skip_list &other)
+        : parent_type(other) {}
+    random_access_skip_list(const random_access_skip_list &other, const Allocator &alloc)
+        : parent_type(other, alloc) {}
+    
+    // C++11
+    //random_access_skip_list(const skip_list &&other);
+    //random_access_skip_list(const skip_list &&other, const Allocator &alloc);
+    //random_access_skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
+
+    const_reference operator[](unsigned index) const;
+};
+
+} // namespace goodliffe
 
 //==============================================================================
 #pragma mark - diagnostics
