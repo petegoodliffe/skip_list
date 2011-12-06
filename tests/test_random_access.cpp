@@ -37,3 +37,18 @@ TEST_CASE( "random_access_skip_list/can call basic methods from skip_list", "" )
     REQUIRE(list.begin() == list.end());
     REQUIRE(list.rbegin() == list.rend());
 }
+
+TEST_CASE( "random_access_skip_list/add items", "" )
+{
+    random_access_skip_list<int> list;
+    list.insert(0);
+    list.insert(1);
+    list.insert(2);
+    list.insert(3);
+    list.insert(4);
+    list.insert(5);
+    
+    REQUIRE(list.size() == 6);
+    
+    REQUIRE(list[0] == 0);
+}

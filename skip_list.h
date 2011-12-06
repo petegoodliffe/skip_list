@@ -1044,6 +1044,7 @@ inline
 typename random_access_skip_list<T,C,A,NL,LG>::const_reference
 random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
 {
+    
     // TODO
     return parent_type::front();
 }
@@ -1077,11 +1078,10 @@ struct skip_list_node_traits
         NodeType *node = NodeAllocator(alloc).allocate(1, (void*)0);
         node->next  = ListAllocator(alloc).allocate(level+1, (void*)0);
         node->level = level;
-    #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        for (unsigned n = 0; n < level; ++n)
-            node->next[n] = 0;
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+        for (unsigned n = 0; n < level; ++n) node->next[n] = 0;
         node->magic = MAGIC_GOOD;
-    #endif
+#endif
         return node;
     }
     template <typename Allocator>
@@ -1090,23 +1090,20 @@ struct skip_list_node_traits
     {
         typedef typename Allocator::template rebind<NodeType>::other NodeAllocator;
         typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
-    #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->magic == MAGIC_GOOD);
         node->magic = MAGIC_BAD;
-        for (unsigned n = 0; n < node->level; ++n)
-            node->next[n] = 0;
+        for (unsigned n = 0; n < node->level; ++n) node->next[n] = 0;
         node->prev = 0;
-    #endif
+#endif
         ListAllocator(alloc).deallocate(node->next, node->level+1);
         NodeAllocator(alloc).deallocate(node, 1);
     }
 
-    template <typename Allocator>
     static
     void increment_span(NodeType *node, unsigned level)
     {
     }
-    template <typename Allocator>
     static
     void decrement_span(NodeType *node, unsigned level)
     {
@@ -1133,7 +1130,8 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
         node->next  = ListAllocator(alloc).allocate(level+1, (void*)0);
         node->span  = SpanAllocator(alloc).allocate(level+1, (void*)0);
         node->level = level;
-        for (unsigned n = 0; n < level; ++n)
+        node->span[0] = 1;
+        for (unsigned n = 1; n < level; ++n)
             node->span[n] = 0;
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         for (unsigned n = 0; n < level; ++n)
@@ -1160,23 +1158,23 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
         NodeAllocator(alloc).deallocate(node, 1);
     }
 
-    template <typename Allocator>
     static
     void increment_span(NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->level < level);
 #endif
-        ++node->span[level];
+        if (level)
+            ++node->span[level];
     }
-    template <typename Allocator>
     static
     void decrement_span(NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->level < level);
 #endif
-        --node->span[level];
+        if (level)
+            --node->span[level];
     }
 };
 
@@ -1259,6 +1257,7 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
             insert_point = insert_point->next[l];
             assert_that(l <= insert_point->level);
         }
+        if (l) skip_list_node_traits<node_type>::increment_span(insert_point, l);
         
         if (l <= level)
         {
@@ -1322,6 +1321,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove(node_type *node)
         {
             cur = cur->next[l];
         }
+        if (l) skip_list_node_traits<node_type>::decrement_span(cur, l);
         if (cur->next[l] == node)
         {
             cur->next[l] = node->next[l];
@@ -1393,6 +1393,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
         if (cur->next[l] != tail
             && detail::less_or_equal(cur->next[l]->value, last_value, less))
         {
+            // TODO: span
             // patch up next[l] pointer
             node_type *end = cur->next[l];
             while (end != tail && detail::less_or_equal(end->value, last_value, less))
