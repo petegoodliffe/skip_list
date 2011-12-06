@@ -186,6 +186,10 @@
 				RelativePath="..\tests\test.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\tests\test_random_access.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -193,17 +197,25 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\tests\catch.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\tests\get_time.h"
-				>
-			</File>
-			<File
 				RelativePath="..\skip_list.h"
 				>
 			</File>
+			<Filter
+				Name="tests"
+				>
+				<File
+					RelativePath="..\tests\catch.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\get_time.h"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\test_types.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

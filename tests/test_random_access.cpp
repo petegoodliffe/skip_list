@@ -33,7 +33,7 @@ TEST_CASE( "random_access_skip_list/can call basic methods from skip_list", "" )
     REQUIRE(list.find(10) == list.end());
     REQUIRE(list.count(0) == 0);
     REQUIRE(!list.contains(20));
-    REQUIRE(list.max_size());
+    REQUIRE(list.max_size() > 67890);
     REQUIRE(list.begin() == list.end());
     REQUIRE(list.rbegin() == list.rend());
 }
