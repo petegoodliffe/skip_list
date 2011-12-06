@@ -33,11 +33,11 @@ namespace detail
     template <typename T>         struct skip_list_node;
     
     template <typename T,
-              typename Compare   = std::less<T>,
-              typename Allocator = std::allocator<T>,
-              unsigned NumLevels = 32,
+              typename Compare        = std::less<T>,
+              typename Allocator      = std::allocator<T>,
+              unsigned NumLevels      = 32,
               typename LevelGenerator = skip_list_level_generator<NumLevels>,
-              typename NodeType = skip_list_node<T> >
+              typename NodeType       = skip_list_node<T> >
     class skip_list_impl;
 }
 }
@@ -51,6 +51,8 @@ namespace goodliffe {
 ///
 /// The skip list provides fast searching, and good insert/erase performance.
 /// You can iterate bi-directionally, but do not have full random access.
+///
+/// For full random access, use the random_access_skip_list container.
 ///
 /// TODO:
 ///     * C++11: noexcept decls
@@ -1036,7 +1038,7 @@ enum
 
 /// The functions to allocate and deallocate a skip_list_node
 template <typename NodeType>
-struct skip_list_node_allocation
+struct skip_list_node_traits
 {
     template <typename Allocator>
     static
@@ -1070,6 +1072,17 @@ struct skip_list_node_allocation
         ListAllocator(alloc).deallocate(node->next, node->level+1);
         NodeAllocator(alloc).deallocate(node, 1);
     }
+
+    template <typename Allocator>
+    static
+    void increment_span(NodeType *node, unsigned level)
+    {
+    }
+    template <typename Allocator>
+    static
+    void decrement_span(NodeType *node, unsigned level)
+    {
+    }
 };
 
 //==============================================================================
@@ -1077,7 +1090,7 @@ struct skip_list_node_allocation
 /// Partial specialisation for skip_list_node_with_span
 /// (also intialises all spans to zero)
 template <typename T>
-struct skip_list_node_allocation<skip_list_node_with_span<T> >
+struct skip_list_node_traits<skip_list_node_with_span<T> >
 {
     typedef skip_list_node_with_span<T> NodeType;
 
@@ -1118,6 +1131,25 @@ struct skip_list_node_allocation<skip_list_node_with_span<T> >
         ListAllocator(alloc).deallocate(node->next, node->level+1);
         NodeAllocator(alloc).deallocate(node, 1);
     }
+
+    template <typename Allocator>
+    static
+    void increment_span(NodeType *node, unsigned level)
+    {
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+        assert_that(node->level < level);
+#endif
+        ++node->span[level];
+    }
+    template <typename Allocator>
+    static
+    void decrement_span(NodeType *node, unsigned level)
+    {
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+        assert_that(node->level < level);
+#endif
+        --node->span[level];
+    }
 };
 
 //==============================================================================
@@ -1127,8 +1159,8 @@ inline
 skip_list_impl<T,C,A,NL,LG,N>::skip_list_impl(const allocator_type &alloc_)
 :   alloc(alloc_),
     levels(0),
-    head(skip_list_node_allocation<node_type>::allocate(num_levels, alloc)),
-    tail(skip_list_node_allocation<node_type>::allocate(num_levels, alloc)),
+    head(skip_list_node_traits<node_type>::allocate(num_levels, alloc)),
+    tail(skip_list_node_traits<node_type>::allocate(num_levels, alloc)),
     item_count(0)
 {
     for (unsigned n = 0; n < num_levels; n++)
@@ -1145,8 +1177,8 @@ inline
 skip_list_impl<T,C,A,NL,LG,N>::~skip_list_impl()
 {
     remove_all();
-    skip_list_node_allocation<node_type>::deallocate(head, alloc);
-    skip_list_node_allocation<node_type>::deallocate(tail, alloc);
+    skip_list_node_traits<node_type>::deallocate(head, alloc);
+    skip_list_node_traits<node_type>::deallocate(tail, alloc);
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
@@ -1181,7 +1213,7 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
 {
     const unsigned level = new_level();
 
-    node_type *new_node = skip_list_node_allocation<node_type>::allocate(level, alloc);
+    node_type *new_node = skip_list_node_traits<node_type>::allocate(level, alloc);
     assert_that(new_node);
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
@@ -1269,7 +1301,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove(node_type *node)
     }
 
     alloc.destroy(&node->value);
-    skip_list_node_allocation<node_type>::deallocate(node, alloc);
+    skip_list_node_traits<node_type>::deallocate(node, alloc);
 
     item_count--;
     
@@ -1288,7 +1320,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_all()
     {
         node_type *next = node->next[0];
         alloc.destroy(&node->value);
-        skip_list_node_allocation<node_type>::deallocate(node, alloc);
+        skip_list_node_traits<node_type>::deallocate(node, alloc);
         node = next;
     }
 
@@ -1346,7 +1378,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
     {
         node_type *next = first->next[0];
         alloc.destroy(&first->value);
-        skip_list_node_allocation<node_type>::deallocate(first, alloc);
+        skip_list_node_traits<node_type>::deallocate(first, alloc);
         item_count--;
         first = next;
     }
