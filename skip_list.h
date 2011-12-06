@@ -255,7 +255,7 @@ namespace goodliffe
     /// A random_access_skip_list is a skip_list variant that provides
     /// O(log N) random access.
     ///
-    /// That is, it provides relatively faster operator[]
+    /// That is, it provides relatively fast operator[]
     template <typename T,
               typename Compare        = std::less<T>,
               typename Allocator      = std::allocator<T>,
@@ -264,7 +264,26 @@ namespace goodliffe
     class random_access_skip_list :
         public skip_list<T, Compare, Allocator, NumLevels, LevelGenerator>
     {
+    private:
+        typedef skip_list<T, Compare, Allocator, NumLevels, LevelGenerator>                  parent_type;
+
     public:
+        using typename parent_type::value_type;
+        using typename parent_type::allocator_type;
+        using typename parent_type::size_type;
+        using typename parent_type::difference_type;
+        using typename parent_type::reference;
+        using typename parent_type::const_reference;
+        using typename parent_type::pointer;
+        using typename parent_type::const_pointer;
+        using typename parent_type::compare;
+        
+        using typename parent_type::iterator;
+        using typename parent_type::const_iterator;
+        using typename parent_type::reverse_iterator;
+        using typename parent_type::const_reverse_iterator;
+
+        const_reference operator[](unsigned index) const;
     };
 }
 
@@ -984,6 +1003,22 @@ void std::swap(goodliffe::skip_list<T,C,A,NL,LG,SLT> &lhs, goodliffe::skip_list<
 {
     lhs.swap(rhs);
 }
+
+//==============================================================================
+#pragma mark - random_access_skip_list_impl
+
+namespace goodliffe {
+
+template <class T, class C, class A, unsigned NL, class LG>
+inline
+typename random_access_skip_list<T,C,A,NL,LG>::const_reference
+random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
+{
+    // TODO
+    return parent_type::front();
+}
+
+} // namespace goodliffe
 
 //==============================================================================
 #pragma mark - skip_list_impl
