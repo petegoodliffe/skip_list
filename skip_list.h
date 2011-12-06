@@ -249,6 +249,26 @@ namespace std
 }
 
 //==============================================================================
+
+namespace goodliffe
+{
+    /// A random_access_skip_list is a skip_list variant that provides
+    /// O(log N) random access.
+    ///
+    /// That is, it provides relatively faster operator[]
+    template <typename T,
+              typename Compare        = std::less<T>,
+              typename Allocator      = std::allocator<T>,
+              unsigned NumLevels      = 32,
+              typename LevelGenerator = detail::skip_list_level_generator<NumLevels> >
+    class random_access_skip_list :
+        public skip_list<T, Compare, Allocator, NumLevels, LevelGenerator>
+    {
+    public:
+    };
+}
+
+//==============================================================================
 #pragma mark - diagnostics
 
 //#define SKIP_LIST_IMPL_DIAGNOSTICS 1
