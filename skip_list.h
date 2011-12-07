@@ -33,12 +33,7 @@ namespace detail
     template <typename T>         struct skip_list_node;
     template <typename T>         struct skip_list_node_with_span;
     
-    template <typename T,
-              typename Compare        = std::less<T>,
-              typename Allocator      = std::allocator<T>,
-              unsigned NumLevels      = 32,
-              typename LevelGenerator = skip_list_level_generator<NumLevels>,
-              typename NodeType       = skip_list_node<T> >
+    template <typename T,typename C,typename A,unsigned NL,typename LG,typename N>
     class skip_list_impl;
 }
 }
