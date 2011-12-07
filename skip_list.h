@@ -1089,7 +1089,11 @@ inline
 typename random_access_skip_list<T,C,A,NL,LG>::const_reference
 random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
 {
-    node_type *node = impl.at(index);
+    const node_type *node = impl.at(index);
+    assert_that(impl.is_valid(node));
+    // remove this check in release
+    static const value_type meh = value_type();
+    return impl.is_valid(node) ? node->value : meh;
     return node->value;
 }
 
@@ -1124,7 +1128,7 @@ struct skip_list_node_traits
         node->next  = ListAllocator(alloc).allocate(level+1, (void*)0);
         node->level = level;
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        for (unsigned n = 0; n < level; ++n) node->next[n] = 0;
+        for (unsigned n = 0; n <= level; ++n) node->next[n] = 0;
         node->magic = MAGIC_GOOD;
 #endif
         return node;
@@ -1136,26 +1140,16 @@ struct skip_list_node_traits
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->magic == MAGIC_GOOD);
         node->magic = MAGIC_BAD;
-        for (unsigned n = 0; n < node->level; ++n) node->next[n] = 0;
+        for (unsigned n = 0; n <= node->level; ++n) node->next[n] = 0;
         node->prev = 0;
 #endif
         ListAllocator(alloc).deallocate(node->next, node->level+1);
         NodeAllocator(alloc).deallocate(node, 1);
     }
 
-    static
-    inline
-    void increment_span(NodeType *node, unsigned level)
-    {
-    }
-    static
-    inline
-    void decrement_span(NodeType *node, unsigned level)
-    {
-    }
-    static
-    inline
-    unsigned span(const NodeType *node, unsigned level) { return 0; }
+    static void increment_span(NodeType *node, unsigned level) {}
+    static void decrement_span(NodeType *node, unsigned level) {}
+    static unsigned span(const NodeType *node, unsigned level) { return 0; }
 };
 
 //==============================================================================
@@ -1178,12 +1172,9 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
         node->next  = ListAllocator(alloc).allocate(level+1, (void*)0);
         node->span  = SpanAllocator(alloc).allocate(level+1, (void*)0);
         node->level = level;
-        node->span[0] = 1;
-        for (unsigned n = 1; n < level; ++n)
-            node->span[n] = 0;
+        for (unsigned n = 0; n <= level; ++n) node->span[n] = 1;
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        for (unsigned n = 0; n < level; ++n)
-            node->next[n] = 0;
+        for (unsigned n = 0; n <= level; ++n) node->next[n] = 0;
         node->magic = MAGIC_GOOD;
 #endif
         return node;
@@ -1198,8 +1189,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->magic == MAGIC_GOOD);
         node->magic = MAGIC_BAD;
-        for (unsigned n = 0; n < node->level; ++n)
-            node->next[n] = 0;
+        for (unsigned n = 0; n <= node->level; ++n) node->next[n] = 0;
         node->prev = 0;
 #endif
         SpanAllocator(alloc).deallocate(node->span, node->level+1);
@@ -1214,6 +1204,8 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->level < level);
 #endif
+        
+        // Level 0 always has a span of 1
         if (level)
             ++(node->span[level]);
     }
@@ -1229,7 +1221,13 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
     }
     static
     inline
-    unsigned span(const NodeType *node, unsigned level) { return node->span[level]; }
+    unsigned span(const NodeType *node, unsigned level)
+    {
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+        assert_that(node->level < level);
+#endif
+        return node->span[level];
+    }
 };
 
 //==============================================================================
@@ -1551,7 +1549,7 @@ void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
             if (is_valid(n))
                 s << node_traits::span(n, l) << ":" << n->value;
             else
-                s << "*";
+                s << node_traits::span(n, l) << "*";
             
             if (n != tail)
             {
