@@ -31,6 +31,7 @@ namespace detail
     template <unsigned NumLevels> class bit_based_skip_list_level_generator;
     template <unsigned NumLevels> class skip_list_level_generator;
     template <typename T>         struct skip_list_node;
+    template <typename T>         struct skip_list_node_with_span;
     
     template <typename T,
               typename Compare        = std::less<T>,
@@ -267,10 +268,27 @@ template <typename T,
           unsigned NumLevels      = 32,
           typename LevelGenerator = detail::skip_list_level_generator<NumLevels> >
 class random_access_skip_list :
-    public skip_list<T, Compare, Allocator, NumLevels, LevelGenerator>
+    public skip_list
+        <
+            T, Compare, Allocator, NumLevels, LevelGenerator,
+            typename detail::skip_list_impl
+                <
+                    T,Compare,Allocator,NumLevels,LevelGenerator,
+                    detail::skip_list_node_with_span<T>
+                >
+        >
 {
 private:
-    typedef skip_list<T, Compare, Allocator, NumLevels, LevelGenerator> parent_type;
+    typedef skip_list
+        <
+            T, Compare, Allocator, NumLevels, LevelGenerator,
+            typename detail::skip_list_impl
+                <
+                    T,Compare,Allocator,NumLevels,LevelGenerator,
+                    detail::skip_list_node_with_span<T> 
+                >
+        >
+        parent_type;
 
 protected:
     using typename parent_type::impl_type;
@@ -393,9 +411,17 @@ struct skip_list_node
     
 template <typename T>
 struct skip_list_node_with_span
-    : public skip_list_node<T>
 {
-    unsigned *span; ///< effectively unsigned span[level+1];
+    typedef skip_list_node_with_span<T> self_type;
+    
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+    unsigned    magic;
+#endif
+    T           value;
+    unsigned    level;
+    self_type  *prev;
+    self_type **next; ///< effectively node_type *next[level+1];
+    unsigned   *span; ///< effectively unsigned span[level+1];
 };
 
 /// Internal implementation of skip_list data structure and methods for
@@ -416,7 +442,7 @@ public:
     typedef Allocator                     allocator_type;
     typedef Compare                       compare_type;
     typedef LevelGenerator                generator_type;
-    typedef skip_list_node<T>             node_type;
+    typedef NodeType                      node_type;
 
     static const unsigned num_levels = NumLevels;
 
@@ -1057,7 +1083,7 @@ random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
 } // namespace goodliffe
 
 //==============================================================================
-#pragma mark - skip_list_impl
+#pragma mark - skip_list_node_traits
 
 namespace goodliffe {
 namespace detail {
@@ -1192,6 +1218,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
 };
 
 //==============================================================================
+#pragma mark - skip_list_impl
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
