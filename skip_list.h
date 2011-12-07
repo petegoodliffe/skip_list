@@ -1076,6 +1076,7 @@ struct skip_list_node_traits
 {
     template <typename Allocator>
     static
+    inline
     NodeType *allocate(unsigned level, Allocator &alloc)
     {
         typedef typename Allocator::template rebind<NodeType>::other NodeAllocator;
@@ -1091,6 +1092,7 @@ struct skip_list_node_traits
     }
     template <typename Allocator>
     static
+    inline
     void deallocate(NodeType *node, Allocator &alloc)
     {
         typedef typename Allocator::template rebind<NodeType>::other NodeAllocator;
@@ -1106,10 +1108,12 @@ struct skip_list_node_traits
     }
 
     static
+    inline
     void increment_span(NodeType *node, unsigned level)
     {
     }
     static
+    inline
     void decrement_span(NodeType *node, unsigned level)
     {
     }
@@ -1126,6 +1130,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
 
     template <typename Allocator>
     static
+    inline
     NodeType *allocate(unsigned level, Allocator &alloc)
     {
         typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
@@ -1146,6 +1151,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
         return node;    }
     template <typename Allocator>
     static
+    inline
     void deallocate(NodeType *node, Allocator &alloc)
     {
         typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
@@ -1164,6 +1170,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
     }
 
     static
+    inline
     void increment_span(NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
@@ -1173,6 +1180,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
             ++node->span[level];
     }
     static
+    inline
     void decrement_span(NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS

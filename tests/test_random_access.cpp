@@ -51,4 +51,5 @@ TEST_CASE( "random_access_skip_list/add items", "" )
     REQUIRE(list.size() == 6);
     
     REQUIRE(list[0] == 0);
+    //REQUIRE(list[1] == 1);
 }
