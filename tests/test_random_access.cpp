@@ -50,6 +50,24 @@ TEST_CASE( "random_access_skip_list/add items", "" )
     
     REQUIRE(list.size() == 6);
     
+    list.dump(std::cerr);
+    
     REQUIRE(list[0] == 0);
-    //REQUIRE(list[1] == 1);
+    REQUIRE(list[1] == 1);
+    REQUIRE(list[2] == 2);
+    REQUIRE(list[3] == 3);
+    REQUIRE(list[4] == 4);
+    REQUIRE(list[5] == 5);
 }
+
+TEST_CASE( "random_access_skip_list/non members", "" )
+{
+    random_access_skip_list<int> list1, list2;
+    list1.insert(1);
+    list2.insert(2);
+    
+    REQUIRE(list1 != list2);
+    REQUIRE_FALSE(list1 == list2);
+}
+
+// allocation test

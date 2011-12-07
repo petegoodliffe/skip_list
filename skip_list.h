@@ -1155,6 +1155,9 @@ struct skip_list_node_traits
     void decrement_span(NodeType *node, unsigned level)
     {
     }
+    static
+    inline
+    unsigned span(const NodeType *node, unsigned level) { return 0; }
 };
 
 //==============================================================================
@@ -1215,7 +1218,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
         assert_that(node->level < level);
 #endif
         if (level)
-            ++node->span[level];
+            ++(node->span[level]);
     }
     static
     inline
@@ -1225,8 +1228,11 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
         assert_that(node->level < level);
 #endif
         if (level)
-            --node->span[level];
+            --(node->span[level]);
     }
+    static
+    inline
+    unsigned span(const NodeType *node, unsigned level) { return node->span[level]; }
 };
 
 //==============================================================================
@@ -1289,7 +1295,23 @@ inline
 typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
 skip_list_impl<T,C,A,NL,LG,N>::at(unsigned index) const
 {
-    return head->next[0];
+    // only compiles for node_type where "node->span" is valid
+    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));
+
+    unsigned   l    = levels;
+    node_type *node = head;
+
+    while (l)
+    {
+        --l;
+        if (node->span[l] <= index)
+        {
+            index -= node->span[l];
+            node = node->next[l];
+        }
+    }
+
+    return node;
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
@@ -1317,7 +1339,6 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
             insert_point = insert_point->next[l];
             assert_that(l <= insert_point->level);
         }
-        if (l) skip_list_node_traits<node_type>::increment_span(insert_point, l);
         
         if (l <= level)
         {
@@ -1326,6 +1347,7 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
         
             new_node->next[l]     = next;
             insert_point->next[l] = new_node;
+            //skip_list_node_traits<node_type>::increment_span(insert_point, l);
         }
     }
     
@@ -1381,9 +1403,9 @@ skip_list_impl<T,C,A,NL,LG,N>::remove(node_type *node)
         {
             cur = cur->next[l];
         }
-        if (l) skip_list_node_traits<node_type>::decrement_span(cur, l);
         if (cur->next[l] == node)
         {
+            skip_list_node_traits<node_type>::decrement_span(cur, l);
             cur->next[l] = node->next[l];
         }
     }
@@ -1530,7 +1552,7 @@ void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
                 if (next->prev == n) prev_ok = true;
             }
             if (is_valid(n))
-                s << n->value;
+                s << skip_list_node_traits<node_type>::span(n, l) << ":" << n->value;
             else
                 s << "*";
             
