@@ -368,6 +368,18 @@ void pg_assertion_break() { fprintf(stderr, "**** place a breakpoint at pg_asser
 
 #endif
 
+namespace goodliffe {
+namespace detail {
+
+template<bool> struct static_assert_that_impl;
+template<> struct static_assert_that_impl<true> {};
+    
+#define static_assert_that(a) \
+    {::goodliffe::detail::static_assert_that_impl<a> foo;(void)foo;}
+
+} // namespace detail
+} // namespace goodliffe
+
 //==============================================================================
 #pragma mark - skip_list_impl declaration
 
