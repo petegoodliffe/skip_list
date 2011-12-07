@@ -469,7 +469,7 @@ public:
     node_type       *one_past_end()                        { return tail; }
     const node_type *one_past_end() const                  { return tail; }
     node_type       *find(const value_type &value) const;
-    node_type       *at(unsigned index) const;
+    const node_type *at(unsigned index) const;
     node_type       *insert(const value_type &value, node_type *hint = 0);
     void             remove(node_type *value);
     void             remove_all();
@@ -1289,14 +1289,14 @@ skip_list_impl<T,C,A,NL,LG,N>::find(const value_type &value) const
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
-typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
+const typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
 skip_list_impl<T,C,A,NL,LG,N>::at(unsigned index) const
 {
     // only compiles for node_type where "node->span" is valid
     static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));
 
-    unsigned   l    = levels;
-    node_type *node = head;
+    unsigned l = levels;
+    const node_type *node = head;
 
     while (l)
     {
@@ -1344,7 +1344,7 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
         
             new_node->next[l]     = next;
             insert_point->next[l] = new_node;
-            //node_traits::increment_span(insert_point, l);
+            node_traits::increment_span(insert_point, l);
         }
     }
     
