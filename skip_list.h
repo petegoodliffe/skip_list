@@ -1309,6 +1309,7 @@ skip_list_impl<T,C,A,NL,LG,N>::at(unsigned index) const
     return node;
 }
 
+// TODO: Hint is now ignored (has to be, for spans to work)
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
 typename skip_list_impl<T,C,A,NL,LG,N>::node_type*
@@ -1317,58 +1318,46 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
     const unsigned level = new_level();
 
     node_type *new_node = node_traits::allocate(level, alloc);
+    //node_traits::set_all_spans(new_node, item_count+1);
     assert_that(new_node);
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
-
-    const bool good_hint    = is_valid(hint) && hint->level == levels-1;
-    node_type *insert_point = good_hint ? hint : head;
-    unsigned   l            = levels;
-
-    while (l)
-    {
-        --l;
-        assert_that(l <= insert_point->level);
-        while (insert_point->next[l] != tail && less(insert_point->next[l]->value, value))
-        {
-            insert_point = insert_point->next[l];
-            assert_that(l <= insert_point->level);
-        }
-        
-        if (l <= level)
-        {
-            node_type *next = insert_point->next[l];
-            assert_that(next);
-        
-            new_node->next[l]     = next;
-            insert_point->next[l] = new_node;
-            node_traits::increment_span(insert_point, l);
-        }
-    }
     
-    // By the time we get here, insert_point is the level 0 node immediately
-    // preceding new_node
-    assert_that(insert_point->next[0] == new_node);
-    node_type *next = new_node->next[0];
-    assert_that(next);
-    new_node->prev = insert_point;
-    next->prev = new_node;
-
-    ++item_count;
-          
-#if defined SKIP_LIST_IMPL_DIAGNOSTICS
-      for (unsigned n = 0; n < level; ++n)
-      {
-          assert_that(new_node->next[n] != 0);
-      }
-#endif
-
-    // Do not allow repeated values in the list
-    if (next != tail && detail::equivalent(next->value, value, less))
+    node_type *chain[num_levels] = {0};
     {
-        remove(new_node);
-        new_node = tail;
+        node_type *cur = head;
+        unsigned l = num_levels;
+        //size_type index = 0;
+        while (l)
+        {
+            --l;
+            assert_that(l <= cur->level);
+            while (cur->next[l] != tail && less(cur->next[l]->value, value))
+            {
+                //index += insert_point->span[l];
+                cur = cur->next[l];
+                assert_that(l <= cur->level);
+            }
+            chain[l] = cur;
+        }
     }
+
+    // Do not allow repeated values in the list (we could in a "multi_skip_list")
+    {
+        node_type *next = chain[0]->next[0];
+        if (next != tail && detail::equivalent(next->value, value, less))
+            return tail;
+    }
+
+    for (unsigned l = 0; l <= level; ++l)
+    {
+        new_node->next[l] = chain[l]->next[l];
+        chain[l]->next[l] = new_node;
+    }
+    new_node->next[0]->prev = new_node;
+    new_node->prev          = chain[0];
+    
+    ++item_count;
 
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     check();
