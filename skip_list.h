@@ -48,7 +48,8 @@ namespace detail
 
 namespace goodliffe {
 
-/// An STL-style skip list container; a reasonably fast ordered container.
+/// An STL-style skip list container; a reasonably fast associative
+/// ordered container.
 ///
 /// The skip list provides fast searching, and good insert/erase performance.
 /// You can iterate bi-directionally, but do not have full random access.
@@ -436,6 +437,9 @@ struct skip_list_node_with_span
     unsigned   *span; ///< effectively unsigned span[level+1];
 };
 
+template <typename T, typename Allocator>
+struct skip_list_node_traits;
+
 /// Internal implementation of skip_list data structure and methods for
 /// modifying it.
 ///
@@ -486,6 +490,8 @@ public:
     compare_type less;
 
 private:
+    typedef skip_list_node_traits<node_type, Allocator> node_traits;
+
     skip_list_impl(const skip_list_impl &other);
     skip_list_impl &operator=(const skip_list_impl &other);
 
@@ -1109,16 +1115,16 @@ enum
 #endif
 
 /// The functions to allocate and deallocate a skip_list_node
-template <typename NodeType>
+template <typename NodeType, typename Allocator>
 struct skip_list_node_traits
 {
-    template <typename Allocator>
+    typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
+    typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
+
     static
     inline
     NodeType *allocate(unsigned level, Allocator &alloc)
     {
-        typedef typename Allocator::template rebind<NodeType>::other NodeAllocator;
-        typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
         NodeType *node = NodeAllocator(alloc).allocate(1, (void*)0);
         node->next  = ListAllocator(alloc).allocate(level+1, (void*)0);
         node->level = level;
@@ -1128,13 +1134,10 @@ struct skip_list_node_traits
 #endif
         return node;
     }
-    template <typename Allocator>
     static
     inline
     void deallocate(NodeType *node, Allocator &alloc)
     {
-        typedef typename Allocator::template rebind<NodeType>::other NodeAllocator;
-        typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->magic == MAGIC_GOOD);
         node->magic = MAGIC_BAD;
@@ -1164,19 +1167,18 @@ struct skip_list_node_traits
 
 /// Partial specialisation for skip_list_node_with_span
 /// (also intialises all spans to zero)
-template <typename T>
-struct skip_list_node_traits<skip_list_node_with_span<T> >
+template <typename T, typename Allocator>
+struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
 {
-    typedef skip_list_node_with_span<T> NodeType;
+    typedef skip_list_node_with_span<T>                           NodeType;
+    typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
+    typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
+    typedef typename Allocator::template rebind<unsigned>::other  SpanAllocator;
 
-    template <typename Allocator>
     static
     inline
     NodeType *allocate(unsigned level, Allocator &alloc)
     {
-        typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
-        typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
-        typedef typename Allocator::template rebind<unsigned>::other  SpanAllocator;
         NodeType *node = NodeAllocator(alloc).allocate(1, (void*)0);
         node->next  = ListAllocator(alloc).allocate(level+1, (void*)0);
         node->span  = SpanAllocator(alloc).allocate(level+1, (void*)0);
@@ -1189,8 +1191,8 @@ struct skip_list_node_traits<skip_list_node_with_span<T> >
             node->next[n] = 0;
         node->magic = MAGIC_GOOD;
 #endif
-        return node;    }
-    template <typename Allocator>
+        return node;
+    }
     static
     inline
     void deallocate(NodeType *node, Allocator &alloc)
@@ -1243,8 +1245,8 @@ inline
 skip_list_impl<T,C,A,NL,LG,N>::skip_list_impl(const allocator_type &alloc_)
 :   alloc(alloc_),
     levels(0),
-    head(skip_list_node_traits<node_type>::allocate(num_levels, alloc)),
-    tail(skip_list_node_traits<node_type>::allocate(num_levels, alloc)),
+    head(node_traits::allocate(num_levels, alloc)),
+    tail(node_traits::allocate(num_levels, alloc)),
     item_count(0)
 {
     for (unsigned n = 0; n < num_levels; n++)
@@ -1261,8 +1263,8 @@ inline
 skip_list_impl<T,C,A,NL,LG,N>::~skip_list_impl()
 {
     remove_all();
-    skip_list_node_traits<node_type>::deallocate(head, alloc);
-    skip_list_node_traits<node_type>::deallocate(tail, alloc);
+    node_traits::deallocate(head, alloc);
+    node_traits::deallocate(tail, alloc);
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
@@ -1289,7 +1291,7 @@ skip_list_impl<T,C,A,NL,LG,N>::find(const value_type &value) const
     }
     return search;
 }
-    
+
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
 typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
@@ -1321,7 +1323,7 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
 {
     const unsigned level = new_level();
 
-    node_type *new_node = skip_list_node_traits<node_type>::allocate(level, alloc);
+    node_type *new_node = node_traits::allocate(level, alloc);
     assert_that(new_node);
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
@@ -1347,7 +1349,7 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
         
             new_node->next[l]     = next;
             insert_point->next[l] = new_node;
-            //skip_list_node_traits<node_type>::increment_span(insert_point, l);
+            //node_traits::increment_span(insert_point, l);
         }
     }
     
@@ -1405,13 +1407,13 @@ skip_list_impl<T,C,A,NL,LG,N>::remove(node_type *node)
         }
         if (cur->next[l] == node)
         {
-            skip_list_node_traits<node_type>::decrement_span(cur, l);
+            node_traits::decrement_span(cur, l);
             cur->next[l] = node->next[l];
         }
     }
 
     alloc.destroy(&node->value);
-    skip_list_node_traits<node_type>::deallocate(node, alloc);
+    node_traits::deallocate(node, alloc);
 
     item_count--;
     
@@ -1430,7 +1432,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_all()
     {
         node_type *next = node->next[0];
         alloc.destroy(&node->value);
-        skip_list_node_traits<node_type>::deallocate(node, alloc);
+        node_traits::deallocate(node, alloc);
         node = next;
     }
 
@@ -1489,7 +1491,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
     {
         node_type *next = first->next[0];
         alloc.destroy(&first->value);
-        skip_list_node_traits<node_type>::deallocate(first, alloc);
+        node_traits::deallocate(first, alloc);
         item_count--;
         first = next;
     }
@@ -1552,7 +1554,7 @@ void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
                 if (next->prev == n) prev_ok = true;
             }
             if (is_valid(n))
-                s << skip_list_node_traits<node_type>::span(n, l) << ":" << n->value;
+                s << node_traits::span(n, l) << ":" << n->value;
             else
                 s << "*";
             
