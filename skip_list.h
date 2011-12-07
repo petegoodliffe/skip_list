@@ -79,7 +79,7 @@ template <typename T,
           typename SkipListType   = typename detail::skip_list_impl<T,Compare,Allocator,NumLevels,LevelGenerator,detail::skip_list_node<T> > >
 class skip_list
 {
-private:
+protected:
     typedef SkipListType                    impl_type;
     typedef typename impl_type::node_type   node_type;
 
@@ -217,7 +217,7 @@ public:
     template <typename STREAM>
     void dump(STREAM &stream) const { impl.dump(stream); }
 
-private:
+protected:
     friend class iterator;
     friend class const_iterator;
 
@@ -271,6 +271,11 @@ class random_access_skip_list :
 {
 private:
     typedef skip_list<T, Compare, Allocator, NumLevels, LevelGenerator> parent_type;
+
+protected:
+    using typename parent_type::impl_type;
+    using typename parent_type::node_type;
+    using parent_type::impl;
 
 public:
 
@@ -427,6 +432,7 @@ public:
     node_type       *one_past_end()                        { return tail; }
     const node_type *one_past_end() const                  { return tail; }
     node_type       *find(const value_type &value) const;
+    node_type       *at(unsigned index) const;
     node_type       *insert(const value_type &value, node_type *hint = 0);
     void             remove(node_type *value);
     void             remove_all();
@@ -1044,9 +1050,8 @@ inline
 typename random_access_skip_list<T,C,A,NL,LG>::const_reference
 random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
 {
-    
-    // TODO
-    return parent_type::front();
+    node_type *node = impl.at(index);
+    return node->value;
 }
 
 } // namespace goodliffe
@@ -1230,6 +1235,14 @@ skip_list_impl<T,C,A,NL,LG,N>::find(const value_type &value) const
         }
     }
     return search;
+}
+    
+template <class T, class C, class A, unsigned NL, class LG, class N>
+inline
+typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
+skip_list_impl<T,C,A,NL,LG,N>::at(unsigned index) const
+{
+    return head->next[0];
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
