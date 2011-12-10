@@ -127,3 +127,34 @@ bool CheckEquality(const C1 &c1, const C2 &c2)
     if (!std::equal(c1.rbegin(), c1.rend(), c2.rbegin())) return false;
     return true;
 }
+
+//============================================================================
+
+inline
+void FillWithRandomData(size_t size, std::vector<int> &data)
+{
+    data.clear();
+    for (size_t n = 0; n < size; ++n) data.push_back(rand());
+}
+
+inline
+void FillWithOrderedData(size_t size, std::vector<int> &data)
+{
+    data.clear();
+    for (size_t n = 0; n < size; ++n) data.push_back(int(n));
+}
+
+inline
+void FillWithReverseOrderedData(size_t size, std::vector<int> &data)
+{
+    data.clear();
+    for (size_t n = size; n; --n) data.push_back(int(n));
+}
+
+inline
+void SortVectorAndRemoveDuplicates(std::vector<int> &data)
+{
+    sort(data.begin(), data.end());
+    std::vector<int>::iterator end = unique(data.begin(), data.end());
+    data.erase(end, data.end());
+}

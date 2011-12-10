@@ -6,6 +6,7 @@
 #include "skip_list.h"
 
 #include "get_time.h"
+#include "test_types.h"
 
 #include <set>
 #include <list>
@@ -143,25 +144,6 @@ long TimeExecutionOf(const boost::function<void()> &f)
     return end-start;
 }
 
-//============================================================================
-
-void FillWithRandomData(size_t size, std::vector<int> &data)
-{
-    data.clear();
-    for (size_t n = 0; n < size; ++n) data.push_back(rand());
-}
-
-void FillWithOrderedData(size_t size, std::vector<int> &data)
-{
-    data.clear();
-    for (size_t n = 0; n < size; ++n) data.push_back(int(n));
-}
-
-void FillWithReverseOrderedData(size_t size, std::vector<int> &data)
-{
-    data.clear();
-    for (size_t n = size; n; --n) data.push_back(int(n));
-}
 
 //============================================================================
 // test methods
@@ -286,12 +268,8 @@ Benchmark InsertData(std::vector<int> &data, const std::string &name)
     REQUIRE(std_vector.size()   == data.size());
     REQUIRE(multi.size()        == data.size());
 
-    {
-        // Remove duplcates from data, to allow size checks below to work correctly
-        sort(data.begin(), data.end());
-        std::vector<int>::iterator end = unique(data.begin(), data.end());
-        data.erase(end, data.end());
-    }
+    // Remove duplcates from data, to allow size checks below to work correctly
+    SortVectorAndRemoveDuplicates(data);
     
     REQUIRE(std_set.size()      == data.size());
     REQUIRE(skip_list.size()    == data.size());
