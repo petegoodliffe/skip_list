@@ -1368,9 +1368,9 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
             return tail;
     }
 
-    fprintf(stderr, "Inserting index=%lu\n", index);
-    for (unsigned l = 0; l < levels; ++l)
-        fprintf(stderr, "  ch[%u]=%lu\n", l, indexes[l]);
+    //fprintf(stderr, "Inserting index=%lu\n", index);
+    //for (unsigned l = 0; l < levels; ++l)
+    //    fprintf(stderr, "  ch[%u]=%lu\n", l, indexes[l]);
 
     for (unsigned l = 0; l < num_levels; ++l)
     {
