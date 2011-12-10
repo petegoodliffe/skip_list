@@ -82,7 +82,7 @@ TEST_CASE( "random_access_skip_list/add items", "" )
     REQUIRE(list[4] == 4);
 }
 
-TEST_CASE( "random_access_skip_list/non members", "" )
+TEST_CASE( "random_access_skip_list/indexing", "" )
 {
     for (unsigned n = 0; n < 10; ++n)
     {
@@ -94,6 +94,21 @@ TEST_CASE( "random_access_skip_list/non members", "" )
             list.insert(data[m]);
         
         SortVectorAndRemoveDuplicates(data);
+        
+        for (unsigned m = 0 ; m < data.size(); ++m)
+        {
+            REQUIRE(list[m] == data[m]);
+        }
+        
+        // Check that clear puts indexing back to right state so subsequent
+        // insertions are correct
+        list.clear();
+        REQUIRE(list.size() == 0);
+        REQUIRE(list.empty());
+        
+        
+        for (unsigned m = 0 ; m < data.size(); ++m)
+            list.insert(data[data.size()-1-m]);
         
         for (unsigned m = 0 ; m < data.size(); ++m)
         {

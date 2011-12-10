@@ -1452,7 +1452,10 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_all()
     }
 
     for (unsigned l = 0; l < num_levels; ++l)
+    {
         head->next[l] = tail;
+        node_traits::set_span(head, l, 1);
+    }
     tail->prev = head;
     item_count = 0;
         
