@@ -1148,6 +1148,8 @@ struct skip_list_node_traits
     }
 
     static void increment_span(NodeType *node, unsigned level) {}
+    static void set_span(NodeType *node, unsigned level, unsigned span) {}
+    static void set_all_spans(NodeType *node, unsigned span) {}
     static void decrement_span(NodeType *node, unsigned level) {}
     static unsigned span(const NodeType *node, unsigned level) { return 0; }
 };
@@ -1198,7 +1200,6 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
     }
 
     static
-    inline
     void increment_span(NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
@@ -1210,7 +1211,22 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
             ++(node->span[level]);
     }
     static
-    inline
+    void set_span(NodeType *node, unsigned level, unsigned span)
+    {
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+        assert_that(node->level < level);
+#endif
+
+        if (level)
+            node->span[level] = span;
+    }
+    static
+    void set_all_spans(NodeType *node, unsigned span)
+    {
+        for (unsigned n = 0; n < node->level; ++n)
+            node->span[n] = span;
+    }
+    static
     void decrement_span(NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
@@ -1295,11 +1311,12 @@ skip_list_impl<T,C,A,NL,LG,N>::at(unsigned index) const
 
     unsigned l = levels;
     const node_type *node = head;
+    index += 1;
 
     while (l)
     {
         --l;
-        if (node->span[l] <= index)
+        while (node->span[l] <= index)
         {
             index -= node->span[l];
             node = node->next[l];
@@ -1318,27 +1335,29 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
     const unsigned level = new_level();
 
     node_type *new_node = node_traits::allocate(level, alloc);
-    //node_traits::set_all_spans(new_node, item_count+1);
     assert_that(new_node);
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
     
     node_type *chain[num_levels] = {0};
+    size_type  indexes[num_levels] = {0};
+    size_type  index = 0;
+
     {
         node_type *cur = head;
         unsigned l = num_levels;
-        //size_type index = 0;
         while (l)
         {
             --l;
             assert_that(l <= cur->level);
             while (cur->next[l] != tail && less(cur->next[l]->value, value))
             {
-                //index += insert_point->span[l];
+                index += node_traits::span(cur, l);
                 cur = cur->next[l];
                 assert_that(l <= cur->level);
             }
-            chain[l] = cur;
+            chain[l]   = cur;
+            indexes[l] = index;
         }
     }
 
@@ -1349,10 +1368,24 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
             return tail;
     }
 
-    for (unsigned l = 0; l <= level; ++l)
+    fprintf(stderr, "Inserting index=%lu\n", index);
+    for (unsigned l = 0; l < levels; ++l)
+        fprintf(stderr, "  ch[%u]=%lu\n", l, indexes[l]);
+
+    for (unsigned l = 0; l < num_levels; ++l)
     {
-        new_node->next[l] = chain[l]->next[l];
-        chain[l]->next[l] = new_node;
+        if (l > level)
+        {
+            node_traits::increment_span(chain[l], l);
+        }
+        else
+        {
+            new_node->next[l] = chain[l]->next[l];
+            chain[l]->next[l] = new_node;
+            unsigned prev_span = node_traits::span(chain[l], l);
+            node_traits::set_span(chain[l], l, index+1-indexes[l]);
+            node_traits::set_span(new_node, l, prev_span - (index-indexes[l]));
+        }
     }
     new_node->next[0]->prev = new_node;
     new_node->prev          = chain[0];
@@ -1522,7 +1555,7 @@ inline
 void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
 {
     s << "skip_list(size="<<item_count<<",levels=" << levels << ")\n";
-    for (unsigned l = 0; l < levels; ++l)
+    for (unsigned l = 0; l < levels+1; ++l)
     {
         s << "  [" << l << "]" ;
         const node_type *n = head;
@@ -1536,13 +1569,13 @@ void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
                 if (next->prev == n) prev_ok = true;
             }
             if (is_valid(n))
-                s << node_traits::span(n, l) << ":" << n->value;
+                s << n->value << " ";
             else
-                s << node_traits::span(n, l) << "*";
+                s << "* ";
             
             if (n != tail)
             {
-                s << (next ? ">":"|")
+                s << node_traits::span(n, l) << ">"
                   << " "
                   << (prev_ok?"<":"X");
             }

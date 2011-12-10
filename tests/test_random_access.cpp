@@ -41,23 +41,54 @@ TEST_CASE( "random_access_skip_list/can call basic methods from skip_list", "" )
 TEST_CASE( "random_access_skip_list/add items", "" )
 {
     random_access_skip_list<int> list;
-    list.insert(0);
-    list.insert(1);
-    list.insert(2);
-    list.insert(3);
-    list.insert(4);
-    list.insert(5);
-    
-    REQUIRE(list.size() == 6);
-    
     list.dump(std::cerr);
+    REQUIRE(list.size() == 0);
+
+    list.insert(0);
+    REQUIRE(list.size() == 1);
+    list.dump(std::cerr);
+    REQUIRE(list[0] == 0);
+
+    list.insert(1);
+    REQUIRE(list.size() == 2);
+    list.dump(std::cerr);
+    REQUIRE(list[0] == 0);
+    REQUIRE(list[1] == 1);
     
+    list.insert(2);
+    REQUIRE(list.size() == 3);
+    list.dump(std::cerr);
+    REQUIRE(list[0] == 0);
+    REQUIRE(list[1] == 1);
+    REQUIRE(list[2] == 2);
+    
+    list.insert(3);
+    REQUIRE(list.size() == 4);
+    list.dump(std::cerr);
+    REQUIRE(list[0] == 0);
+    REQUIRE(list[1] == 1);
+    REQUIRE(list[2] == 2);
+    REQUIRE(list[3] == 3);
+    
+    list.insert(4);
+    REQUIRE(list.size() == 5);
+    list.dump(std::cerr);
     REQUIRE(list[0] == 0);
     REQUIRE(list[1] == 1);
     REQUIRE(list[2] == 2);
     REQUIRE(list[3] == 3);
     REQUIRE(list[4] == 4);
-    REQUIRE(list[5] == 5);
+    
+    list.insert(5);
+    REQUIRE(list.size() == 6);
+    list.dump(std::cerr);
+    REQUIRE(list[0] == 0);
+    REQUIRE(list[1] == 1);
+    REQUIRE(list[2] == 2);
+    REQUIRE(list[3] == 3);
+    REQUIRE(list[4] == 4);
+    
+    list.dump(std::cerr);
 }
 
 TEST_CASE( "random_access_skip_list/non members", "" )
@@ -70,4 +101,5 @@ TEST_CASE( "random_access_skip_list/non members", "" )
     REQUIRE_FALSE(list1 == list2);
 }
 
-// allocation test
+// TODO: allocation test
+
