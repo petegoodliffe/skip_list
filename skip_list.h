@@ -186,8 +186,6 @@ public:
     iterator  erase(const_iterator position);
     iterator  erase(const_iterator first, const_iterator last);
 
-    void erase_at(size_type index);
-
     void swap(skip_list &other);
 
     friend void swap(skip_list &lhs, skip_list &rhs) { lhs.swap(rhs); }
@@ -332,8 +330,16 @@ public:
     //random_access_skip_list(const skip_list &&other);
     //random_access_skip_list(const skip_list &&other, const Allocator &alloc);
     //random_access_skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
+    
+    //======================================================================
+    // random access
 
     const_reference operator[](unsigned index) const;
+    
+    iterator       iterator_at(unsigned index);
+    const_iterator iterator_at(unsigned index) const;
+
+    void erase_at(size_type index);
 };
 
 } // namespace goodliffe
@@ -1102,14 +1108,32 @@ random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
     return node->value;
 }
 
-template <class T, class C, class A, unsigned NL, class LG, class SLT>
+template <class T, class C, class A, unsigned NL, class LG>
 inline
 void
-skip_list<T,C,A,NL,LG,SLT>::erase_at(size_type index)
+random_access_skip_list<T,C,A,NL,LG>::erase_at(size_type index)
 {
     node_type *node = impl.at(index);
     assert_that(impl.is_valid(node));
     impl.remove(node);
+}
+
+template <class T, class C, class A, unsigned NL, class LG>
+inline
+typename random_access_skip_list<T,C,A,NL,LG>::iterator
+random_access_skip_list<T,C,A,NL,LG>::iterator_at(unsigned index)
+{
+    const node_type *node = impl.at(index);
+    return iterator(this, node);
+}
+
+template <class T, class C, class A, unsigned NL, class LG>
+inline
+typename random_access_skip_list<T,C,A,NL,LG>::const_iterator
+random_access_skip_list<T,C,A,NL,LG>::iterator_at(unsigned index) const
+{
+    const node_type *node = impl.at(index);
+    return const_iterator(this, node);
 }
 
 } // namespace goodliffe

@@ -143,5 +143,10 @@ TEST_CASE( "random_access_skip_list/non members", "" )
     REQUIRE_FALSE(list1 == list2);
 }
 
+TEST_CASE( "random_access_skip_list/iterator_at", "" )
+{
+    // TODO
+}
+
 // TODO: allocation test
 
