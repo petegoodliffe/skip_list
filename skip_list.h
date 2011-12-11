@@ -1103,14 +1103,7 @@ typename random_access_skip_list<T,C,A,NL,LG>::const_reference
 random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
 {
     const node_type *node = impl.at(index);
-    if (index >= parent_type::size())
-        fprintf(stderr, "INDEX ERROR *****\n");
     assert_that(impl.is_valid(node));
-    /*
-    // remove this check in release
-    static const value_type meh = value_type();
-    return impl.is_valid(node) ? node->value : meh;
-     */
     return node->value;
 }
 
@@ -1468,10 +1461,6 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
         if (next != tail && detail::equivalent(next->value, value, less))
             return tail;
     }
-
-    //fprintf(stderr, "Inserting index=%lu\n", index);
-    //for (unsigned l = 0; l < levels; ++l)
-    //    fprintf(stderr, "  ch[%u]=%lu\n", l, indexes[l]);
 
     for (unsigned l = 0; l < num_levels; ++l)
     {
