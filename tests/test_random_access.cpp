@@ -131,6 +131,50 @@ TEST_CASE( "random_access_skip_list/iterator_at", "" )
     }
 }
 
+TEST_CASE( "random_access_skip_list/erase/maintains indexes/1", "" )
+{
+    random_access_skip_list<int> list;
+    for (int n = 0; n < 9; ++n)
+        list.insert(n);
+    
+    list.erase_at(1);
+    REQUIRE(list[0] == 0);    REQUIRE(list[1] == 2);    REQUIRE(list[2] == 3);
+    REQUIRE(list[3] == 4);    REQUIRE(list[4] == 5);    REQUIRE(list[7] == 8);
+}
+
+TEST_CASE( "random_access_skip_list/erase/maintains indexes/2", "" )
+{
+    random_access_skip_list<int> list;
+    for (int n = 0; n < 9; ++n)
+        list.insert(n);
+    
+    list.erase_at(2);
+    REQUIRE(list[0] == 0);    REQUIRE(list[1] == 1);    REQUIRE(list[2] == 3);
+    REQUIRE(list[3] == 4);    REQUIRE(list[4] == 5);    REQUIRE(list[7] == 8);
+}
+
+TEST_CASE( "random_access_skip_list/erase/maintains indexes/3", "" )
+{
+    random_access_skip_list<int> list;
+    for (int n = 0; n < 9; ++n)
+        list.insert(n);
+
+    list.erase_at(3);
+    REQUIRE(list[0] == 0);    REQUIRE(list[1] == 1);    REQUIRE(list[2] == 2);
+    REQUIRE(list[3] == 4);    REQUIRE(list[4] == 5);    REQUIRE(list[7] == 8);
+}
+
+TEST_CASE( "random_access_skip_list/erase/maintains indexes/4", "" )
+{
+    random_access_skip_list<int> list;
+    for (int n = 0; n < 9; ++n)
+        list.insert(n);
+    
+    list.erase_at(4);
+    REQUIRE(list[0] == 0);    REQUIRE(list[1] == 1);    REQUIRE(list[2] == 2);
+    REQUIRE(list[3] == 3);    REQUIRE(list[4] == 5);    REQUIRE(list[7] == 8);
+}
+
 TEST_CASE( "random_access_skip_list/erase/maintains indexes", "" )
 {
     std::vector<int> data;
@@ -143,6 +187,7 @@ TEST_CASE( "random_access_skip_list/erase/maintains indexes", "" )
     for (unsigned n = 0 ; n < 20; ++n)
     {
         unsigned index = unsigned(rand()) % unsigned(list.size());
+        fprintf(stderr, "  remove %u/%u\n", index, (unsigned)list.size());
         list.erase_at(index);
         data.erase(data.begin()+index);
     }
@@ -151,11 +196,13 @@ TEST_CASE( "random_access_skip_list/erase/maintains indexes", "" )
     REQUIRE(CheckBackwardIteration(list));
     
     REQUIRE(list.size() == data.size());
+    /*
     for (unsigned n = 0; n < list.size(); ++n)
     {
-        //fprintf(stderr, "  %u: %d==%d %s\n", n, list[n], data[n], list[n] == data[n]?"":"NO");
+        fprintf(stderr, "  %u/%u: %d==%d %s\n", n, (unsigned)list.size(), list[n], data[n], list[n] == data[n]?"":"NO");
     }
-    //REQUIRE(CheckEquality(list, data));
+     */
+    REQUIRE(CheckEquality(list, data));
 }
 
 TEST_CASE( "random_access_skip_list/non members", "" )

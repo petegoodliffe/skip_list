@@ -498,6 +498,10 @@ private:
 
     skip_list_impl(const skip_list_impl &other);
     skip_list_impl &operator=(const skip_list_impl &other);
+    
+    size_type find_chain(const value_type &value, node_type **chain);
+    size_type find_chain(const value_type &value, node_type **chain, size_type *indexes);
+    size_type find_chain(node_type *node, node_type **chain, size_type *indexes);
 
     allocator_type  alloc;
     generator_type  generator;
@@ -1099,6 +1103,8 @@ typename random_access_skip_list<T,C,A,NL,LG>::const_reference
 random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
 {
     const node_type *node = impl.at(index);
+    if (index >= parent_type::size())
+        fprintf(stderr, "INDEX ERROR *****\n");
     assert_that(impl.is_valid(node));
     /*
     // remove this check in release
@@ -1367,6 +1373,55 @@ skip_list_impl<T,C,A,NL,LG,N>::at(size_type index)
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
+typename skip_list_impl<T,C,A,NL,LG,N>::size_type
+skip_list_impl<T,C,A,NL,LG,N>::find_chain(const value_type &value, node_type **chain, size_type *indexes)
+{
+    size_type index = 0;
+    node_type *cur = head;
+    unsigned l = num_levels;
+    while (l)
+    {
+        --l;
+        assert_that(l <= cur->level);
+        while (cur->next[l] != tail && less(cur->next[l]->value, value))
+        {
+            index += node_traits::span(cur, l);
+            cur = cur->next[l];
+            assert_that(l <= cur->level);
+        }
+        chain[l]   = cur;
+        indexes[l] = index;
+    }
+    return index;
+}
+
+// TODO: fold these down
+template <class T, class C, class A, unsigned NL, class LG, class N>
+inline
+typename skip_list_impl<T,C,A,NL,LG,N>::size_type
+skip_list_impl<T,C,A,NL,LG,N>::find_chain(node_type *node, node_type **chain, size_type *indexes)
+{
+    size_type index = 0;
+    node_type *cur = head;
+    unsigned l = num_levels;
+    while (l)
+    {
+        --l;
+        assert_that(l <= cur->level);
+        while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
+        {
+            index += node_traits::span(cur, l);
+            cur = cur->next[l];
+            assert_that(l <= cur->level);
+        }
+        chain[l]   = cur;
+        indexes[l] = index;
+    }
+    return index;
+}
+
+template <class T, class C, class A, unsigned NL, class LG, class N>
+inline
 const typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
 skip_list_impl<T,C,A,NL,LG,N>::at(size_type index) const
 {
@@ -1402,28 +1457,10 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
     assert_that(new_node);
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
-    
-    node_type *chain[num_levels] = {0};
-    size_type  indexes[num_levels] = {0};
-    size_type  index = 0;
 
-    {
-        node_type *cur = head;
-        unsigned l = num_levels;
-        while (l)
-        {
-            --l;
-            assert_that(l <= cur->level);
-            while (cur->next[l] != tail && less(cur->next[l]->value, value))
-            {
-                index += node_traits::span(cur, l);
-                cur = cur->next[l];
-                assert_that(l <= cur->level);
-            }
-            chain[l]   = cur;
-            indexes[l] = index;
-        }
-    }
+    node_type *chain[num_levels]   = {0};
+    size_type  indexes[num_levels] = {0};
+    size_type  index               = find_chain(value, chain, indexes);
 
     // Do not allow repeated values in the list (we could in a "multi_skip_list")
     {
@@ -1471,23 +1508,23 @@ skip_list_impl<T,C,A,NL,LG,N>::remove(node_type *node)
     assert_that(node != head);
     assert_that(node != tail);
     assert_that(node->next[0]);
+    
+    node_type *chain[num_levels]   = {0};
+    size_type  indexes[num_levels] = {0};
+    find_chain(node, chain, indexes);
 
     node->next[0]->prev = node->prev;
-
-    // patch up all next pointers
-    node_type *cur = head;
-    for (unsigned l = levels; l; )
+    
+    for (unsigned l = 0; l < num_levels; ++l)
     {
-        --l;
-        assert_that(l <= cur->level);
-        while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
+        if (l <= node->level)
         {
-            cur = cur->next[l];
+            node_traits::set_span(chain[l], l, chain[l]->span[l] + node->span[l]-1);
+            chain[l]->next[l] = node->next[l];
         }
-        if (cur->next[l] == node)
+        else if (chain[l]->value < node->value)
         {
-            node_traits::decrement_span(cur, l);
-            cur->next[l] = node->next[l];
+            node_traits::decrement_span(chain[l], l);
         }
     }
 
