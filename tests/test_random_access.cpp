@@ -99,14 +99,13 @@ TEST_CASE( "random_access_skip_list/indexing", "" )
         {
             REQUIRE(list[m] == data[m]);
         }
-        
+
         // Check that clear puts indexing back to right state so subsequent
         // insertions are correct
         list.clear();
         REQUIRE(list.size() == 0);
         REQUIRE(list.empty());
-        
-        
+
         for (unsigned m = 0 ; m < data.size(); ++m)
             list.insert(data[data.size()-1-m]);
         
@@ -117,20 +116,46 @@ TEST_CASE( "random_access_skip_list/indexing", "" )
     }
 }
 
+TEST_CASE( "random_access_skip_list/iterator_at", "" )
+{
+    std::vector<int> data;
+    FillWithRandomData(1000, data);
+    
+    random_access_skip_list<int> list(data.begin(), data.end());
+    
+    SortVectorAndRemoveDuplicates(data);
+    
+    for (unsigned n = 0; n < list.size(); n += 7)
+    {
+        REQUIRE(*list.iterator_at(n) == data[n]);
+    }
+}
 
 TEST_CASE( "random_access_skip_list/erase/maintains indexes", "" )
 {
     std::vector<int> data;
-    random_access_skip_list<int> list;
     FillWithRandomData(1000, data);
+    
+    random_access_skip_list<int> list(data.begin(), data.end());
+
+    SortVectorAndRemoveDuplicates(data);
 
     for (unsigned n = 0 ; n < 20; ++n)
     {
-        list.erase_at(unsigned(rand()) % list.size());
+        unsigned index = unsigned(rand()) % unsigned(list.size());
+        list.erase_at(index);
+        data.erase(data.begin()+index);
     }
     
     REQUIRE(CheckForwardIteration(list));
     REQUIRE(CheckBackwardIteration(list));
+    
+    REQUIRE(list.size() == data.size());
+    for (unsigned n = 0; n < list.size(); ++n)
+    {
+        //fprintf(stderr, "  %u: %d==%d %s\n", n, list[n], data[n], list[n] == data[n]?"":"NO");
+    }
+    //REQUIRE(CheckEquality(list, data));
 }
 
 TEST_CASE( "random_access_skip_list/non members", "" )
@@ -141,11 +166,11 @@ TEST_CASE( "random_access_skip_list/non members", "" )
     
     REQUIRE(list1 != list2);
     REQUIRE_FALSE(list1 == list2);
-}
-
-TEST_CASE( "random_access_skip_list/iterator_at", "" )
-{
-    // TODO
+    
+    REQUIRE(list1 < list2);
+    REQUIRE(list1 <= list2);
+    REQUIRE_FALSE(list1 > list2);
+    REQUIRE_FALSE(list1 >= list2);
 }
 
 // TODO: allocation test

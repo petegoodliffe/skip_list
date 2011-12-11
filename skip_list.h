@@ -1123,7 +1123,7 @@ inline
 typename random_access_skip_list<T,C,A,NL,LG>::iterator
 random_access_skip_list<T,C,A,NL,LG>::iterator_at(unsigned index)
 {
-    const node_type *node = impl.at(index);
+    node_type *node = impl.at(index);
     return iterator(this, node);
 }
 
