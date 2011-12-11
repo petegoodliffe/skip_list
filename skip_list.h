@@ -186,6 +186,8 @@ public:
     iterator  erase(const_iterator position);
     iterator  erase(const_iterator first, const_iterator last);
 
+    void erase_at(size_type index);
+
     void swap(skip_list &other);
 
     friend void swap(skip_list &lhs, skip_list &rhs) { lhs.swap(rhs); }
@@ -469,7 +471,8 @@ public:
     node_type       *one_past_end()                        { return tail; }
     const node_type *one_past_end() const                  { return tail; }
     node_type       *find(const value_type &value) const;
-    const node_type *at(unsigned index) const;
+    node_type       *at(size_type index);
+    const node_type *at(size_type index) const;
     node_type       *insert(const value_type &value, node_type *hint = 0);
     void             remove(node_type *value);
     void             remove_all();
@@ -950,7 +953,7 @@ skip_list<T,C,A,NL,LG,SLT>::erase(const value_type &value)
     {
         return 0;
     }
-}
+}    
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT>
 inline
@@ -1091,10 +1094,22 @@ random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
 {
     const node_type *node = impl.at(index);
     assert_that(impl.is_valid(node));
+    /*
     // remove this check in release
     static const value_type meh = value_type();
     return impl.is_valid(node) ? node->value : meh;
+     */
     return node->value;
+}
+
+template <class T, class C, class A, unsigned NL, class LG, class SLT>
+inline
+void
+skip_list<T,C,A,NL,LG,SLT>::erase_at(size_type index)
+{
+    node_type *node = impl.at(index);
+    assert_that(impl.is_valid(node));
+    impl.remove(node);
 }
 
 } // namespace goodliffe
@@ -1303,8 +1318,33 @@ skip_list_impl<T,C,A,NL,LG,N>::find(const value_type &value) const
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
+typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
+skip_list_impl<T,C,A,NL,LG,N>::at(size_type index)
+{
+    // only compiles for node_type where "node->span" is valid
+    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));
+
+    unsigned l = levels;
+    node_type *node = head;
+    index += 1;
+
+    while (l)
+    {
+        --l;
+        while (node->span[l] <= index)
+        {
+            index -= node->span[l];
+            node = node->next[l];
+        }
+    }
+
+    return node;
+}
+
+template <class T, class C, class A, unsigned NL, class LG, class N>
+inline
 const typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
-skip_list_impl<T,C,A,NL,LG,N>::at(unsigned index) const
+skip_list_impl<T,C,A,NL,LG,N>::at(size_type index) const
 {
     // only compiles for node_type where "node->span" is valid
     static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));

@@ -117,6 +117,22 @@ TEST_CASE( "random_access_skip_list/indexing", "" )
     }
 }
 
+
+TEST_CASE( "random_access_skip_list/erase/maintains indexes", "" )
+{
+    std::vector<int> data;
+    random_access_skip_list<int> list;
+    FillWithRandomData(1000, data);
+
+    for (unsigned n = 0 ; n < 20; ++n)
+    {
+        list.erase_at(unsigned(rand()) % list.size());
+    }
+    
+    REQUIRE(CheckForwardIteration(list));
+    REQUIRE(CheckBackwardIteration(list));
+}
+
 TEST_CASE( "random_access_skip_list/non members", "" )
 {
     random_access_skip_list<int> list1, list2;
