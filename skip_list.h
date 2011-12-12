@@ -347,7 +347,7 @@ public:
 //==============================================================================
 #pragma mark - diagnostics
 
-//#define SKIP_LIST_IMPL_DIAGNOSTICS 1
+#define SKIP_LIST_IMPL_DIAGNOSTICS 1
 
 #if defined(DEBUG) || defined(_DEBUG) || defined(SKIP_LIST_IMPL_DIAGNOSTICS)
 #define SKIP_LIST_DIAGNOSTICS 1
@@ -1243,7 +1243,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
     void increment_span(NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(node->level < level);
+        assert_that(level <= node->level);
 #endif
         
         // Level 0 always has a span of 1
@@ -1254,7 +1254,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
     void set_span(NodeType *node, unsigned level, unsigned span)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(node->level < level);
+        assert_that(level <= node->level);
 #endif
 
         if (level)
@@ -1270,7 +1270,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
     void decrement_span(NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(node->level < level);
+        assert_that(level <= node->level);
 #endif
         if (level)
             --(node->span[level]);
@@ -1280,7 +1280,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
     unsigned span(const NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(node->level < level);
+        assert_that(level <= node->level);
 #endif
         return node->span[level];
     }
@@ -1302,6 +1302,7 @@ skip_list_impl<T,C,A,NL,LG,N>::skip_list_impl(const allocator_type &alloc_)
     {
         head->next[n] = tail;
         tail->next[n] = 0;
+        node_traits::set_span(head, n, 1);
     }
     head->prev = 0;
     tail->prev = head;
@@ -1328,7 +1329,7 @@ inline
 typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
 skip_list_impl<T,C,A,NL,LG,N>::find(const value_type &value) const
 {
-    // I could have a const and non-const overload, but this is simpler
+    // I could have a const and non-const overload, but this cast is simpler
     node_type *search = const_cast<node_type*>(head);
     for (unsigned l = levels; l; )
     {
@@ -1412,6 +1413,14 @@ skip_list_impl<T,C,A,NL,LG,N>::find_chain(const value_type &value, node_type **c
         chain[l]   = cur;
         indexes[l] = index;
     }
+    
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+    for (unsigned l1 = 0; l1 < num_levels; ++l1)
+    {
+        assert_that(chain[l1]->level >= l1);
+    }
+#endif
+
     return index;
 }
 
@@ -1725,7 +1734,7 @@ bool skip_list_impl<T,C,A,NL,LG,N>::check() const
             }
 
             // if level 0, we check prev pointers
-            if (l == 0 && n->next[l]->prev != n)
+            if (l == 0 && n->next[0]->prev != n)
             {
                 assert_that(false && "chain error");
                 return false;
