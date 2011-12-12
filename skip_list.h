@@ -456,20 +456,20 @@ class skip_list_impl
 {
 public:
     
-    typedef T                             value_type;
-    typedef typename Allocator::size_type size_type;
-    typedef Allocator                     allocator_type;
-    typedef Compare                       compare_type;
-    typedef LevelGenerator                generator_type;
-    typedef NodeType                      node_type;
+    typedef T                                   value_type;
+    typedef typename Allocator::size_type       size_type;
+    typedef typename Allocator::difference_type difference_type;
+    typedef Allocator                           allocator_type;
+    typedef Compare                             compare_type;
+    typedef LevelGenerator                      generator_type;
+    typedef NodeType                            node_type;
 
     static const unsigned num_levels = NumLevels;
 
     skip_list_impl(const Allocator &alloc = Allocator());
     ~skip_list_impl();
 
-    Allocator get_allocator() const;
-
+    Allocator        get_allocator() const;
     size_type        size() const                          { return item_count; }
     bool             is_valid(const node_type *node) const { return node && node != head && node != tail; }
     node_type       *front()                               { return head->next[0]; }
@@ -485,11 +485,10 @@ public:
     void             remove_between(node_type *first, node_type *last);
     void             swap(skip_list_impl &other);
 
-    unsigned         new_level();
-
     template <typename STREAM>
-    void dump(STREAM &stream) const;
-    bool check() const;
+    void        dump(STREAM &stream) const;
+    bool        check() const;
+    unsigned    new_level();
 
     compare_type less;
 
@@ -1151,12 +1150,15 @@ enum
 };
 #endif
 
+// TODO: change these to use correct types (not unsigned, int)
+
 /// The functions to allocate and deallocate a skip_list_node
 template <typename NodeType, typename Allocator>
 struct skip_list_node_traits
 {
     typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
     typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
+    typedef typename Allocator::difference_type                   Difference;
 
     static
     inline
