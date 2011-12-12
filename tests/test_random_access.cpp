@@ -38,6 +38,9 @@ TEST_CASE( "random_access_skip_list/can call basic methods from skip_list", "" )
     REQUIRE(list.rbegin() == list.rend());
 }
 
+//============================================================================
+// indexing
+
 TEST_CASE( "random_access_skip_list/add items", "" )
 {
     random_access_skip_list<int> list;
@@ -131,7 +134,10 @@ TEST_CASE( "random_access_skip_list/iterator_at", "" )
     }
 }
 
-TEST_CASE( "random_access_skip_list/erase/maintains indexes/1", "" )
+//============================================================================
+// erase_at
+
+TEST_CASE( "random_access_skip_list/erase_at/maintains indexes/1", "" )
 {
     random_access_skip_list<int> list;
     for (int n = 0; n < 9; ++n)
@@ -142,7 +148,7 @@ TEST_CASE( "random_access_skip_list/erase/maintains indexes/1", "" )
     REQUIRE(list[3] == 4);    REQUIRE(list[4] == 5);    REQUIRE(list[7] == 8);
 }
 
-TEST_CASE( "random_access_skip_list/erase/maintains indexes/2", "" )
+TEST_CASE( "random_access_skip_list/erase_at/maintains indexes/2", "" )
 {
     random_access_skip_list<int> list;
     for (int n = 0; n < 9; ++n)
@@ -153,7 +159,7 @@ TEST_CASE( "random_access_skip_list/erase/maintains indexes/2", "" )
     REQUIRE(list[3] == 4);    REQUIRE(list[4] == 5);    REQUIRE(list[7] == 8);
 }
 
-TEST_CASE( "random_access_skip_list/erase/maintains indexes/3", "" )
+TEST_CASE( "random_access_skip_list/erase_at/maintains indexes/3", "" )
 {
     random_access_skip_list<int> list;
     for (int n = 0; n < 9; ++n)
@@ -164,7 +170,7 @@ TEST_CASE( "random_access_skip_list/erase/maintains indexes/3", "" )
     REQUIRE(list[3] == 4);    REQUIRE(list[4] == 5);    REQUIRE(list[7] == 8);
 }
 
-TEST_CASE( "random_access_skip_list/erase/maintains indexes/4", "" )
+TEST_CASE( "random_access_skip_list/erase_at/maintains indexes/4", "" )
 {
     random_access_skip_list<int> list;
     for (int n = 0; n < 9; ++n)
@@ -175,7 +181,7 @@ TEST_CASE( "random_access_skip_list/erase/maintains indexes/4", "" )
     REQUIRE(list[3] == 3);    REQUIRE(list[4] == 5);    REQUIRE(list[7] == 8);
 }
 
-TEST_CASE( "random_access_skip_list/erase/maintains indexes", "" )
+TEST_CASE( "random_access_skip_list/erase_at/maintains indexes", "" )
 {
     std::vector<int> data;
     FillWithRandomData(1000, data);
@@ -204,6 +210,8 @@ TEST_CASE( "random_access_skip_list/erase/maintains indexes", "" )
      */
     REQUIRE(CheckEquality(list, data));
 }
+
+//============================================================================
 
 TEST_CASE( "random_access_skip_list/erase range/maintains indexes", "" )
 {
