@@ -130,6 +130,17 @@ bool CheckEquality(const C1 &c1, const C2 &c2)
     return true;
 }
 
+template <typename C1, typename C2>
+inline
+bool CheckEqualityViaIndexing(const C1 &c1, const C2 &c2)
+{
+    if (c1.size() != c2.size()) return false;
+    for (unsigned n = 0; n < c1.size(); ++n)
+    {
+        if (c1[n] != c2[n]) return false;
+    }
+    return true;
+}
 //============================================================================
 
 inline
