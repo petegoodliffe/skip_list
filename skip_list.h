@@ -1692,10 +1692,16 @@ void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
         {
             assert_that(l <= n->level);
             const node_type *next = n->next[l];
+            size_type span = node_traits::span(n, l);
             bool prev_ok = false;
-            if (next)
+            char prev_char = span > 1 ? '(' : 'X';
+            if (next && span <= 1)
             {
-                if (next->prev == n) prev_ok = true;
+                if (next->prev == n)
+                {
+                    prev_ok = true;
+                    prev_char = '<';
+                }
             }
             if (is_valid(n))
                 s << n->value << " ";
@@ -1704,9 +1710,9 @@ void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
             
             if (n != tail)
             {
-                s << node_traits::span(n, l) << ">"
+                s << span << ">"
                   << " "
-                  << (prev_ok?"<":"X");
+                  << prev_char;
             }
             n = next;
         }
