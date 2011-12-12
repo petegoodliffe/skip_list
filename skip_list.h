@@ -1511,7 +1511,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove(node_type *node)
             node_traits::set_span(chain[l], l, chain[l]->span[l] + node->span[l]-1);
             chain[l]->next[l] = node->next[l];
         }
-        else if (chain[l]->value < node->value)
+        else if (chain[l] == head || chain[l]->value < node->value)
         {
             node_traits::decrement_span(chain[l], l);
         }
