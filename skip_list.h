@@ -1368,6 +1368,31 @@ skip_list_impl<T,C,A,NL,LG,N>::at(size_type index)
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
+const typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
+skip_list_impl<T,C,A,NL,LG,N>::at(size_type index) const
+{
+    // only compiles for node_type where "node->span" is valid
+    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));
+
+    unsigned l = levels;
+    const node_type *node = head;
+    index += 1;
+
+    while (l)
+    {
+        --l;
+        while (node->span[l] <= index)
+        {
+            index -= node->span[l];
+            node = node->next[l];
+        }
+    }
+
+    return node;
+}
+
+template <class T, class C, class A, unsigned NL, class LG, class N>
+inline
 typename skip_list_impl<T,C,A,NL,LG,N>::size_type
 skip_list_impl<T,C,A,NL,LG,N>::find_chain(const value_type &value, node_type **chain, size_type *indexes)
 {
