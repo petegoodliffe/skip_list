@@ -1188,6 +1188,7 @@ struct skip_list_node_traits
     }
 
     static void increment_span(NodeType *node, unsigned level) {}
+    static void change_span(NodeType *node, unsigned level, Difference by) {}
     static void set_span(NodeType *node, unsigned level, unsigned span) {}
     static void set_all_spans(NodeType *node, unsigned span) {}
     static void decrement_span(NodeType *node, unsigned level) {}
@@ -1205,6 +1206,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
     typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
     typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
     typedef typename Allocator::template rebind<unsigned>::other  SpanAllocator;
+    typedef typename Allocator::difference_type                   Difference;
 
     static
     inline
@@ -1249,6 +1251,13 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
         // Level 0 always has a span of 1
         if (level)
             ++(node->span[level]);
+    }
+    static
+    void change_span(NodeType *node, unsigned level, Difference by)
+    {
+        // Level 0 always has a span of 1
+        if (level)
+            node->span[level] += by;
     }
     static
     void set_span(NodeType *node, unsigned level, unsigned span)
@@ -1446,32 +1455,13 @@ skip_list_impl<T,C,A,NL,LG,N>::find_chain(node_type *node, node_type **chain, si
         chain[l]   = cur;
         indexes[l] = index;
     }
-    return index;
-}
-
-template <class T, class C, class A, unsigned NL, class LG, class N>
-inline
-const typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
-skip_list_impl<T,C,A,NL,LG,N>::at(size_type index) const
-{
-    // only compiles for node_type where "node->span" is valid
-    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));
-
-    unsigned l = levels;
-    const node_type *node = head;
-    index += 1;
-
-    while (l)
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+    for (unsigned l1 = 0; l1 < num_levels; ++l1)
     {
-        --l;
-        while (node->span[l] <= index)
-        {
-            index -= node->span[l];
-            node = node->next[l];
-        }
+        assert_that(chain[l1]->level >= l1);
     }
-
-    return node;
+#endif
+    return index;
 }
 
 // TODO: Hint is now ignored (has to be, for spans to work)
@@ -1595,39 +1585,49 @@ inline
 void 
 skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
 {
-    assert_that(first != head);
-    assert_that(first != tail);
-    assert_that(last != head);
-    assert_that(last != tail);
+    assert_that(is_valid(first));
+    assert_that(is_valid(last));
 
-    node_type       * const prev         = first->prev;
-    node_type       * const one_past_end = last->next[0];
-    const value_type       &first_value  = first->value;
-    const value_type       &last_value   = last->value;
+    node_type * const prev         = first->prev;
+    node_type * const one_past_end = last->next[0];
+
+    node_type *first_chain[num_levels] = {0};
+    node_type *last_chain[num_levels]  = {0};
+    size_type  indexes[num_levels]     = {0};// TODO no indexes needed
+    size_type  first_index             = find_chain(first, first_chain, indexes);
+    size_type  last_index              = find_chain(last,  last_chain,  indexes);
+
+    //unsigned max_level = std::max(first_chain[0]->level, last->level);
+    //difference_type size_reduction = difference_type(first_index)-difference_type(last_index);
 
     // backwards pointer
-    one_past_end->prev = prev;    
+    one_past_end->prev = prev;
 
-    // forwards pointers
-    node_type *cur = head;
-    for (unsigned l = levels; l; )
+    // forwards pointers (and spans)
+    for (unsigned l = 0; l < num_levels; ++l)
     {
-        --l;
-        assert_that(l < cur->level);
-        while (cur->next[l] != tail && less(cur->next[l]->value, first_value))
+        if (l <= last->level)
+            first_chain[l]->next[l] = last->next[l];
+        else
+            first_chain[l]->next[l] = last_chain[l]->next[l];
+        /*
+        if (l >= max_level)
         {
-            cur = cur->next[l];
+            node_traits::change_span(first_chain[l], l, size_reduction);
         }
-        if (cur->next[l] != tail
-            && detail::less_or_equal(cur->next[l]->value, last_value, less))
+        else if (l >= first_chain[0]->level)
         {
-            // TODO: span
-            // patch up next[l] pointer
-            node_type *end = cur->next[l];
-            while (end != tail && detail::less_or_equal(end->value, last_value, less))
-                end = end->next[l];
-            cur->next[l] = end;
+            node_traits::change_span(first_chain[l], l, last->span[l]+size_reduction);
         }
+        else if (l >= last->level)
+        {
+            node_traits::change_span(first_chain[l], l, size_reduction);            
+        }
+        else
+        {
+            node_traits::change_span(first_chain[l], l, last->span[l]+size_reduction);
+        }
+         */
     }
 
     // now delete all the nodes between [first,last]

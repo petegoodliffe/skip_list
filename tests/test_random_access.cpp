@@ -187,7 +187,7 @@ TEST_CASE( "random_access_skip_list/erase/maintains indexes", "" )
     for (unsigned n = 0 ; n < 20; ++n)
     {
         unsigned index = unsigned(rand()) % unsigned(list.size());
-        fprintf(stderr, "  remove %u/%u\n", index, (unsigned)list.size());
+        //fprintf(stderr, "  remove %u/%u\n", index, (unsigned)list.size());
         list.erase_at(index);
         data.erase(data.begin()+index);
     }
@@ -203,6 +203,20 @@ TEST_CASE( "random_access_skip_list/erase/maintains indexes", "" )
     }
      */
     REQUIRE(CheckEquality(list, data));
+}
+
+TEST_CASE( "random_access_skip_list/erase range/maintains indexes", "" )
+{
+    std::vector<int> data;
+    FillWithOrderedData(1000, data);
+    random_access_skip_list<int> list(data.begin(), data.end());
+
+    unsigned start = 10;
+    unsigned end = 10;
+    
+    random_access_skip_list<int>::iterator i1 = list.iterator_at(start);
+    random_access_skip_list<int>::iterator i2 = list.iterator_at(start+end);
+    list.erase(i1, i2);
 }
 
 TEST_CASE( "random_access_skip_list/non members", "" )
