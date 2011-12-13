@@ -216,31 +216,41 @@ TEST_CASE( "random_access_skip_list/erase_at/maintains indexes", "" )
 
 TEST_CASE( "random_access_skip_list/erase range/maintains indexes", "" )
 {
-    std::vector<int> data;
-    FillWithOrderedData(100, data);
-    random_access_skip_list<int> list(data.begin(), data.end());
-
-    unsigned start = 10;
-    unsigned length = 10;
-    
-    random_access_skip_list<int>::iterator i1 = list.iterator_at(start);
-    random_access_skip_list<int>::iterator i2 = list.iterator_at(start+length);
-    list.erase(i1, i2);
-    
-    std::vector<int>::iterator v1 = data.begin()+start;
-    std::vector<int>::iterator v2 = data.begin()+start+length;
-    data.erase(v1, v2);
-
-    REQUIRE(CheckEquality(list, data));
-    /*
-    list.dump(std::cerr);
-    for (unsigned n = 0; n < data.size(); ++n)
+    for (unsigned megaloop = 1; megaloop < 10; ++megaloop)
     {
-        fprintf(stderr, "  %03u: d=% 6d/l=% 6d %s\n", n, data[n], list[n],
-                data[n] != list[n] ? "(error)":"");
+        std::vector<int> data;
+        FillWithOrderedData(10 * megaloop, data);
+        random_access_skip_list<int> list(data.begin(), data.end());
+
+        for (unsigned m = 0; m < 5; ++m)
+        {
+            //list.dump(std::cerr);
+            unsigned start  = unsigned(rand()) % unsigned(data.size()/2);
+            unsigned length = unsigned(rand()) % unsigned(data.size()/2);
+            //fprintf(stderr, "removing: (%u,%u)...\n", start, length);
+            
+            random_access_skip_list<int>::iterator i1 = list.iterator_at(start);
+            random_access_skip_list<int>::iterator i2 = list.iterator_at(start+length);
+            list.erase(i1, i2);
+            
+            std::vector<int>::iterator v1 = data.begin()+start;
+            std::vector<int>::iterator v2 = data.begin()+start+length;
+            data.erase(v1, v2);
+
+            REQUIRE(CheckEquality(list, data));
+
+            /*
+            list.dump(std::cerr);
+            for (unsigned n = 0; n < data.size(); ++n)
+            {
+                fprintf(stderr, "  %03u: d=% 6d/l=% 6d %s\n", n, data[n], list[n],
+                        data[n] != list[n] ? "(error)":"");
+            }
+             */
+
+            REQUIRE(CheckEqualityViaIndexing(list, data));
+        }
     }
-     */
-    REQUIRE(CheckEqualityViaIndexing(list, data));
 }
 
 TEST_CASE( "random_access_skip_list/non members", "" )
