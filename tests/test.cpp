@@ -10,6 +10,7 @@
 
 #include "skip_list.h"
 
+#define CATCH_CONFIG_NO_STREAM_REDIRECTION
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 #include "test_types.h"

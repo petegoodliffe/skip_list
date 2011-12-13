@@ -1596,8 +1596,14 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
     size_type  first_indexes[num_levels] = {0};// TODO no indexes needed
     size_type  last_indexes[num_levels]  = {0};// TODO no indexes needed
     size_type  first_index               = find_chain(first, first_chain, first_indexes);
-    size_type  last_index                = find_chain(last,  last_chain,  last_indexes);
-    size_type  size_reduction            = last_index+1-first_index;
+    size_type  last_index                = find_chain(one_past_end, last_chain, last_indexes);
+    size_type  size_reduction            = last_index-first_index;
+
+    //fprintf(stderr, "Removing from %d -> %d\n", first->value, last->value);
+    //for (int n = 0; n < levels; ++n)
+    //    fprintf(stderr, "[%d]: first=%d@%u, last=%d@%u(%u)\n",
+    //            n, first_chain[n]->value, first_indexes[n],
+    //            last_chain[n]->value, last_indexes[n], last_chain[n]->span[n]);
 
     // backwards pointer
     one_past_end->prev = prev;
