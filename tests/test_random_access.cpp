@@ -216,15 +216,30 @@ TEST_CASE( "random_access_skip_list/erase_at/maintains indexes", "" )
 TEST_CASE( "random_access_skip_list/erase range/maintains indexes", "" )
 {
     std::vector<int> data;
-    FillWithOrderedData(1000, data);
+    FillWithOrderedData(100, data);
     random_access_skip_list<int> list(data.begin(), data.end());
 
     unsigned start = 10;
-    unsigned end = 10;
+    unsigned length = 10;
     
     random_access_skip_list<int>::iterator i1 = list.iterator_at(start);
-    random_access_skip_list<int>::iterator i2 = list.iterator_at(start+end);
+    random_access_skip_list<int>::iterator i2 = list.iterator_at(start+length);
     list.erase(i1, i2);
+    
+    std::vector<int>::iterator v1 = data.begin()+start;
+    std::vector<int>::iterator v2 = data.begin()+start+length;
+    data.erase(v1, v2);
+
+    REQUIRE(CheckEquality(list, data));
+    /*
+    list.dump(std::cerr);
+    for (unsigned n = 0; n < data.size(); ++n)
+    {
+        fprintf(stderr, "  %03u: d=% 6d/l=% 6d %s\n", n, data[n], list[n],
+                data[n] != list[n] ? "(error)":"");
+    }
+     */
+    REQUIRE(CheckEqualityViaIndexing(list, data));
 }
 
 TEST_CASE( "random_access_skip_list/non members", "" )

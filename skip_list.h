@@ -1591,14 +1591,13 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
     node_type * const prev         = first->prev;
     node_type * const one_past_end = last->next[0];
 
-    node_type *first_chain[num_levels] = {0};
-    node_type *last_chain[num_levels]  = {0};
-    size_type  indexes[num_levels]     = {0};// TODO no indexes needed
-    size_type  first_index             = find_chain(first, first_chain, indexes);
-    size_type  last_index              = find_chain(last,  last_chain,  indexes);
-
-    //unsigned max_level = std::max(first_chain[0]->level, last->level);
-    //difference_type size_reduction = difference_type(first_index)-difference_type(last_index);
+    node_type *first_chain[num_levels]   = {0};
+    node_type *last_chain[num_levels]    = {0};
+    size_type  first_indexes[num_levels] = {0};// TODO no indexes needed
+    size_type  last_indexes[num_levels]  = {0};// TODO no indexes needed
+    size_type  first_index               = find_chain(first, first_chain, first_indexes);
+    size_type  last_index                = find_chain(last,  last_chain,  last_indexes);
+    size_type  size_reduction            = last_index+1-first_index;
 
     // backwards pointer
     one_past_end->prev = prev;
@@ -1606,28 +1605,14 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
     // forwards pointers (and spans)
     for (unsigned l = 0; l < num_levels; ++l)
     {
+        // forwards pointer
         if (l <= last->level)
             first_chain[l]->next[l] = last->next[l];
         else
             first_chain[l]->next[l] = last_chain[l]->next[l];
-        /*
-        if (l >= max_level)
-        {
-            node_traits::change_span(first_chain[l], l, size_reduction);
-        }
-        else if (l >= first_chain[0]->level)
-        {
-            node_traits::change_span(first_chain[l], l, last->span[l]+size_reduction);
-        }
-        else if (l >= last->level)
-        {
-            node_traits::change_span(first_chain[l], l, size_reduction);            
-        }
-        else
-        {
-            node_traits::change_span(first_chain[l], l, last->span[l]+size_reduction);
-        }
-         */
+
+        // span
+        node_traits::set_span(first_chain[l], l, last_indexes[l]+last_chain[l]->span[l]-first_indexes[l]-size_reduction);
     }
 
     // now delete all the nodes between [first,last]
