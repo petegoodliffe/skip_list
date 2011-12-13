@@ -4175,8 +4175,10 @@ namespace Catch
             try
             {
                 m_runningTest->reset();
+#ifndef CATCH_CONFIG_NO_STREAM_REDIRECTION
                 StreamRedirect coutRedir( std::cout, redirectedCout );
                 StreamRedirect cerrRedir( std::cerr, redirectedCerr );
+#endif
                 m_runningTest->getTestCaseInfo().invoke();
                 m_runningTest->ranToCompletion();
             }

@@ -5,6 +5,7 @@
 
 #include "skip_list.h"
 
+#define CATCH_CONFIG_NO_STREAM_REDIRECTION 1
 #include "catch.hpp"
 #include "test_types.h"
 
