@@ -29,6 +29,7 @@
 #include "catch.hpp"
 
 using goodliffe::skip_list;
+using goodliffe::random_access_skip_list;
 
 TEST_CASE( "skip_list/benchmark/smoketest", "" )
 {
@@ -51,6 +52,7 @@ typedef boost::multi_index_container
     multi_index;
 
 //============================================================================
+#pragma mark Benchmark struct
 
 struct Benchmark
 {
@@ -60,11 +62,12 @@ struct Benchmark
     long        list;
     long        multi;
     long        skip_list;
+    long        ra_skip_list;
     
     Benchmark()
-        : name(), vector(-1), set(-1), list(-1), multi(-1), skip_list(-1) {}
+        : name(), vector(-1), set(-1), list(-1), multi(-1), skip_list(-1), ra_skip_list(-1) {}
     Benchmark(const std::string &name_)
-        : name(name_), vector(-1), set(-1), list(-1), multi(-1), skip_list(-1) {}
+        : name(name_), vector(-1), set(-1), list(-1), multi(-1), skip_list(-1), ra_skip_list(-1) {}
 };
 
 long TimeExecutionOf(const boost::function<void()> &f);
@@ -73,6 +76,7 @@ void FillWithOrderedData(size_t size, std::vector<int> &data);
 void FillWithReverseOrderedData(size_t size, std::vector<int> &data);
 
 //============================================================================
+#pragma mark TestingAllocator
 
 int allocator_bytes_allocated = 0;
 int allocator_objects_constructed = 0;
@@ -136,6 +140,7 @@ bool operator!=(const TestingAllocator<T1>&, const TestingAllocator<T2>&)
 }
 
 //============================================================================
+#pragma mark Useful stuff
 
 long TimeExecutionOf(const boost::function<void()> &f)
 {
@@ -145,9 +150,9 @@ long TimeExecutionOf(const boost::function<void()> &f)
     return end-start;
 }
 
-
 //============================================================================
-// test methods
+#pragma mark Working with containers
+// helpful things like kittens and shrews
 
 template <typename CONTAINER>
 bool ContainerIsInOrder(const CONTAINER &container)
@@ -213,6 +218,7 @@ void IterateBackwardsThrough(CONTAINER *container)
 }
 
 //============================================================================
+#pragma mark Finding things from an ordered container
 
 template <typename CONTAINER>
 void Find(const CONTAINER *container)
@@ -244,26 +250,50 @@ void FindFromMultiIndex(multi_index *container)
     }
 }
 
+template <typename CONTAINER>
+void Index(const CONTAINER *container)
+{
+    for (int n = 0 ; n < int(container->size()); ++n)
+    {
+        (void)container[n];
+    }
+}
+template <typename CONTAINER>
+void IndexManually(const CONTAINER *container)
+{
+    for (int n = 0 ; n < int(container->size()); ++n)
+    {
+        typename CONTAINER::const_iterator i = container->begin();
+        std::advance(i, n);
+        (void)*i;
+    }
+}
+
+
 //============================================================================
 // performance test
 //============================================================================
 
+#pragma mark Performance tests
+
 Benchmark InsertData(std::vector<int> &data, const std::string &name);
 Benchmark InsertData(std::vector<int> &data, const std::string &name)
 {
-    std::set<int>    std_set;
-    std::list<int>   std_list;
-    std::vector<int> std_vector;
-    multi_index      multi;
-    skip_list<int>   skip_list;
+    std::set<int>                std_set;
+    std::list<int>               std_list;
+    std::vector<int>             std_vector;
+    multi_index                  multi;
+    skip_list<int>               skip_list;
+    random_access_skip_list<int> ra_skip_list;
 
     Benchmark benchmark("insert data: "+name);    
 
-    benchmark.set        = TimeExecutionOf(boost::bind(&InsertByValue<std::set<int> >, &data, &std_set));
-    benchmark.list       = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::list<int> >, &data, &std_list));
-    benchmark.vector     = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::vector<int> >, &data, &std_vector));
-    benchmark.multi      = TimeExecutionOf(boost::bind(&InsertIntoMultiIndex, &data, &multi));
-    benchmark.skip_list  = TimeExecutionOf(boost::bind(&InsertByValue<goodliffe::skip_list<int> >, &data, &skip_list));
+    benchmark.set           = TimeExecutionOf(boost::bind(&InsertByValue<std::set<int> >, &data, &std_set));
+    benchmark.list          = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::list<int> >, &data, &std_list));
+    benchmark.vector        = TimeExecutionOf(boost::bind(&InsertByValueAtRightPlace<std::vector<int> >, &data, &std_vector));
+    benchmark.multi         = TimeExecutionOf(boost::bind(&InsertIntoMultiIndex, &data, &multi));
+    benchmark.skip_list     = TimeExecutionOf(boost::bind(&InsertByValue<goodliffe::skip_list<int> >, &data, &skip_list));
+    benchmark.ra_skip_list  = TimeExecutionOf(boost::bind(&InsertByValue<goodliffe::random_access_skip_list<int> >, &data, &ra_skip_list));
     
     REQUIRE(std_list.size()     == data.size());
     REQUIRE(std_vector.size()   == data.size());
@@ -280,6 +310,7 @@ Benchmark InsertData(std::vector<int> &data, const std::string &name)
     //REQUIRE(ContainerIsInOrder(std_list));
     //REQUIRE(ContainerIsInOrder(std_vector));
     //REQUIRE(ContainerIsInOrder(skip_list));;
+    //REQUIRE(ContainerIsInOrder(ra_skip_list));;
     //REQUIRE(ContainerIsInOrder(multi));
 
     return benchmark;
@@ -314,19 +345,21 @@ Benchmark IterateForwards(unsigned size)
     std::vector<int> data;
     FillWithRandomData(size, data);
     
-    std::set<int>    std_set(data.begin(), data.end());
-    std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
-    std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
-    multi_index      multi(std_set.begin(), std_set.end()); // use set to ensure order;
-    skip_list<int>   skip_list(data.begin(), data.end());
+    std::set<int>                std_set(data.begin(), data.end());
+    std::list<int>               std_list(std_set.begin(), std_set.end());   // use set to ensure order
+    std::vector<int>             std_vector(std_set.begin(), std_set.end()); // use set to ensure order
+    multi_index                  multi(std_set.begin(), std_set.end()); // use set to ensure order;
+    skip_list<int>               skip_list(data.begin(), data.end());
+    random_access_skip_list<int> ra_skip_list;
     
     Benchmark benchmark("iterate forwards");    
     
-    benchmark.set        = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::set<int> >, &std_set));
-    benchmark.list       = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::list<int> >, &std_list));
-    benchmark.vector     = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::vector<int> >, &std_vector));
-    benchmark.multi      = TimeExecutionOf(boost::bind(&IterateForwardsThrough<multi_index >, &multi));
-    benchmark.skip_list  = TimeExecutionOf(boost::bind(&IterateForwardsThrough<goodliffe::skip_list<int> >, &skip_list));
+    benchmark.set           = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::set<int> >, &std_set));
+    benchmark.list          = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::list<int> >, &std_list));
+    benchmark.vector        = TimeExecutionOf(boost::bind(&IterateForwardsThrough<std::vector<int> >, &std_vector));
+    benchmark.multi         = TimeExecutionOf(boost::bind(&IterateForwardsThrough<multi_index >, &multi));
+    benchmark.skip_list     = TimeExecutionOf(boost::bind(&IterateForwardsThrough<goodliffe::skip_list<int> >, &skip_list));
+    benchmark.ra_skip_list  = TimeExecutionOf(boost::bind(&IterateForwardsThrough<goodliffe::random_access_skip_list<int> >, &ra_skip_list));
 
     return benchmark;
 }
@@ -337,19 +370,21 @@ Benchmark IterateBackwards(unsigned size)
     std::vector<int> data;
     FillWithRandomData(size, data);
 
-    std::set<int>    std_set(data.begin(), data.end());
-    std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
-    std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
-    multi_index      multi(std_set.begin(), std_set.end()); // use set to ensure order;
-    skip_list<int>   skip_list(data.begin(), data.end());
+    std::set<int>                std_set(data.begin(), data.end());
+    std::list<int>               std_list(std_set.begin(), std_set.end());   // use set to ensure order
+    std::vector<int>             std_vector(std_set.begin(), std_set.end()); // use set to ensure order
+    multi_index                  multi(std_set.begin(), std_set.end()); // use set to ensure order;
+    skip_list<int>               skip_list(data.begin(), data.end());
+    random_access_skip_list<int> ra_skip_list(data.begin(), data.end());
     
     Benchmark benchmark("iterate backwards");    
     
-    benchmark.set        = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::set<int> >, &std_set));
-    benchmark.list       = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::list<int> >, &std_list));
-    benchmark.vector     = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::vector<int> >, &std_vector));
-    benchmark.multi      = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<multi_index>, &multi));
-    benchmark.skip_list  = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<goodliffe::skip_list<int> >, &skip_list));
+    benchmark.set           = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::set<int> >, &std_set));
+    benchmark.list          = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::list<int> >, &std_list));
+    benchmark.vector        = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<std::vector<int> >, &std_vector));
+    benchmark.multi         = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<multi_index>, &multi));
+    benchmark.skip_list     = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<goodliffe::skip_list<int> >, &skip_list));
+    benchmark.ra_skip_list  = TimeExecutionOf(boost::bind(&IterateBackwardsThrough<goodliffe::random_access_skip_list<int> >, &ra_skip_list));
 
     return benchmark;
 }
@@ -360,21 +395,50 @@ Benchmark Find(unsigned size)
     std::vector<int> data;
     FillWithOrderedData(size, data);
     
-    std::set<int>    std_set(data.begin(), data.end());
-    std::list<int>   std_list(std_set.begin(), std_set.end());   // use set to ensure order
-    std::vector<int> std_vector(std_set.begin(), std_set.end()); // use set to ensure order
-    skip_list<int>   skip_list(data.begin(), data.end());
-    multi_index      multi(std_set.begin(), std_set.end()); // use set to ensure order;
+    std::set<int>                std_set(data.begin(), data.end());
+    std::list<int>               std_list(std_set.begin(), std_set.end());   // use set to ensure order
+    std::vector<int>             std_vector(std_set.begin(), std_set.end()); // use set to ensure order
+    skip_list<int>               skip_list(data.begin(), data.end());
+    random_access_skip_list<int> ra_skip_list(data.begin(), data.end());
+    multi_index                  multi(std_set.begin(), std_set.end()); // use set to ensure order;
 
     multi.get<1>().rearrange(multi.get<2>().begin()); // keep random access in order
 
     Benchmark benchmark("find");    
     
-    benchmark.set        = TimeExecutionOf(boost::bind(&Find<std::set<int> >, &std_set));
-    benchmark.list       = TimeExecutionOf(boost::bind(&FindManually<std::list<int> >, &std_list));
-    benchmark.vector     = TimeExecutionOf(boost::bind(&FindManually<std::vector<int> >, &std_vector));
-    benchmark.multi      = TimeExecutionOf(boost::bind(&FindFromMultiIndex, &multi));
-    benchmark.skip_list  = TimeExecutionOf(boost::bind(&Find<goodliffe::skip_list<int> >, &skip_list));
+    benchmark.set           = TimeExecutionOf(boost::bind(&Find<std::set<int> >, &std_set));
+    benchmark.list          = TimeExecutionOf(boost::bind(&FindManually<std::list<int> >, &std_list));
+    benchmark.vector        = TimeExecutionOf(boost::bind(&FindManually<std::vector<int> >, &std_vector));
+    benchmark.multi         = TimeExecutionOf(boost::bind(&FindFromMultiIndex, &multi));
+    benchmark.skip_list     = TimeExecutionOf(boost::bind(&Find<goodliffe::skip_list<int> >, &skip_list));
+    benchmark.ra_skip_list  = TimeExecutionOf(boost::bind(&Find<goodliffe::random_access_skip_list<int> >, &ra_skip_list));
+    
+    return benchmark;
+}
+
+Benchmark Indexing(unsigned size);
+Benchmark Indexing(unsigned size)
+{
+    std::vector<int> data;
+    FillWithOrderedData(size, data);
+    
+    std::set<int>                std_set(data.begin(), data.end());
+    std::list<int>               std_list(std_set.begin(), std_set.end());   // use set to ensure order
+    std::vector<int>             std_vector(std_set.begin(), std_set.end()); // use set to ensure order
+    skip_list<int>               skip_list(data.begin(), data.end());
+    random_access_skip_list<int> ra_skip_list(data.begin(), data.end());
+    multi_index                  multi(std_set.begin(), std_set.end()); // use set to ensure order;
+    
+    multi.get<1>().rearrange(multi.get<2>().begin()); // keep random access in order
+    
+    Benchmark benchmark("indexing");    
+    
+    benchmark.set           = TimeExecutionOf(boost::bind(&IndexManually<std::set<int> >, &std_set));
+    benchmark.list          = TimeExecutionOf(boost::bind(&IndexManually<std::list<int> >, &std_list));
+    benchmark.vector        = TimeExecutionOf(boost::bind(&Index<std::vector<int> >, &std_vector));
+    benchmark.multi         = TimeExecutionOf(boost::bind(&IndexManually<multi_index>, &multi));
+    benchmark.skip_list     = TimeExecutionOf(boost::bind(&IndexManually<goodliffe::skip_list<int> >, &skip_list));
+    benchmark.ra_skip_list  = TimeExecutionOf(boost::bind(&Index<goodliffe::random_access_skip_list<int> >, &ra_skip_list));
     
     return benchmark;
 }
@@ -447,10 +511,19 @@ Benchmark Allocation(unsigned size)
     }
     REQUIRE(allocator_bytes_allocated == 0);
 
+    {
+        allocator_bytes_allocated     = 0;
+        allocator_objects_constructed = 0;
+        random_access_skip_list<int,std::less<int>,TestingAllocator<int> > ra_skip_list(data.begin(), data.end());
+        benchmark.ra_skip_list = allocator_bytes_allocated;
+    }
+    REQUIRE(allocator_bytes_allocated == 0);
+
     return benchmark;
 }
 
 //============================================================================
+#pragma mark The mother of all tests
 // the mother of all comparison tests converted into a benchmark
 
 template <typename CONTAINER>
@@ -484,6 +557,15 @@ void AddInt<multi_index>(multi_index &c, int value)
 }
 
 template <typename CONTAINER>
+void Dump(CONTAINER &s) {}
+
+template <>
+void Dump<goodliffe::skip_list<int> >(goodliffe::skip_list<int> &s)
+{
+    s.dump(std::cerr);
+}
+
+template <typename CONTAINER>
 void RandomUse(unsigned total_repeats, const std::vector<int> *insert, const unsigned *erase_from, const unsigned *erase_length);
 
 template <typename CONTAINER>
@@ -493,12 +575,24 @@ void RandomUse(unsigned total_repeats, const std::vector<int> *insert, const uns
     
     for (unsigned repeats = 0; repeats < total_repeats; ++repeats)
     {
+        //std::cerr << "RandomUse, repeat: " << repeats << "\n";
         for (unsigned n = 0; n < insert[repeats].size(); ++n)
         {
+            //std::cerr << "n=" << n << "\n";
+            if (n == 0 && repeats == 14)
+            {
+                //fprintf(stderr, "All about to go wrong\n");
+                //Dump(s);
+            }
             AddInt<CONTAINER>(s, insert[repeats][n]);
             //s.insert(insert[repeats][n]);
         }
         
+        if (repeats == 13)
+        {
+            //fprintf(stderr, "Will perpetrate the erase of doom...\n");
+            //Dump(s);
+        }
         unsigned efrom   = erase_from[repeats];
         unsigned elength = erase_length[repeats];
         if (efrom >= s.size())        efrom   = unsigned(s.size())/2;
@@ -536,16 +630,18 @@ Benchmark RandomUse(unsigned insert_size)
         erase_length[n] = unsigned(rand()) % unsigned(insert_size*((n/2)+1)/3);
     }
 
-    benchmark.set       = TimeExecutionOf(boost::bind(&RandomUse<std::set<int> >,    repeats, insert, erase_from, erase_length));
-    benchmark.vector    = TimeExecutionOf(boost::bind(&RandomUse<std::vector<int> >, repeats, insert, erase_from, erase_length));
-    benchmark.list      = TimeExecutionOf(boost::bind(&RandomUse<std::list<int> >,   repeats, insert, erase_from, erase_length));
-    benchmark.multi     = TimeExecutionOf(boost::bind(&RandomUse<multi_index>,       repeats, insert, erase_from, erase_length));
-    benchmark.skip_list = TimeExecutionOf(boost::bind(&RandomUse<skip_list<int> >,   repeats, insert, erase_from, erase_length));
+    benchmark.set           = TimeExecutionOf(boost::bind(&RandomUse<std::set<int> >,    repeats, insert, erase_from, erase_length));
+    benchmark.vector        = TimeExecutionOf(boost::bind(&RandomUse<std::vector<int> >, repeats, insert, erase_from, erase_length));
+    benchmark.list          = TimeExecutionOf(boost::bind(&RandomUse<std::list<int> >,   repeats, insert, erase_from, erase_length));
+    benchmark.multi         = TimeExecutionOf(boost::bind(&RandomUse<multi_index>,       repeats, insert, erase_from, erase_length));
+    benchmark.skip_list     = TimeExecutionOf(boost::bind(&RandomUse<skip_list<int> >,   repeats, insert, erase_from, erase_length));
+    benchmark.ra_skip_list  = TimeExecutionOf(boost::bind(&RandomUse<random_access_skip_list<int> >, repeats, insert, erase_from, erase_length));
 
     return benchmark;
 }
 
 //============================================================================
+#pragma mark Main harness
 
 void Progress();
 void Progress() { fprintf(stderr, "."); }
@@ -568,13 +664,14 @@ void RunBenchmarks(unsigned size)
     benchmarks.push_back(IterateForwards(size));            Progress();
     benchmarks.push_back(IterateBackwards(size));           Progress();
     benchmarks.push_back(Find(size));                       Progress();
+    benchmarks.push_back(Indexing(size));                   Progress();
     benchmarks.push_back(Allocation(size));                 Progress();
     benchmarks.push_back(RandomUse(unsigned(size*0.4)));    Progress();
     
     fprintf(stderr, "\n\n");
-    fprintf(stderr, "+===============================+===========+==========+==========+==========+==========+=========+=========+=========+=========+\n");
-    fprintf(stderr, "|                    test title | skip_list |      set |   vector |     list |    multi |>   set%% | vector%% |   list%% |  multi%% |\n");
-    fprintf(stderr, "+-------------------------------+-----------+----------+----------+----------+----------+---------+---------+---------+---------+\n");
+    fprintf(stderr, "+===============================+===========+===========+==========+==========+==========+==========+=========+=========+=========+=========+\n");
+    fprintf(stderr, "|                    test title | skip_list |     ra_sl |      set |   vector |     list |    multi |>   set%% | vector%% |   list%% |  multi%% |\n");
+    fprintf(stderr, "+-------------------------------+-----------+-----------+----------+----------+----------+----------+---------+---------+---------+---------+\n");
 
     for (size_t n = 0; n < benchmarks.size(); ++n)
     {
@@ -583,16 +680,12 @@ void RunBenchmarks(unsigned size)
         int list_pc   = b.list   >0 ? int(b.skip_list * 100 / b.list)     : 0;
         int vector_pc = b.vector >0 ? int(b.skip_list * 100 / b.vector)   : 0;
         int multi_pc =  b.multi  >0 ? int(b.skip_list * 100 / b.multi)    : 0;
-        fprintf(stderr, "|%30s | %9ld |%9ld |%9ld |%9ld |%9ld |>%6d%% | %6d%% | %6d%% | %6d%% |\n",
+        fprintf(stderr, "|%30s | %9ld | %9ld |%9ld |%9ld |%9ld |%9ld |>%6d%% | %6d%% | %6d%% | %6d%% |\n",
                 b.name.c_str(),
-                b.skip_list, b.set, b.vector, b.list, b.multi,
+                b.skip_list, b.ra_skip_list, b.set, b.vector, b.list, b.multi,
                 set_pc, vector_pc, list_pc, multi_pc);
-        //fprintf(stderr, "|%30s | %9s | %5d%% | %5d%% | %5d%% |\n",
-        //        " ",
-        //        " ",
-        //        set_pc, vector_pc, list_pc);
     }
-    fprintf(stderr, "+===============================+===========+==========+==========+==========+==========+=========+=========+=========+=========+\n");
+    fprintf(stderr, "+===============================+===========+===========+==========+==========+==========+==========+=========+=========+=========+=========+\n");
     fprintf(stderr, "\n");
 }
 
