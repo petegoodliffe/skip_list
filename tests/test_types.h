@@ -6,6 +6,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 struct Struct
 {
@@ -16,10 +17,9 @@ struct Struct
     Struct(int i_, float f_) : i(i_), f(f_) {}
 };
 
-template <class STREAM>
 inline
-STREAM &operator<<(STREAM &s, const Struct &v)
-    { /*s << v.i << "," << v.f;*/ return s; } // streaming ints and floats fails to compile on MSVS
+std::ostream &operator<<(std::ostream &s, const Struct &v)
+    { s << v.i << "," << v.f; return s; }
 inline
 bool operator<(const Struct &lhs, const Struct &rhs)
     { return lhs.i < rhs.i; }
@@ -86,8 +86,8 @@ struct Counter
     bool operator<=(const Counter &rhs) const { return value <= rhs.value; }
 };
 
-template <class STREAM>
-STREAM &operator<<(STREAM &s, const Counter &c)
+inline
+std::ostream &operator<<(std::ostream &s, const Counter &c)
     { s << "Counter"; return s; }
 
 //============================================================================

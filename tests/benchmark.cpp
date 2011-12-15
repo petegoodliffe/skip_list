@@ -25,6 +25,7 @@
 #define CATCH_CONFIG_MAIN
 #endif 
 
+#define CATCH_CONFIG_NO_STREAM_REDIRECTION
 #include "catch.hpp"
 
 using goodliffe::skip_list;

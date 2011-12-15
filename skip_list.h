@@ -501,6 +501,7 @@ private:
     size_type find_chain(const value_type &value, node_type **chain);
     size_type find_chain(const value_type &value, node_type **chain, size_type *indexes);
     size_type find_chain(node_type *node, node_type **chain, size_type *indexes);
+    size_type find_end_chain(node_type **chain, size_type *indexes);
 
     allocator_type  alloc;
     generator_type  generator;
@@ -1439,6 +1440,7 @@ inline
 typename skip_list_impl<T,C,A,NL,LG,N>::size_type
 skip_list_impl<T,C,A,NL,LG,N>::find_chain(node_type *node, node_type **chain, size_type *indexes)
 {
+    assert_that(is_valid(node));
     size_type index = 0;
     node_type *cur = head;
     unsigned l = num_levels;
@@ -1447,6 +1449,37 @@ skip_list_impl<T,C,A,NL,LG,N>::find_chain(node_type *node, node_type **chain, si
         --l;
         assert_that(l <= cur->level);
         while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
+        {
+            index += node_traits::span(cur, l);
+            cur = cur->next[l];
+            assert_that(l <= cur->level);
+        }
+        chain[l]   = cur;
+        indexes[l] = index;
+    }
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+    for (unsigned l1 = 0; l1 < num_levels; ++l1)
+    {
+        assert_that(chain[l1]->level >= l1);
+    }
+#endif
+    return index;
+}
+
+// TODO: fold these down, up, sideways
+template <class T, class C, class A, unsigned NL, class LG, class N>
+inline
+typename skip_list_impl<T,C,A,NL,LG,N>::size_type
+skip_list_impl<T,C,A,NL,LG,N>::find_end_chain(node_type **chain, size_type *indexes)
+{
+    size_type index = 0;
+    node_type *cur = head;
+    unsigned l = num_levels;
+    while (l)
+    {
+        --l;
+        assert_that(l <= cur->level);
+        while (cur->next[l] != tail)
         {
             index += node_traits::span(cur, l);
             cur = cur->next[l];
@@ -1520,8 +1553,7 @@ inline
 void
 skip_list_impl<T,C,A,NL,LG,N>::remove(node_type *node)
 {
-    assert_that(node != head);
-    assert_that(node != tail);
+    assert_that(is_valid(node));
     assert_that(node->next[0]);
     
     node_type *chain[num_levels]   = {0};
@@ -1534,10 +1566,10 @@ skip_list_impl<T,C,A,NL,LG,N>::remove(node_type *node)
     {
         if (l <= node->level)
         {
-            node_traits::set_span(chain[l], l, chain[l]->span[l] + node->span[l]-1);
+            node_traits::set_span(chain[l], l, node_traits::span(chain[l], l) + node_traits::span(node, l)-1);
             chain[l]->next[l] = node->next[l];
         }
-        else if (chain[l] == head || chain[l]->value < node->value)
+        else if (chain[l] == head || less(chain[l]->value, node->value))
         {
             node_traits::decrement_span(chain[l], l);
         }
@@ -1596,7 +1628,9 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
     size_type  first_indexes[num_levels] = {0};// TODO no indexes needed
     size_type  last_indexes[num_levels]  = {0};// TODO no indexes needed
     size_type  first_index               = find_chain(first, first_chain, first_indexes);
-    size_type  last_index                = find_chain(one_past_end, last_chain, last_indexes);
+    size_type  last_index                = one_past_end != tail
+                                         ? find_chain(one_past_end, last_chain, last_indexes)
+                                         : find_end_chain(last_chain, last_indexes);
     size_type  size_reduction            = last_index-first_index;
 
     //fprintf(stderr, "Removing from %d -> %d\n", first->value, last->value);
@@ -1618,7 +1652,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
             first_chain[l]->next[l] = last_chain[l]->next[l];
 
         // span
-        node_traits::set_span(first_chain[l], l, last_indexes[l]+last_chain[l]->span[l]-first_indexes[l]-size_reduction);
+        node_traits::set_span(first_chain[l], l, last_indexes[l]+node_traits::span(last_chain[l], l)-first_indexes[l]-size_reduction);
     }
 
     // now delete all the nodes between [first,last]
