@@ -347,7 +347,7 @@ public:
 //==============================================================================
 #pragma mark - diagnostics
 
-#define SKIP_LIST_IMPL_DIAGNOSTICS 1
+//#define SKIP_LIST_IMPL_DIAGNOSTICS 1
 
 #if defined(DEBUG) || defined(_DEBUG) || defined(SKIP_LIST_IMPL_DIAGNOSTICS)
 #define SKIP_LIST_DIAGNOSTICS 1
@@ -1632,13 +1632,15 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
                                          ? find_chain(one_past_end, last_chain, last_indexes)
                                          : find_end_chain(last_chain, last_indexes);
     size_type  size_reduction            = last_index-first_index;
-
-    //fprintf(stderr, "Removing from %d -> %d\n", first->value, last->value);
-    //for (int n = 0; n < levels; ++n)
-    //    fprintf(stderr, "[%d]: first=%d@%u, last=%d@%u(%u)\n",
-    //            n, first_chain[n]->value, first_indexes[n],
-    //            last_chain[n]->value, last_indexes[n], last_chain[n]->span[n]);
-
+/*
+    std::cerr << "Removing from " << first->value << " to " << last->value;
+    for (int n = 0; n < levels; ++n)
+        std::cerr << "[" << n << "] first=" << first_chain[n]->value
+        //<< "/" << first_indexes[n]
+            << ", last=" << last_chain[n]->value
+        //<< "/" << last_indexes[n]
+            << "  span=" << node_traits::span(last_chain[n], n) << "\n";
+*/
     // backwards pointer
     one_past_end->prev = prev;
 
@@ -1735,6 +1737,8 @@ void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
             
             if (n != tail)
             {
+                if (next != tail && !(n->value < next->value))
+                    s << "*XXXXXXXXX* ";
                 s << span << ">"
                   << " "
                   << prev_char;
@@ -1761,6 +1765,7 @@ bool skip_list_impl<T,C,A,NL,LG,N>::check() const
             if (n->magic != MAGIC_GOOD)
             {
                 assert_that(false && "bad magic");
+                dump(std::cerr);
                 return false;
             }
 
@@ -1768,6 +1773,7 @@ bool skip_list_impl<T,C,A,NL,LG,N>::check() const
             if (l == 0 && n->next[0]->prev != n)
             {
                 assert_that(false && "chain error");
+                dump(std::cerr);
                 return false;
             }
             // check values are in order
@@ -1777,6 +1783,7 @@ bool skip_list_impl<T,C,A,NL,LG,N>::check() const
                 if (!(less(n->value, next->value)))
                 {
                     assert_that(false && "value order error");
+                    dump(std::cerr);
                     return false;
                 }
             }
@@ -1788,6 +1795,7 @@ bool skip_list_impl<T,C,A,NL,LG,N>::check() const
         if (l == 0 && count != item_count)
         {
             assert_that(false && "item count error")
+            dump(std::cerr);
             return false;
         }
     }
