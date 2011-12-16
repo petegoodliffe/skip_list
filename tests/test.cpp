@@ -575,6 +575,17 @@ TEST_CASE( "skip_list/erase/iterator/three item list/end", "" )
     REQUIRE(*ri++ == 2); REQUIRE(*ri++ == 1); REQUIRE(ri == list.rend());
 }
 
+TEST_CASE( "skip_list/erase/iterator/three item list/whole list", "" )
+{
+    skip_list<int> list; list.insert(1); list.insert(2); list.insert(3); list.insert(4);
+    
+    list.erase(list.begin(), list.end());
+    REQUIRE(list.size() == 0);
+    
+    skip_list<int>::iterator i = list.begin();
+    REQUIRE(i == list.end());
+}
+
 //============================================================================
 // size
 
