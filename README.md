@@ -1,7 +1,7 @@
 skip_list
 =========
 
-Pete Goodliffe (pete /at/ goodlfife.net)
+Pete Goodliffe (pete /at/ goodliffe.net)
 
 
 This is an STL-style C++ skip list container; a reasonably fast ordered container.
