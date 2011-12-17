@@ -268,5 +268,27 @@ TEST_CASE( "random_access_skip_list/non members", "" )
     REQUIRE_FALSE(list1 >= list2);
 }
 
+//============================================================================
+
+TEST_CASE( "random_access_skip_list/index_of", "" )
+{
+    random_access_skip_list<int> list;
+    for (int n = 0; n < 9; ++n)
+        list.insert(n);
+
+    random_access_skip_list<int>::iterator i = list.begin();
+    
+    REQUIRE(list.index_of(i++) == 0);
+    REQUIRE(list.index_of(i++) == 1);
+    REQUIRE(list.index_of(i++) == 2);
+    REQUIRE(list.index_of(i++) == 3);
+    REQUIRE(list.index_of(i++) == 4);
+    REQUIRE(list.index_of(i++) == 5);
+    REQUIRE(list.index_of(i++) == 6);
+    REQUIRE(list.index_of(i++) == 7);
+    REQUIRE(list.index_of(i++) == 8);
+}
+
+//============================================================================
 // TODO: allocation test
 

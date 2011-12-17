@@ -316,12 +316,11 @@ public:
     using typename parent_type::pointer;
     using typename parent_type::const_pointer;
     using typename parent_type::compare;
-    
     using typename parent_type::iterator;
     using typename parent_type::const_iterator;
     using typename parent_type::reverse_iterator;
     using typename parent_type::const_reverse_iterator;
-    
+
     //======================================================================
     // lifetime management
     
@@ -349,6 +348,8 @@ public:
     
     iterator       iterator_at(unsigned index);
     const_iterator iterator_at(unsigned index) const;
+    
+    size_type index_of(const const_iterator &i) const;
 
     void erase_at(size_type index);
 };
@@ -495,6 +496,7 @@ public:
     void             remove_all();
     void             remove_between(node_type *first, node_type *last);
     void             swap(skip_list_impl &other);
+    size_type        index_of(const node_type *node) const;
 
     template <typename STREAM>
     void        dump(STREAM &stream) const;
@@ -509,10 +511,10 @@ private:
     skip_list_impl(const skip_list_impl &other);
     skip_list_impl &operator=(const skip_list_impl &other);
     
-    size_type find_chain(const value_type &value, node_type **chain);
-    size_type find_chain(const value_type &value, node_type **chain, size_type *indexes);
-    size_type find_chain(node_type *node, node_type **chain, size_type *indexes);
-    size_type find_end_chain(node_type **chain, size_type *indexes);
+    size_type find_chain(const value_type &value, node_type **chain) const;
+    size_type find_chain(const value_type &value, node_type **chain, size_type *indexes) const;
+    size_type find_chain(const node_type *node, node_type **chain, size_type *indexes) const;
+    size_type find_end_chain(node_type **chain, size_type *indexes) const;
 
     allocator_type  alloc;
     generator_type  generator;
@@ -1149,6 +1151,14 @@ random_access_skip_list<T,C,A,NL,LG>::iterator_at(unsigned index) const
     return const_iterator(this, node);
 }
 
+template <class T, class C, class A, unsigned NL, class LG>
+inline
+typename random_access_skip_list<T,C,A,NL,LG>::size_type
+random_access_skip_list<T,C,A,NL,LG>::index_of(const const_iterator &i) const
+{
+    return impl.index_of(i.get_node());
+}
+
 } // namespace goodliffe
 
 //==============================================================================
@@ -1419,7 +1429,20 @@ skip_list_impl<T,C,A,NL,LG,N>::at(size_type index) const
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
 typename skip_list_impl<T,C,A,NL,LG,N>::size_type
-skip_list_impl<T,C,A,NL,LG,N>::find_chain(const value_type &value, node_type **chain, size_type *indexes)
+skip_list_impl<T,C,A,NL,LG,N>::index_of(const node_type *node) const
+{
+    // only compiles for node_type where "node->span" is valid
+    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));
+
+    node_type *chain[num_levels]   = {0};
+    size_type  indexes[num_levels] = {0};
+    return find_chain(node, chain, indexes);
+}
+
+template <class T, class C, class A, unsigned NL, class LG, class N>
+inline
+typename skip_list_impl<T,C,A,NL,LG,N>::size_type
+skip_list_impl<T,C,A,NL,LG,N>::find_chain(const value_type &value, node_type **chain, size_type *indexes) const
 {
     size_type index = 0;
     node_type *cur = head;
@@ -1452,7 +1475,7 @@ skip_list_impl<T,C,A,NL,LG,N>::find_chain(const value_type &value, node_type **c
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
 typename skip_list_impl<T,C,A,NL,LG,N>::size_type
-skip_list_impl<T,C,A,NL,LG,N>::find_chain(node_type *node, node_type **chain, size_type *indexes)
+skip_list_impl<T,C,A,NL,LG,N>::find_chain(const node_type *node, node_type **chain, size_type *indexes) const
 {
     assert_that(is_valid(node));
     size_type index = 0;
@@ -1484,7 +1507,7 @@ skip_list_impl<T,C,A,NL,LG,N>::find_chain(node_type *node, node_type **chain, si
 template <class T, class C, class A, unsigned NL, class LG, class N>
 inline
 typename skip_list_impl<T,C,A,NL,LG,N>::size_type
-skip_list_impl<T,C,A,NL,LG,N>::find_end_chain(node_type **chain, size_type *indexes)
+skip_list_impl<T,C,A,NL,LG,N>::find_end_chain(node_type **chain, size_type *indexes) const
 {
     size_type index = 0;
     node_type *cur = head;
