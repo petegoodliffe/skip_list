@@ -35,6 +35,9 @@ namespace detail
     
     template <typename T,typename C,typename A,unsigned NL,typename LG,typename N>
     class skip_list_impl;
+
+    template <typename LIST> class skip_list_iterator;
+    template <typename LIST> class skip_list_const_iterator;
 }
 }
 
@@ -77,8 +80,14 @@ template <typename T,
 class skip_list
 {
 protected:
+    typedef skip_list<T,Compare,Allocator,NumLevels,LevelGenerator,SkipListType> self_type;
     typedef SkipListType                    impl_type;
     typedef typename impl_type::node_type   node_type;
+
+    template <typename T1>
+    friend class detail::skip_list_iterator;
+    template <typename T1>
+    friend class detail::skip_list_const_iterator;
 
 public:
 
@@ -95,10 +104,10 @@ public:
     typedef typename allocator_type::const_pointer      const_pointer;
     typedef Compare                                     compare;
 
-    class iterator;
-    class const_iterator;
-    typedef std::reverse_iterator<iterator>       reverse_iterator;
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef detail::skip_list_iterator<self_type>       iterator;
+    typedef detail::skip_list_const_iterator<self_type> const_iterator;
+    typedef std::reverse_iterator<iterator>             reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
 
     //======================================================================
     // lifetime management
@@ -215,9 +224,6 @@ public:
     void dump(STREAM &stream) const { impl.dump(stream); }
 
 protected:
-    friend class iterator;
-    friend class const_iterator;
-
     impl_type impl;
 };
 
@@ -248,6 +254,7 @@ namespace std
 }
 
 //==============================================================================
+#pragma mark - random_access_skip_list
 
 namespace goodliffe {
 
@@ -281,13 +288,17 @@ private:
             typename detail::skip_list_impl
                 <
                     T,Compare,Allocator,NumLevels,LevelGenerator,
-                    detail::skip_list_node_with_span<T> 
+                    detail::skip_list_node_with_span<T>
                 >
         >
         parent_type;
+    typedef random_access_skip_list
+        <
+            T,Compare,Allocator,NumLevels,LevelGenerator
+        >
+        self_type;
 
 protected:
-    using typename parent_type::impl_type;
     using typename parent_type::node_type;
     using parent_type::impl;
 
@@ -551,24 +562,25 @@ bool less_or_equal(const T &lhs, const T &rhs, Compare &less)
 #pragma mark - iterators
 
 namespace goodliffe {
+namespace detail {
 
-template <class T, class C, class A, unsigned NL, class LG, class SLT>
-class skip_list<T,C,A,NL,LG,SLT>::iterator
+template <typename SKIP_LIST>
+class skip_list_iterator
     : public std::iterator<std::bidirectional_iterator_tag,
-                           typename skip_list<T,C,A,NL,LG,SLT>::value_type,
-                           typename skip_list<T,C,A,NL,LG,SLT>::difference_type,
-                           typename skip_list<T,C,A,NL,LG,SLT>::const_pointer,
-                           typename skip_list<T,C,A,NL,LG,SLT>::const_reference>
+                           typename SKIP_LIST::value_type,
+                           typename SKIP_LIST::difference_type,
+                           typename SKIP_LIST::const_pointer,
+                           typename SKIP_LIST::const_reference>
 {
 public:
-    typedef skip_list<T,C,A,NL,LG,SLT>                  parent_type;
-    typedef typename parent_type::const_iterator        const_type;
+    typedef SKIP_LIST                                   parent_type;
+    typedef skip_list_const_iterator<SKIP_LIST>         const_type;
     typedef typename parent_type::impl_type::node_type  node_type;
-    typedef iterator                                    self_type;
-    
-    iterator()
+    typedef skip_list_iterator<SKIP_LIST>               self_type;
+
+    skip_list_iterator()
         : parent(0), node(0) {}
-    iterator(parent_type *parent_, node_type *node_)
+    skip_list_iterator(parent_type *parent_, node_type *node_)
         : parent(parent_), node(node_) {}
 
     self_type &operator++()
@@ -581,8 +593,8 @@ public:
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
 
-    const_reference operator*()  { return node->value; }
-    const_pointer   operator->() { return node->value; }
+    typename parent_type::const_reference operator*()  { return node->value; }
+    typename parent_type::const_pointer   operator->() { return node->value; }
     
     bool operator==(const self_type &other) const
         { return parent == other.parent && node == other.node; }
@@ -598,30 +610,30 @@ public:
     const node_type   *get_node()   const { return node; }   ///< @internal
 
 private:
-    friend class const_iterator;
+    friend class skip_list_const_iterator<SKIP_LIST>;
     parent_type *parent;
     node_type   *node;
 };
 
-template <class T, class C, class A, unsigned NL, class LG, class SLT>
-class skip_list<T,C,A,NL,LG,SLT>::const_iterator
+template <class SKIP_LIST>
+class skip_list_const_iterator
     : public std::iterator<std::bidirectional_iterator_tag,
-                           typename skip_list<T,C,A,NL,LG,SLT>::value_type,
-                           typename skip_list<T,C,A,NL,LG,SLT>::difference_type,
-                           typename skip_list<T,C,A,NL,LG,SLT>::const_pointer,
-                           typename skip_list<T,C,A,NL,LG,SLT>::const_reference>
+                           typename SKIP_LIST::value_type,
+                           typename SKIP_LIST::difference_type,
+                           typename SKIP_LIST::const_pointer,
+                           typename SKIP_LIST::const_reference>
 {
 public:
-    typedef const skip_list<T,C,A,NL,LG,SLT>                    parent_type;
-    typedef typename parent_type::iterator                      non_const_type;
+    typedef const SKIP_LIST                                     parent_type;
+    typedef skip_list_iterator<SKIP_LIST>                       non_const_type;
     typedef const typename parent_type::impl_type::node_type    node_type;
-    typedef const_iterator                                      self_type;
+    typedef skip_list_const_iterator<SKIP_LIST>                 self_type;
 
-    const_iterator()
+    skip_list_const_iterator()
         : parent(0), node(0) {}
-    const_iterator(const non_const_type &i)
+    skip_list_const_iterator(const non_const_type &i)
         : parent(i.parent), node(i.node) {}
-    const_iterator(const parent_type *parent_, node_type *node_)
+    skip_list_const_iterator(const parent_type *parent_, node_type *node_)
         : parent(parent_), node(node_) {}
 
     self_type &operator++()
@@ -634,9 +646,9 @@ public:
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
 
-    const_reference operator*()  { return node->value; }
-    const_pointer   operator->() { return node->value; }
-    
+    typename parent_type::const_reference operator*()  { return node->value; }
+    typename parent_type::const_pointer   operator->() { return node->value; }
+
     bool operator==(const self_type &other) const
         { return parent == other.parent && node == other.node; }
     bool operator!=(const self_type &other) const
@@ -651,10 +663,12 @@ public:
     const node_type   *get_node()   const { return node; }   ///< @internal
 
 private:
-    friend class iterator;
+    friend class skip_list_iterator<SKIP_LIST>;
     parent_type *parent;
     node_type   *node;
 };
+
+} // namespace detail
 
 //==============================================================================
 #pragma mark - lifetime management
