@@ -3,7 +3,7 @@
 // Copyright (c) 2011 Pete Goodliffe. All rights reserved
 //============================================================================
 
-#include "skip_list.h"
+#include "random_access_skip_list.h"
 
 #define CATCH_CONFIG_NO_STREAM_REDIRECTION 1
 #include "catch.hpp"

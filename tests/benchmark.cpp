@@ -4,6 +4,7 @@
 //============================================================================
 
 #include "skip_list.h"
+#include "random_access_skip_list.h"
 
 #include "get_time.h"
 #include "test_types.h"
