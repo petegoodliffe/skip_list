@@ -28,10 +28,9 @@ namespace goodliffe {
 /// Internal namespace for impementation of skip list data structure
 namespace detail
 {
-    template <unsigned NumLevels>           class bit_based_skip_list_level_generator;
-    template <unsigned NumLevels>           class skip_list_level_generator;
-    template <typename T>                   struct skip_list_node;
-    template <typename T, typename SPAN>    struct skip_list_node_with_span;
+    template <unsigned NumLevels>   class bit_based_skip_list_level_generator;
+    template <unsigned NumLevels>   class skip_list_level_generator;
+    template <typename T>           struct skip_list_node;
     
     template <typename T,typename C,typename A,unsigned NL,typename LG,typename N>
     class skip_list_impl;
@@ -332,22 +331,6 @@ struct skip_list_node
     unsigned    level;
     self_type  *prev;
     self_type **next; ///< effectively node_type *next[level+1];
-};
-    
-template <typename T, typename SPAN>
-struct skip_list_node_with_span
-{
-    typedef skip_list_node_with_span<T,SPAN> self_type;
-    typedef SPAN                             size_type;
-    
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-    unsigned    magic;
-#endif
-    T           value;
-    unsigned    level;
-    self_type  *prev;
-    self_type **next; ///< effectively node_type *next[level+1];
-    size_type  *span; ///< effectively unsigned span[level+1];
 };
 
 template <typename T, typename Allocator>
@@ -1067,105 +1050,6 @@ struct skip_list_node_traits
 };
 
 //==============================================================================
-
-/// Partial specialisation for skip_list_node_with_span
-/// (also intialises all spans to zero)
-template <typename T, typename Allocator>
-struct skip_list_node_traits<skip_list_node_with_span<T,typename Allocator::size_type>, Allocator>
-{
-    typedef typename Allocator::size_type                           Span;
-    typedef skip_list_node_with_span<T,Span>                        NodeType;
-    typedef typename Allocator::template rebind<NodeType>::other    NodeAllocator;
-    typedef typename Allocator::template rebind<NodeType*>::other   ListAllocator;
-    typedef typename Allocator::template rebind<Span>::other        SpanAllocator;
-    typedef typename Allocator::difference_type                     Difference;
-    typedef typename Allocator::size_type                           Size;
-
-    static
-    inline
-    NodeType *allocate(unsigned level, Allocator &alloc)
-    {
-        NodeType *node = NodeAllocator(alloc).allocate(1, (void*)0);
-        node->next  = ListAllocator(alloc).allocate(level+1, (void*)0);
-        node->span  = SpanAllocator(alloc).allocate(level+1, (void*)0);
-        node->level = level;
-        for (unsigned n = 0; n <= level; ++n) node->span[n] = 1;
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        for (unsigned n = 0; n <= level; ++n) node->next[n] = 0;
-        node->magic = MAGIC_GOOD;
-#endif
-        return node;
-    }
-    static
-    inline
-    void deallocate(NodeType *node, Allocator &alloc)
-    {
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(node->magic == MAGIC_GOOD);
-        node->magic = MAGIC_BAD;
-        for (unsigned n = 0; n <= node->level; ++n) node->next[n] = 0;
-        node->prev = 0;
-#endif
-        SpanAllocator(alloc).deallocate(node->span, node->level+1);
-        ListAllocator(alloc).deallocate(node->next, node->level+1);
-        NodeAllocator(alloc).deallocate(node, 1);
-    }
-
-    static
-    void increment_span(NodeType *node, unsigned level)
-    {
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(level <= node->level);
-#endif
-        
-        // Level 0 always has a span of 1
-        if (level)
-            ++(node->span[level]);
-    }
-    static
-    void change_span(NodeType *node, unsigned level, Difference by)
-    {
-        // Level 0 always has a span of 1
-        if (level)
-            node->span[level] += by;
-    }
-    static
-    void set_span(NodeType *node, unsigned level, Size span)
-    {
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(level <= node->level);
-#endif
-
-        if (level)
-            node->span[level] = span;
-    }
-    static
-    void set_all_spans(NodeType *node, Size span)
-    {
-        for (unsigned n = 0; n < node->level; ++n)
-            node->span[n] = span;
-    }
-    static
-    void decrement_span(NodeType *node, unsigned level)
-    {
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(level <= node->level);
-#endif
-        if (level)
-            --(node->span[level]);
-    }
-    static
-    inline
-    Size span(const NodeType *node, unsigned level)
-    {
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(level <= node->level);
-#endif
-        return node->span[level];
-    }
-};
-
-//==============================================================================
 #pragma mark - skip_list_impl
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
@@ -1219,69 +1103,6 @@ skip_list_impl<T,C,A,NL,LG,N>::find(const value_type &value) const
         }
     }
     return search;
-}
-
-template <class T, class C, class A, unsigned NL, class LG, class N>
-inline
-typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
-skip_list_impl<T,C,A,NL,LG,N>::at(size_type index)
-{
-    // only compiles for node_type where "node->span" is valid
-    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T,size_type>));
-
-    unsigned l = levels;
-    node_type *node = head;
-    index += 1;
-
-    while (l)
-    {
-        --l;
-        while (node->span[l] <= index)
-        {
-            index -= node->span[l];
-            node = node->next[l];
-        }
-    }
-
-    return node;
-}
-
-template <class T, class C, class A, unsigned NL, class LG, class N>
-inline
-const typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
-skip_list_impl<T,C,A,NL,LG,N>::at(size_type index) const
-{
-    // only compiles for node_type where "node->span" is valid
-    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T,size_type>));
-
-    unsigned l = levels;
-    const node_type *node = head;
-    index += 1;
-
-    while (l)
-    {
-        --l;
-        while (node->span[l] <= index)
-        {
-            index -= node->span[l];
-            node = node->next[l];
-        }
-    }
-
-    return node;
-}
-
-template <class T, class C, class A, unsigned NL, class LG, class N>
-inline
-typename skip_list_impl<T,C,A,NL,LG,N>::size_type
-skip_list_impl<T,C,A,NL,LG,N>::index_of(const node_type *node) const
-{
-    // only compiles for node_type where "node->span" is valid
-    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T,size_type>));
-
-    node_type *chain[num_levels]   = {0};
-    size_type  indexes[num_levels] = {0};
-    return find_chain(node, chain, indexes);
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class N>
