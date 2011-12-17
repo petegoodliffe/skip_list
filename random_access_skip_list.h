@@ -40,7 +40,7 @@ class random_access_skip_list :
             typename detail::skip_list_impl
                 <
                     T,Compare,Allocator,NumLevels,LevelGenerator,
-                    detail::skip_list_node_with_span<T>
+                    detail::skip_list_node_with_span<T,typename Allocator::size_type>
                 >
         >
 {
@@ -51,7 +51,7 @@ private:
             typename detail::skip_list_impl
                 <
                     T,Compare,Allocator,NumLevels,LevelGenerator,
-                    detail::skip_list_node_with_span<T>
+                    detail::skip_list_node_with_span<T, typename Allocator::size_type>
                 >
         >
         parent_type;

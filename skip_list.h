@@ -28,10 +28,10 @@ namespace goodliffe {
 /// Internal namespace for impementation of skip list data structure
 namespace detail
 {
-    template <unsigned NumLevels> class bit_based_skip_list_level_generator;
-    template <unsigned NumLevels> class skip_list_level_generator;
-    template <typename T>         struct skip_list_node;
-    template <typename T>         struct skip_list_node_with_span;
+    template <unsigned NumLevels>           class bit_based_skip_list_level_generator;
+    template <unsigned NumLevels>           class skip_list_level_generator;
+    template <typename T>                   struct skip_list_node;
+    template <typename T, typename SPAN>    struct skip_list_node_with_span;
     
     template <typename T,typename C,typename A,unsigned NL,typename LG,typename N>
     class skip_list_impl;
@@ -334,10 +334,11 @@ struct skip_list_node
     self_type **next; ///< effectively node_type *next[level+1];
 };
     
-template <typename T>
+template <typename T, typename SPAN>
 struct skip_list_node_with_span
 {
-    typedef skip_list_node_with_span<T> self_type;
+    typedef skip_list_node_with_span<T,SPAN> self_type;
+    typedef SPAN                             size_type;
     
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     unsigned    magic;
@@ -346,7 +347,7 @@ struct skip_list_node_with_span
     unsigned    level;
     self_type  *prev;
     self_type **next; ///< effectively node_type *next[level+1];
-    unsigned   *span; ///< effectively unsigned span[level+1];
+    size_type  *span; ///< effectively unsigned span[level+1];
 };
 
 template <typename T, typename Allocator>
@@ -1028,6 +1029,7 @@ struct skip_list_node_traits
     typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
     typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
     typedef typename Allocator::difference_type                   Difference;
+    typedef typename Allocator::size_type                         Size;
 
     static
     inline
@@ -1058,10 +1060,10 @@ struct skip_list_node_traits
 
     static void increment_span(NodeType *node, unsigned level) {}
     static void change_span(NodeType *node, unsigned level, Difference by) {}
-    static void set_span(NodeType *node, unsigned level, unsigned span) {}
-    static void set_all_spans(NodeType *node, unsigned span) {}
-    static void decrement_span(NodeType *node, unsigned level) {}
-    static unsigned span(const NodeType *node, unsigned level) { return 0; }
+    static void set_span(NodeType *node, unsigned level, Size span) {}
+    static void set_all_spans(NodeType *node, Size span) {}
+    static void decrement_span(NodeType *node, Size level) {}
+    static Size span(const NodeType *node, unsigned level) { return 0; }
 };
 
 //==============================================================================
@@ -1069,13 +1071,15 @@ struct skip_list_node_traits
 /// Partial specialisation for skip_list_node_with_span
 /// (also intialises all spans to zero)
 template <typename T, typename Allocator>
-struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
+struct skip_list_node_traits<skip_list_node_with_span<T,typename Allocator::size_type>, Allocator>
 {
-    typedef skip_list_node_with_span<T>                           NodeType;
-    typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
-    typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
-    typedef typename Allocator::template rebind<unsigned>::other  SpanAllocator;
-    typedef typename Allocator::difference_type                   Difference;
+    typedef typename Allocator::size_type                           Span;
+    typedef skip_list_node_with_span<T,Span>                        NodeType;
+    typedef typename Allocator::template rebind<NodeType>::other    NodeAllocator;
+    typedef typename Allocator::template rebind<NodeType*>::other   ListAllocator;
+    typedef typename Allocator::template rebind<Span>::other        SpanAllocator;
+    typedef typename Allocator::difference_type                     Difference;
+    typedef typename Allocator::size_type                           Size;
 
     static
     inline
@@ -1096,9 +1100,6 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
     inline
     void deallocate(NodeType *node, Allocator &alloc)
     {
-        typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
-        typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
-        typedef typename Allocator::template rebind<unsigned>::other  SpanAllocator;
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->magic == MAGIC_GOOD);
         node->magic = MAGIC_BAD;
@@ -1129,7 +1130,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
             node->span[level] += by;
     }
     static
-    void set_span(NodeType *node, unsigned level, unsigned span)
+    void set_span(NodeType *node, unsigned level, Size span)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(level <= node->level);
@@ -1139,7 +1140,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
             node->span[level] = span;
     }
     static
-    void set_all_spans(NodeType *node, unsigned span)
+    void set_all_spans(NodeType *node, Size span)
     {
         for (unsigned n = 0; n < node->level; ++n)
             node->span[n] = span;
@@ -1155,7 +1156,7 @@ struct skip_list_node_traits<skip_list_node_with_span<T>, Allocator>
     }
     static
     inline
-    unsigned span(const NodeType *node, unsigned level)
+    Size span(const NodeType *node, unsigned level)
     {
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(level <= node->level);
@@ -1226,7 +1227,7 @@ typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
 skip_list_impl<T,C,A,NL,LG,N>::at(size_type index)
 {
     // only compiles for node_type where "node->span" is valid
-    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));
+    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T,size_type>));
 
     unsigned l = levels;
     node_type *node = head;
@@ -1251,7 +1252,7 @@ const typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
 skip_list_impl<T,C,A,NL,LG,N>::at(size_type index) const
 {
     // only compiles for node_type where "node->span" is valid
-    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));
+    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T,size_type>));
 
     unsigned l = levels;
     const node_type *node = head;
@@ -1276,7 +1277,7 @@ typename skip_list_impl<T,C,A,NL,LG,N>::size_type
 skip_list_impl<T,C,A,NL,LG,N>::index_of(const node_type *node) const
 {
     // only compiles for node_type where "node->span" is valid
-    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T>));
+    static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T,size_type>));
 
     node_type *chain[num_levels]   = {0};
     size_type  indexes[num_levels] = {0};
@@ -1412,7 +1413,7 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
         {
             new_node->next[l] = chain[l]->next[l];
             chain[l]->next[l] = new_node;
-            unsigned prev_span = node_traits::span(chain[l], l);
+            size_type prev_span = node_traits::span(chain[l], l);
             node_traits::set_span(chain[l], l, index+1-indexes[l]);
             node_traits::set_span(new_node, l, prev_span - (index-indexes[l]));
         }
