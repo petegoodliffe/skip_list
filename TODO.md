@@ -1,0 +1,1 @@
+Impl held in pointer, so std::swap keeps iterators pointing to right structure

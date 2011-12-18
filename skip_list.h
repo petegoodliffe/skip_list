@@ -111,7 +111,7 @@ public:
     typedef typename allocator_type::const_pointer      const_pointer;
     typedef Compare                                     compare;
 
-    typedef Iterator<self_type>                         iterator;
+    typedef Iterator<impl_type>                         iterator;
     typedef typename iterator::const_iterator           const_iterator;
     typedef std::reverse_iterator<iterator>             reverse_iterator;
     typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
@@ -366,6 +366,8 @@ public:
     typedef NodeType                            node_type;
 
     static const unsigned num_levels = NumLevels;
+    typedef typename Allocator::const_reference const_reference;
+    typedef typename Allocator::const_pointer   const_pointer;
 
     skip_list_impl(const Allocator &alloc = Allocator());
     ~skip_list_impl();
@@ -455,24 +457,24 @@ bool less_or_equal(const T &lhs, const T &rhs, Compare &less)
 namespace goodliffe {
 namespace detail {
 
-template <typename SKIP_LIST>
+template <typename SKIP_LIST_IMPL>
 class skip_list_iterator
     : public std::iterator<std::bidirectional_iterator_tag,
-                           typename SKIP_LIST::value_type,
-                           typename SKIP_LIST::difference_type,
-                           typename SKIP_LIST::const_pointer,
-                           typename SKIP_LIST::const_reference>
+                           typename SKIP_LIST_IMPL::value_type,
+                           typename SKIP_LIST_IMPL::difference_type,
+                           typename SKIP_LIST_IMPL::const_pointer,
+                           typename SKIP_LIST_IMPL::const_reference>
 {
 public:
-    typedef SKIP_LIST                                   parent_type;
-    typedef skip_list_const_iterator<SKIP_LIST>         const_iterator;
-    typedef typename parent_type::impl_type::node_type  node_type;
-    typedef skip_list_iterator<SKIP_LIST>               self_type;
+    typedef SKIP_LIST_IMPL                              impl_type;
+    typedef skip_list_const_iterator<SKIP_LIST_IMPL>    const_iterator;
+    typedef typename impl_type::node_type               node_type;
+    typedef skip_list_iterator<SKIP_LIST_IMPL>          self_type;
 
     skip_list_iterator()
-        : parent(0), node(0) {}
-    skip_list_iterator(parent_type *parent_, node_type *node_)
-        : parent(parent_), node(node_) {}
+        : impl(0), node(0) {}
+    skip_list_iterator(impl_type *impl_, node_type *node_)
+        : impl(impl_), node(node_) {}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }
@@ -484,48 +486,47 @@ public:
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
 
-    typename parent_type::const_reference operator*()  { return node->value; }
-    typename parent_type::const_pointer   operator->() { return node->value; }
+    typename impl_type::const_reference operator*()  { return node->value; }
+    typename impl_type::const_pointer   operator->() { return node->value; }
     
     bool operator==(const self_type &other) const
-        { return parent == other.parent && node == other.node; }
+        { return impl == other.impl && node == other.node; }
     bool operator!=(const self_type &other) const
         { return !operator==(other); }
     
     bool operator==(const const_iterator &other) const
-        { return parent == other.parent && node == other.node; }
+        { return impl == other.get_impl() && node == other.get_node(); }
     bool operator!=(const const_iterator &other) const
         { return !operator==(other); }
 
-    const parent_type *get_parent() const { return parent; } ///< @internal
-    const node_type   *get_node()   const { return node; }   ///< @internal
+    const impl_type *get_impl() const { return impl; } ///< @internal
+    const node_type *get_node() const { return node; }   ///< @internal
 
 private:
-    friend class skip_list_const_iterator<SKIP_LIST>;
-    parent_type *parent;
-    node_type   *node;
+    impl_type *impl;
+    node_type *node;
 };
 
-template <class SKIP_LIST>
+template <class SKIP_LIST_IMPL>
 class skip_list_const_iterator
     : public std::iterator<std::bidirectional_iterator_tag,
-                           typename SKIP_LIST::value_type,
-                           typename SKIP_LIST::difference_type,
-                           typename SKIP_LIST::const_pointer,
-                           typename SKIP_LIST::const_reference>
+                           typename SKIP_LIST_IMPL::value_type,
+                           typename SKIP_LIST_IMPL::difference_type,
+                           typename SKIP_LIST_IMPL::const_pointer,
+                           typename SKIP_LIST_IMPL::const_reference>
 {
 public:
-    typedef const SKIP_LIST                                     parent_type;
-    typedef skip_list_iterator<SKIP_LIST>                       iterator;
-    typedef const typename parent_type::impl_type::node_type    node_type;
-    typedef skip_list_const_iterator<SKIP_LIST>                 self_type;
+    typedef const SKIP_LIST_IMPL                        impl_type;
+    typedef skip_list_iterator<SKIP_LIST_IMPL>          iterator;
+    typedef const typename impl_type::node_type         node_type;
+    typedef skip_list_const_iterator<SKIP_LIST_IMPL>    self_type;
 
     skip_list_const_iterator()
-        : parent(0), node(0) {}
+        : impl(0), node(0) {}
     skip_list_const_iterator(const iterator &i)
-        : parent(i.parent), node(i.node) {}
-    skip_list_const_iterator(const parent_type *parent_, node_type *node_)
-        : parent(parent_), node(node_) {}
+        : impl(i.get_impl()), node(i.get_node()) {}
+    skip_list_const_iterator(const impl_type *impl_, node_type *node_)
+        : impl(impl_), node(node_) {}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }
@@ -537,26 +538,25 @@ public:
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
 
-    typename parent_type::const_reference operator*()  { return node->value; }
-    typename parent_type::const_pointer   operator->() { return node->value; }
+    typename impl_type::const_reference operator*()  { return node->value; }
+    typename impl_type::const_pointer   operator->() { return node->value; }
 
     bool operator==(const self_type &other) const
-        { return parent == other.parent && node == other.node; }
+        { return impl == other.impl && node == other.node; }
     bool operator!=(const self_type &other) const
         { return !operator==(other); }
 
     bool operator==(const iterator &other) const
-        { return parent == other.parent && node == other.node; }
+        { return impl == other.get_impl() && node == other.get_node(); }
     bool operator!=(const iterator &other) const
         { return !operator==(other); }
 
-    const parent_type *get_parent() const { return parent; } ///< @internal
-    const node_type   *get_node()   const { return node; }   ///< @internal
+    const impl_type *get_impl() const { return impl; } ///< @internal
+    const node_type *get_node() const { return node; }   ///< @internal
 
 private:
-    friend class skip_list_iterator<SKIP_LIST>;
-    parent_type *parent;
-    node_type   *node;
+    impl_type *impl;
+    node_type *node;
 };
 
 } // namespace detail
@@ -684,7 +684,7 @@ inline
 typename skip_list<T,C,A,NL,LG,SLT,I>::iterator
 skip_list<T,C,A,NL,LG,SLT,I>::begin()
 {
-    return iterator(this, impl.front());
+    return iterator(&impl, impl.front());
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
@@ -692,7 +692,7 @@ inline
 typename skip_list<T,C,A,NL,LG,SLT,I>::const_iterator
 skip_list<T,C,A,NL,LG,SLT,I>::begin() const
 {
-    return const_iterator(this, impl.front());
+    return const_iterator(&impl, impl.front());
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
@@ -700,7 +700,7 @@ inline
 typename skip_list<T,C,A,NL,LG,SLT,I>::const_iterator
 skip_list<T,C,A,NL,LG,SLT,I>::cbegin() const
 {
-    return const_iterator(this, impl.front());
+    return const_iterator(&impl, impl.front());
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
@@ -708,7 +708,7 @@ inline
 typename skip_list<T,C,A,NL,LG,SLT,I>::iterator
 skip_list<T,C,A,NL,LG,SLT,I>::end()
 {
-    return iterator(this, impl.one_past_end());
+    return iterator(&impl, impl.one_past_end());
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
@@ -716,7 +716,7 @@ inline
 typename skip_list<T,C,A,NL,LG,SLT,I>::const_iterator
 skip_list<T,C,A,NL,LG,SLT,I>::end() const
 {
-    return const_iterator(this, impl.one_past_end());
+    return const_iterator(&impl, impl.one_past_end());
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
@@ -724,7 +724,7 @@ inline
 typename skip_list<T,C,A,NL,LG,SLT,I>::const_iterator
 skip_list<T,C,A,NL,LG,SLT,I>::cend() const
 {
-    return const_iterator(this, impl.one_past_end());
+    return const_iterator(&impl, impl.one_past_end());
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
@@ -817,7 +817,7 @@ typename skip_list<T,C,A,NL,LG,SLT,I>::insert_by_value_result
 skip_list<T,C,A,NL,LG,SLT,I>::insert(const value_type &value)
 {
     node_type *node = impl.insert(value);
-    return std::make_pair(iterator(this, node), impl.is_valid(node));
+    return std::make_pair(iterator(&impl, node), impl.is_valid(node));
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
@@ -830,9 +830,9 @@ skip_list<T,C,A,NL,LG,SLT,I>::insert(const_iterator hint, const value_type &valu
     const node_type *hint_node = hint.get_node();
 
     if (impl.is_valid(hint_node) && detail::less_or_equal(value, hint_node->value, impl.less))
-        return iterator(this,impl.insert(value)); // bad hint, resort to "normal" insert
+        return iterator(&impl,impl.insert(value)); // bad hint, resort to "normal" insert
     else
-        return iterator(this,impl.insert(value,const_cast<node_type*>(hint_node)));
+        return iterator(&impl,impl.insert(value,const_cast<node_type*>(hint_node)));
 }
 
 //C++11iterator insert const_iterator pos, value_type &&value);
@@ -880,7 +880,7 @@ skip_list<T,C,A,NL,LG,SLT,I>::erase(const_iterator position)
     node_type *node = const_cast<node_type*>(position.get_node());
     node_type *next = node->next[0];
     impl.remove(node);
-    return iterator(this, next);
+    return iterator(&impl, next);
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
@@ -898,7 +898,7 @@ skip_list<T,C,A,NL,LG,SLT,I>::erase(const_iterator first, const_iterator last)
         impl.remove_between(first_node, last_node);
     }
     
-    return iterator(this, const_cast<node_type*>(last.get_node()));
+    return iterator(&impl, const_cast<node_type*>(last.get_node()));
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
@@ -928,7 +928,7 @@ skip_list<T,C,A,NL,LG,SLT,I>::find(const value_type &value)
 {
     node_type *node = impl.find(value);
     return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
-        ? iterator(this, node)
+        ? iterator(&impl, node)
         : end();
 }
   
@@ -939,7 +939,7 @@ skip_list<T,C,A,NL,LG,SLT,I>::find(const value_type &value) const
 {
     const node_type *node = impl.find(value);
     return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
-        ? const_iterator(this, node)
+        ? const_iterator(&impl, node)
         : end();
 }
 

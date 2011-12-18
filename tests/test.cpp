@@ -1057,7 +1057,7 @@ TEST_CASE( "skip_list/clear/two item list", "" )
     list.clear();
     REQUIRE(list.size() == 0);
     REQUIRE(list.empty());
-    REQUIRE(list.begin().get_parent() == list.end().get_parent());
+    REQUIRE(list.begin().get_impl() == list.end().get_impl());
     REQUIRE(list.begin().get_node() == list.end().get_node());
     REQUIRE(list.begin() == list.end());
 }
