@@ -136,6 +136,25 @@ TEST_CASE( "random_access_skip_list/iterator_at", "" )
 }
 
 //============================================================================
+// iterators provide random access
+
+TEST_CASE( "random_access_skip_list/iterators/can be default constructed", "" )
+{
+    random_access_skip_list<int>::iterator i;
+    random_access_skip_list<int>::const_iterator ci;
+}
+
+TEST_CASE( "random_access_skip_list/iterators/convert from one to t'other", "" )
+{
+    random_access_skip_list<int> list;
+    for (int n = 0; n < 9; ++n)
+        list.insert(n);
+
+    random_access_skip_list<int>::iterator i = list.begin();
+    random_access_skip_list<int>::const_iterator ci = i;
+}
+
+//============================================================================
 // erase_at
 
 TEST_CASE( "random_access_skip_list/erase_at/maintains indexes/1", "" )

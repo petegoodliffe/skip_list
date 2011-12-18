@@ -18,10 +18,11 @@
 #pragma mark - internal forward declarations
 
 namespace goodliffe {
-
 namespace detail
 {
-    template <typename T, typename SPAN>    struct skip_list_node_with_span;
+    template <typename T, typename SPAN> struct skip_list_node_with_span;
+    template <typename LIST> class random_access_skip_list_iterator;
+    template <typename LIST> class random_access_skip_list_const_iterator;
 }
 }
 
@@ -50,7 +51,8 @@ class random_access_skip_list :
                 <
                     T,Compare,Allocator,NumLevels,LevelGenerator,
                     detail::skip_list_node_with_span<T,typename Allocator::size_type>
-                >
+                >,
+            detail::random_access_skip_list_iterator
         >
 {
 private:
@@ -61,7 +63,8 @@ private:
                 <
                     T,Compare,Allocator,NumLevels,LevelGenerator,
                     detail::skip_list_node_with_span<T, typename Allocator::size_type>
-                >
+                >,
+            detail::random_access_skip_list_iterator
         >
         parent_type;
     typedef random_access_skip_list
@@ -69,6 +72,11 @@ private:
             T,Compare,Allocator,NumLevels,LevelGenerator
         >
         self_type;
+    
+    template <typename T1>
+    friend class detail::random_access_skip_list_iterator;
+    template <typename T1>
+    friend class detail::random_access_skip_list_const_iterator;
 
 protected:
     using typename parent_type::node_type;
@@ -128,6 +136,117 @@ public:
 
 } // namespace goodliffe
 
+//==============================================================================
+#pragma mark - iterators
+
+namespace goodliffe {
+namespace detail {
+
+template <typename SKIP_LIST>
+class random_access_skip_list_iterator
+    : public std::iterator<std::bidirectional_iterator_tag, // TODO random access
+                           typename SKIP_LIST::value_type,
+                           typename SKIP_LIST::difference_type,
+                           typename SKIP_LIST::const_pointer,
+                           typename SKIP_LIST::const_reference>
+{
+public:
+    typedef SKIP_LIST                                           parent_type;
+    typedef random_access_skip_list_const_iterator<SKIP_LIST>   const_iterator;
+    typedef typename parent_type::impl_type::node_type          node_type;
+    typedef random_access_skip_list_iterator<SKIP_LIST>         self_type;
+
+    random_access_skip_list_iterator()
+        : parent(0), node(0) {}
+    random_access_skip_list_iterator(parent_type *parent_, node_type *node_)
+        : parent(parent_), node(node_) {}
+
+    self_type &operator++()
+        { node = node->next[0]; return *this; }
+    self_type operator++(int) // postincrement
+        { self_type old(*this); node = node->next[0]; return old; }
+
+    self_type &operator--()
+        { node = node->prev; return *this; }
+    self_type operator--(int) // postdecrement
+        { self_type old(*this); node = node->prev; return old; }
+
+    typename parent_type::const_reference operator*()  { return node->value; }
+    typename parent_type::const_pointer   operator->() { return node->value; }
+    
+    bool operator==(const self_type &other) const
+        { return parent == other.parent && node == other.node; }
+    bool operator!=(const self_type &other) const
+        { return !operator==(other); }
+    
+    bool operator==(const const_iterator &other) const
+        { return parent == other.parent && node == other.node; }
+    bool operator!=(const const_iterator &other) const
+        { return !operator==(other); }
+
+    const parent_type *get_parent() const { return parent; } ///< @internal
+    const node_type   *get_node()   const { return node; }   ///< @internal
+
+private:
+    friend class skip_list_const_iterator<SKIP_LIST>;
+    parent_type *parent;
+    node_type   *node;
+};
+
+template <typename SKIP_LIST>
+class random_access_skip_list_const_iterator
+    : public std::iterator<std::bidirectional_iterator_tag,
+                           typename SKIP_LIST::value_type,
+                           typename SKIP_LIST::difference_type,
+                           typename SKIP_LIST::const_pointer,
+                           typename SKIP_LIST::const_reference>
+{
+public:
+    typedef const SKIP_LIST                                     parent_type;
+    typedef random_access_skip_list_iterator<SKIP_LIST>         normal_iterator;
+    typedef const typename parent_type::impl_type::node_type    node_type;
+    typedef random_access_skip_list_const_iterator<SKIP_LIST>   self_type;
+
+    random_access_skip_list_const_iterator()
+        : parent(0), node(0) {}
+    random_access_skip_list_const_iterator(const normal_iterator &i)
+        : parent(i.get_parent()), node(i.get_node()) {}
+    random_access_skip_list_const_iterator(const parent_type *parent_, node_type *node_)
+        : parent(parent_), node(node_) {}
+
+    self_type &operator++()
+        { node = node->next[0]; return *this; }
+    self_type operator++(int) // postincrement
+        { self_type old(*this); node = node->next[0]; return old; }
+
+    self_type &operator--()
+        { node = node->prev; return *this; }
+    self_type operator--(int) // postdecrement
+        { self_type old(*this); node = node->prev; return old; }
+
+    typename parent_type::const_reference operator*()  { return node->value; }
+    typename parent_type::const_pointer   operator->() { return node->value; }
+
+    bool operator==(const self_type &other) const
+        { return parent == other.parent && node == other.node; }
+    bool operator!=(const self_type &other) const
+        { return !operator==(other); }
+
+    bool operator==(const normal_iterator &other) const
+        { return parent == other.parent && node == other.node; }
+    bool operator!=(const normal_iterator &other) const
+        { return !operator==(other); }
+
+    const parent_type *get_parent() const { return parent; } ///< @internal
+    const node_type   *get_node()   const { return node; }   ///< @internal
+
+private:
+    parent_type *parent;
+    node_type   *node;
+};
+
+} // namespace detail
+} // namespace goodliffe
 
 //==============================================================================
 #pragma mark - random_access_skip_list_impl
