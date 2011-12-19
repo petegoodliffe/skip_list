@@ -288,6 +288,12 @@ void pg_assertion_break() { fprintf(stderr, "**** place a breakpoint at pg_asser
 
 #endif
 
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+#define impl_assert_that(a) assert_that(a)
+#else
+#define impl_assert_that(a)
+#endif
+
 namespace goodliffe {
 namespace detail {
 
@@ -1139,12 +1145,12 @@ skip_list_impl<T,C,A,NL,LG,N>::find_chain(const value_type &value, node_type **c
     while (l)
     {
         --l;
-        assert_that(l <= cur->level);
+        impl_assert_that(l <= cur->level);
         while (cur->next[l] != tail && less(cur->next[l]->value, value))
         {
             index += node_traits::span(cur, l);
             cur = cur->next[l];
-            assert_that(l <= cur->level);
+            impl_assert_that(l <= cur->level);
         }
         chain[l]   = cur;
         indexes[l] = index;
@@ -1173,12 +1179,12 @@ skip_list_impl<T,C,A,NL,LG,N>::find_chain(const node_type *node, node_type **cha
     while (l)
     {
         --l;
-        assert_that(l <= cur->level);
+        impl_assert_that(l <= cur->level);
         while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
         {
             index += node_traits::span(cur, l);
             cur = cur->next[l];
-            assert_that(l <= cur->level);
+            impl_assert_that(l <= cur->level);
         }
         chain[l]   = cur;
         indexes[l] = index;
@@ -1204,12 +1210,12 @@ skip_list_impl<T,C,A,NL,LG,N>::find_end_chain(node_type **chain, size_type *inde
     while (l)
     {
         --l;
-        assert_that(l <= cur->level);
+        impl_assert_that(l <= cur->level);
         while (cur->next[l] != tail)
         {
             index += node_traits::span(cur, l);
             cur = cur->next[l];
-            assert_that(l <= cur->level);
+            impl_assert_that(l <= cur->level);
         }
         chain[l]   = cur;
         indexes[l] = index;
@@ -1217,7 +1223,7 @@ skip_list_impl<T,C,A,NL,LG,N>::find_end_chain(node_type **chain, size_type *inde
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     for (unsigned l1 = 0; l1 < num_levels; ++l1)
     {
-        assert_that(chain[l1]->level >= l1);
+        impl_assert_that(chain[l1]->level >= l1);
     }
 #endif
     return index;
@@ -1233,7 +1239,7 @@ skip_list_impl<T,C,A,NL,LG,N>::insert(const value_type &value, node_type *hint)
 
     node_type *new_node = node_traits::allocate(level, alloc);
     assert_that(new_node);
-    assert_that(new_node->level == level);
+    impl_assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
 
     node_type *chain[num_levels]   = {0};
@@ -1370,7 +1376,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
     unsigned last_node_level = 0;
     while (last_node_level+1 < num_levels
            && last_chain[last_node_level+1] == last) ++last_node_level;
-    assert_that(last_node_level == last->level);
+    impl_assert_that(last_node_level == last->level);
 
     // backwards pointer
     one_past_end->prev = prev;
@@ -1429,7 +1435,7 @@ void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
         const node_type *n = head;
         while (n)
         {
-            assert_that(l <= n->level);
+            impl_assert_that(l <= n->level);
             const node_type *next = n->next[l];
             size_type span = node_traits::span(n, l);
             bool prev_ok = false;
