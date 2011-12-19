@@ -1459,7 +1459,7 @@ void skip_list_impl<T,C,A,NL,LG,N>::dump(STREAM &s) const
             
             if (n != tail)
             {
-                if (next != tail && !(n->value < next->value))
+                if (next != tail && !less(n->value, next->value))
                     s << "*XXXXXXXXX* ";
                 s << span << ">"
                   << " "
