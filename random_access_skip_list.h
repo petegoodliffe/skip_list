@@ -257,8 +257,8 @@ inline
 typename random_access_skip_list<T,C,A,NL,LG>::const_reference
 random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
 {
-    const node_type *node = impl->at(index);
-    assert_that(impl->is_valid(node));
+    const node_type *node = impl.at(index);
+    assert_that(impl.is_valid(node));
     return node->value;
 }
 
@@ -267,9 +267,9 @@ inline
 void
 random_access_skip_list<T,C,A,NL,LG>::erase_at(size_type index)
 {
-    node_type *node = impl->at(index);
-    assert_that(impl->is_valid(node));
-    impl->remove(node);
+    node_type *node = impl.at(index);
+    assert_that(impl.is_valid(node));
+    impl.remove(node);
 }
 
 template <class T, class C, class A, unsigned NL, class LG>
@@ -277,8 +277,8 @@ inline
 typename random_access_skip_list<T,C,A,NL,LG>::iterator
 random_access_skip_list<T,C,A,NL,LG>::iterator_at(unsigned index)
 {
-    node_type *node = impl->at(index);
-    return iterator(impl, node);
+    node_type *node = impl.at(index);
+    return iterator(&impl, node);
 }
 
 template <class T, class C, class A, unsigned NL, class LG>
@@ -286,8 +286,8 @@ inline
 typename random_access_skip_list<T,C,A,NL,LG>::const_iterator
 random_access_skip_list<T,C,A,NL,LG>::iterator_at(unsigned index) const
 {
-    const node_type *node = impl->at(index);
-    return const_iterator(impl, node);
+    const node_type *node = impl.at(index);
+    return const_iterator(&impl, node);
 }
 
 template <class T, class C, class A, unsigned NL, class LG>
@@ -295,7 +295,7 @@ inline
 typename random_access_skip_list<T,C,A,NL,LG>::size_type
 random_access_skip_list<T,C,A,NL,LG>::index_of(const const_iterator &i) const
 {
-    return impl->index_of(i.get_node());
+    return impl.index_of(i.get_node());
 }
 
 } // namespace goodliffe
