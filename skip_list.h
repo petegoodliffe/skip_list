@@ -371,21 +371,6 @@ public:
     typedef LevelGenerator                      generator_type;
     typedef NodeType                            node_type;
 
-    typedef skip_list_impl self_type;
-    typedef typename Allocator::template rebind<self_type>::other impl_allocator;
-    static self_type *allocate(const Allocator &a)
-    {
-        self_type *impl = impl_allocator(a).allocate(1, (void*)0);
-        impl_allocator(a).construct(impl, a);
-        return impl;
-    }
-    static void deallocate(self_type *impl)
-    {
-        Allocator a = impl->get_allocator();
-        impl_allocator(a).destroy(impl);
-        impl_allocator(a).deallocate(impl, 1);      
-    }
-
     static const unsigned num_levels = NumLevels;
     typedef typename Allocator::const_reference const_reference;
     typedef typename Allocator::const_pointer   const_pointer;
@@ -587,7 +572,7 @@ private:
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
 inline
 skip_list<T,C,A,NL,LG,SLT,I>::skip_list(const allocator_type &alloc_)
-:   impl(impl_type::allocate(alloc_))
+:   impl(new impl_type(alloc_))
 {
 }
 
@@ -595,14 +580,14 @@ template <class T, class C, class A, unsigned NL, class LG, class SLT, template 
 inline
 skip_list<T,C,A,NL,LG,SLT,I>::~skip_list()
 {
-    impl_type::deallocate(impl);
+    delete impl;
 }
 
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
 template <class InputIterator>
 inline
 skip_list<T,C,A,NL,LG,SLT,I>::skip_list(InputIterator first, InputIterator last, const allocator_type &alloc_)
-:   impl(impl_type::allocate(alloc_))
+:   impl(new impl_type(alloc_))
 {
     assign(first, last);
 }
@@ -610,7 +595,7 @@ skip_list<T,C,A,NL,LG,SLT,I>::skip_list(InputIterator first, InputIterator last,
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
 inline
 skip_list<T,C,A,NL,LG,SLT,I>::skip_list(const skip_list &other)
-:   impl(impl_type::allocate(other.get_allocator()))
+:   impl(new impl_type(other.get_allocator()))
 {    
     assign(other.begin(), other.end());
 }
@@ -618,7 +603,7 @@ skip_list<T,C,A,NL,LG,SLT,I>::skip_list(const skip_list &other)
 template <class T, class C, class A, unsigned NL, class LG, class SLT, template <class> class I>
 inline
 skip_list<T,C,A,NL,LG,SLT,I>::skip_list(const skip_list &other, const allocator_type &alloc_)
-:   impl(impl_type::allocate(alloc_))
+:   impl(new impl_type(alloc_))
 {
     assign(other.begin(), other.end());
 }
