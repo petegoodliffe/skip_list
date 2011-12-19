@@ -477,10 +477,16 @@ public:
     typedef typename impl_type::node_type               node_type;
     typedef skip_list_iterator<SKIP_LIST_IMPL>          self_type;
 
-    skip_list_iterator()
-        : impl(0), node(0) {}
-    skip_list_iterator(impl_type *impl_, node_type *node_)
-        : impl(impl_), node(node_) {}
+    skip_list_iterator() :
+#ifdef SKIP_LIST_DIAGNOSTICS
+        impl(0),
+#endif
+        node(0) {}
+    skip_list_iterator(impl_type *impl_, node_type *node_) :
+#ifdef SKIP_LIST_DIAGNOSTICS
+        impl(impl_),
+#endif
+        node(node_) {}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }
@@ -496,20 +502,24 @@ public:
     typename impl_type::const_pointer   operator->() { return node->value; }
     
     bool operator==(const self_type &other) const
-        { return impl == other.impl && node == other.node; }
+        { return node == other.node; }
     bool operator!=(const self_type &other) const
         { return !operator==(other); }
     
     bool operator==(const const_iterator &other) const
-        { return impl == other.get_impl() && node == other.get_node(); }
+        { return node == other.get_node(); }
     bool operator!=(const const_iterator &other) const
         { return !operator==(other); }
 
+#ifdef SKIP_LIST_DIAGNOSTICS
     const impl_type *get_impl() const { return impl; } ///< @internal
-    const node_type *get_node() const { return node; }   ///< @internal
+#endif
+    const node_type *get_node() const { return node; } ///< @internal
 
 private:
+#ifdef SKIP_LIST_DIAGNOSTICS
     impl_type *impl;
+#endif
     node_type *node;
 };
 
@@ -527,12 +537,21 @@ public:
     typedef const typename impl_type::node_type         node_type;
     typedef skip_list_const_iterator<SKIP_LIST_IMPL>    self_type;
 
-    skip_list_const_iterator()
-        : impl(0), node(0) {}
-    skip_list_const_iterator(const iterator &i)
-        : impl(i.get_impl()), node(i.get_node()) {}
-    skip_list_const_iterator(const impl_type *impl_, node_type *node_)
-        : impl(impl_), node(node_) {}
+    skip_list_const_iterator() :
+#ifdef SKIP_LIST_DIAGNOSTICS
+        impl(0),
+#endif
+        node(0) {}
+    skip_list_const_iterator(const iterator &i) :
+#ifdef SKIP_LIST_DIAGNOSTICS
+        impl(i.get_impl()),
+#endif
+        node(i.get_node()) {}
+    skip_list_const_iterator(const impl_type *impl_, node_type *node_) :
+#ifdef SKIP_LIST_DIAGNOSTICS
+        impl(impl_),
+#endif
+        node(node_) {}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }
@@ -548,20 +567,24 @@ public:
     typename impl_type::const_pointer   operator->() { return node->value; }
 
     bool operator==(const self_type &other) const
-        { return impl == other.impl && node == other.node; }
+        { return node == other.node; }
     bool operator!=(const self_type &other) const
         { return !operator==(other); }
 
     bool operator==(const iterator &other) const
-        { return impl == other.get_impl() && node == other.get_node(); }
+        { return node == other.get_node(); }
     bool operator!=(const iterator &other) const
         { return !operator==(other); }
 
+#ifdef SKIP_LIST_DIAGNOSTICS
     const impl_type *get_impl() const { return impl; } ///< @internal
-    const node_type *get_node() const { return node; }   ///< @internal
+#endif
+    const node_type *get_node() const { return node; } ///< @internal
 
 private:
+#ifdef SKIP_LIST_DIAGNOSTICS
     impl_type *impl;
+#endif
     node_type *node;
 };
 

@@ -1090,7 +1090,9 @@ TEST_CASE( "skip_list/clear/two item list", "" )
     list.clear();
     REQUIRE(list.size() == 0);
     REQUIRE(list.empty());
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS    
     REQUIRE(list.begin().get_impl() == list.end().get_impl());
+#endif
     REQUIRE(list.begin().get_node() == list.end().get_node());
     REQUIRE(list.begin() == list.end());
 }
