@@ -1275,7 +1275,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove(node_type *node)
     
     for (unsigned l = 0; l < num_levels; ++l)
     {
-        if (l <= node->level)
+        if (chain[l]->next[l] == node)
         {
             node_traits::set_span(chain[l], l, node_traits::span(chain[l], l) + node_traits::span(node, l)-1);
             chain[l]->next[l] = node->next[l];
@@ -1336,8 +1336,8 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
 
     node_type *first_chain[num_levels]   = {0};
     node_type *last_chain[num_levels]    = {0};
-    size_type  first_indexes[num_levels] = {0};// TODO no indexes needed
-    size_type  last_indexes[num_levels]  = {0};// TODO no indexes needed
+    size_type  first_indexes[num_levels] = {0};
+    size_type  last_indexes[num_levels]  = {0};
     size_type  first_index               = find_chain(first, first_chain, first_indexes);
     size_type  last_index                = one_past_end != tail
                                          ? find_chain(one_past_end, last_chain, last_indexes)
@@ -1352,6 +1352,11 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
         //<< "/" << last_indexes[n]
             << "  span=" << node_traits::span(last_chain[n], n) << "\n";
 */
+    unsigned last_node_level = 0;
+    while (last_node_level+1 < num_levels
+           && last_chain[last_node_level+1] == last) ++last_node_level;
+    assert_that(last_node_level == last->level);
+
     // backwards pointer
     one_past_end->prev = prev;
 
@@ -1359,7 +1364,7 @@ skip_list_impl<T,C,A,NL,LG,N>::remove_between(node_type *first, node_type *last)
     for (unsigned l = 0; l < num_levels; ++l)
     {
         // forwards pointer
-        if (l <= last->level)
+        if (l <= last_node_level)
             first_chain[l]->next[l] = last->next[l];
         else
             first_chain[l]->next[l] = last_chain[l]->next[l];
