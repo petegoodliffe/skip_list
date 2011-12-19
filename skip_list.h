@@ -825,7 +825,7 @@ inline
 typename skip_list<T,C,A,NL,LG,SLT,I>::iterator
 skip_list<T,C,A,NL,LG,SLT,I>::insert(const_iterator hint, const value_type &value)
 {
-    assert_that(hint.get_parent() == this);
+    assert_that(hint.get_impl() == &impl);
     
     const node_type *hint_node = hint.get_node();
 
@@ -875,7 +875,7 @@ inline
 typename skip_list<T,C,A,NL,LG,SLT,I>::iterator
 skip_list<T,C,A,NL,LG,SLT,I>::erase(const_iterator position)
 {
-    assert_that(position.get_parent() == this);
+    assert_that(position.get_impl() == &impl);
     assert_that(impl.is_valid(position.get_node()));
     node_type *node = const_cast<node_type*>(position.get_node());
     node_type *next = node->next[0];
@@ -888,8 +888,8 @@ inline
 typename skip_list<T,C,A,NL,LG,SLT,I>::iterator
 skip_list<T,C,A,NL,LG,SLT,I>::erase(const_iterator first, const_iterator last)
 {
-    assert_that(first.get_parent() == this);
-    assert_that(last.get_parent() == this);
+    assert_that(first.get_impl() == &impl);
+    assert_that(last.get_impl() == &impl);
 
     if (first != last)
     {
