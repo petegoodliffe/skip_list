@@ -942,6 +942,39 @@ TEST_CASE( "skip_list/swap", "" )
     REQUIRE(l2.size() == 3);
 }
 
+TEST_CASE( "skip_list/swap/iterators", "" )
+{
+    skip_list<int> l1, l2;
+    l1.insert(1);
+    l1.insert(2);
+    l1.insert(3);
+
+    l2.insert(10);
+    l2.insert(20);
+    l2.insert(30);
+    
+    skip_list<int>::iterator i1 = l1.begin(), i2 = l2.begin();
+    
+    swap(l1, l2);
+    REQUIRE(*i1 == 1); ++i1;
+    REQUIRE(*i1 == 2); ++i1;
+    REQUIRE(*i1 == 3); ++i1;
+    REQUIRE(*i2 == 10); ++ i2;
+    REQUIRE(*i2 == 20); ++ i2;
+    REQUIRE(*i2 == 30); ++ i2;
+
+    i1 = l1.begin();
+    i2 = l2.begin();
+    
+    std::swap(l1, l2);
+    REQUIRE(*i1 == 10); ++i1;
+    REQUIRE(*i1 == 20); ++i1;
+    REQUIRE(*i1 == 30); ++i1;
+    REQUIRE(*i2 == 1); ++ i2;
+    REQUIRE(*i2 == 2); ++ i2;
+    REQUIRE(*i2 == 3); ++ i2;
+}
+
 //============================================================================
 // insert(iter,iter)
 
