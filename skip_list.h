@@ -238,103 +238,6 @@ namespace std
 }
 
 //==============================================================================
-#pragma mark - skip_list_impl declaration
-//==============================================================================
-
-namespace goodliffe {
-namespace detail {
-
-template <typename T>
-struct skip_list_node
-{
-    typedef skip_list_node<T> self_type;
-
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-    unsigned    magic;
-#endif
-    T           value;
-    unsigned    level;
-    self_type  *prev;
-    self_type **next; ///< effectively node_type *next[level+1];
-};
-
-template <typename T, typename Allocator>
-struct skip_list_node_traits;
-
-/// Internal implementation of skip_list data structure and methods for
-/// modifying it.
-///
-/// Not for "public" access.
-///
-/// @internal
-template <typename T, typename Compare, typename Allocator,
-          typename LevelGenerator, typename NodeType>
-class skip_list_impl
-{
-public:
-    
-    typedef T                                   value_type;
-    typedef typename Allocator::size_type       size_type;
-    typedef typename Allocator::difference_type difference_type;
-    typedef typename Allocator::const_reference const_reference;
-    typedef typename Allocator::const_pointer   const_pointer;
-    typedef Allocator                           allocator_type;
-    typedef Compare                             compare_type;
-    typedef LevelGenerator                      generator_type;
-    typedef NodeType                            node_type;
-
-    static const unsigned num_levels = LevelGenerator::num_levels;
-
-    skip_list_impl(const Allocator &alloc = Allocator());
-    ~skip_list_impl();
-
-    Allocator        get_allocator() const;
-    size_type        size() const                          { return item_count; }
-    bool             is_valid(const node_type *node) const { return node && node != head && node != tail; }
-    node_type       *front()                               { return head->next[0]; }
-    const node_type *front() const                         { return head->next[0]; }
-    node_type       *one_past_end()                        { return tail; }
-    const node_type *one_past_end() const                  { return tail; }
-    node_type       *find(const value_type &value) const;
-    node_type       *at(size_type index);
-    const node_type *at(size_type index) const;
-    node_type       *insert(const value_type &value, node_type *hint = 0);
-    void             remove(node_type *value);
-    void             remove_all();
-    void             remove_between(node_type *first, node_type *last);
-    void             swap(skip_list_impl &other);
-    size_type        index_of(const node_type *node) const;
-
-    template <typename STREAM>
-    void        dump(STREAM &stream) const;
-    bool        check() const;
-    unsigned    new_level();
-
-    compare_type less;
-
-private:
-    typedef skip_list_node_traits<node_type, Allocator> node_traits;
-
-    skip_list_impl(const skip_list_impl &other);
-    skip_list_impl &operator=(const skip_list_impl &other);
-    
-    size_type find_chain(const value_type &value, node_type **chain) const;
-    size_type find_chain(const value_type &value, node_type **chain, size_type *indexes) const;
-    size_type find_chain(const node_type *node, node_type **chain, size_type *indexes) const;
-    size_type find_end_chain(node_type **chain, size_type *indexes) const;
-
-    allocator_type  alloc;
-    generator_type  generator;
-    unsigned        levels;
-    node_type      *head;
-    node_type      *tail;
-    size_type       item_count;
-};
-
-} // namespace detail
-} // namespace goodliffe
-
-//==============================================================================
 #pragma mark - iterators
 //==============================================================================
 
@@ -920,6 +823,9 @@ void std::swap(goodliffe::skip_list<T,C,A,LG,SLT,I> &lhs, goodliffe::skip_list<T
 namespace goodliffe {
 namespace detail {
 
+template <typename T, typename Allocator>
+struct skip_list_node_traits;
+
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
 enum
 {
@@ -983,6 +889,90 @@ struct skip_list_node_traits
 
 namespace goodliffe {
 namespace detail {
+
+template <typename T>
+struct skip_list_node
+{
+    typedef skip_list_node<T> self_type;
+
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+    unsigned    magic;
+#endif
+    T           value;
+    unsigned    level;
+    self_type  *prev;
+    self_type **next; ///< effectively node_type *next[level+1];
+};
+
+/// Internal implementation of skip_list data structure and methods for
+/// modifying it.
+///
+/// Not for "public" access.
+///
+/// @internal
+template <typename T, typename Compare, typename Allocator,
+          typename LevelGenerator, typename NodeType>
+class skip_list_impl
+{
+public:
+    
+    typedef T                                   value_type;
+    typedef typename Allocator::size_type       size_type;
+    typedef typename Allocator::difference_type difference_type;
+    typedef typename Allocator::const_reference const_reference;
+    typedef typename Allocator::const_pointer   const_pointer;
+    typedef Allocator                           allocator_type;
+    typedef Compare                             compare_type;
+    typedef LevelGenerator                      generator_type;
+    typedef NodeType                            node_type;
+
+    static const unsigned num_levels = LevelGenerator::num_levels;
+
+    skip_list_impl(const Allocator &alloc = Allocator());
+    ~skip_list_impl();
+
+    Allocator        get_allocator() const;
+    size_type        size() const                          { return item_count; }
+    bool             is_valid(const node_type *node) const { return node && node != head && node != tail; }
+    node_type       *front()                               { return head->next[0]; }
+    const node_type *front() const                         { return head->next[0]; }
+    node_type       *one_past_end()                        { return tail; }
+    const node_type *one_past_end() const                  { return tail; }
+    node_type       *find(const value_type &value) const;
+    node_type       *at(size_type index);
+    const node_type *at(size_type index) const;
+    node_type       *insert(const value_type &value, node_type *hint = 0);
+    void             remove(node_type *value);
+    void             remove_all();
+    void             remove_between(node_type *first, node_type *last);
+    void             swap(skip_list_impl &other);
+    size_type        index_of(const node_type *node) const;
+
+    template <typename STREAM>
+    void        dump(STREAM &stream) const;
+    bool        check() const;
+    unsigned    new_level();
+
+    compare_type less;
+
+private:
+    typedef skip_list_node_traits<node_type, Allocator> node_traits;
+
+    skip_list_impl(const skip_list_impl &other);
+    skip_list_impl &operator=(const skip_list_impl &other);
+    
+    size_type find_chain(const value_type &value, node_type **chain) const;
+    size_type find_chain(const value_type &value, node_type **chain, size_type *indexes) const;
+    size_type find_chain(const node_type *node, node_type **chain, size_type *indexes) const;
+    size_type find_end_chain(node_type **chain, size_type *indexes) const;
+
+    allocator_type  alloc;
+    generator_type  generator;
+    unsigned        levels;
+    node_type      *head;
+    node_type      *tail;
+    size_type       item_count;
+};
 
 template <class T, class C, class A, class LG, class N>
 inline
