@@ -52,6 +52,7 @@
 		C16AEEC314838FF700E7977A /* benchmark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = benchmark.cpp; sourceTree = "<group>"; };
 		C176E0581487917200D90461 /* benchmarks */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = benchmarks; sourceTree = BUILT_PRODUCTS_DIR; };
 		C17B6906148ED8A3002ABD3E /* test_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_types.h; sourceTree = "<group>"; };
+		C1D5F69814A2576D007B3932 /* skip_list_detail.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = skip_list_detail.h; sourceTree = "<group>"; };
 		C1DF2EB81488D4BD002DDB47 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		C1DF30DD148E91EC002DDB47 /* test_random_access.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test_random_access.cpp; sourceTree = "<group>"; };
 		C1E1E06D1482C2B40071FEB1 /* get_time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = get_time.h; sourceTree = "<group>"; };
@@ -111,6 +112,7 @@
 			children = (
 				C16AEEB4147FA40400E7977A /* skip_list.h */,
 				C155A91B149D5B0F0061FB7C /* random_access_skip_list.h */,
+				C1D5F69814A2576D007B3932 /* skip_list_detail.h */,
 				C1DF2EB81488D4BD002DDB47 /* README.md */,
 				C1EC5363149EA89E00AAE8A3 /* TODO.md */,
 				C1DF2ECD1488E71B002DDB47 /* tests */,
