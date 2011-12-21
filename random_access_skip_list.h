@@ -41,15 +41,14 @@ namespace goodliffe {
 template <typename T,
           typename Compare        = std::less<T>,
           typename Allocator      = std::allocator<T>,
-          unsigned NumLevels      = 32,
-          typename LevelGenerator = detail::skip_list_level_generator<NumLevels> >
+          typename LevelGenerator = detail::skip_list_level_generator<32> >
 class random_access_skip_list :
     public skip_list
         <
-            T, Compare, Allocator, NumLevels, LevelGenerator,
+            T, Compare, Allocator, LevelGenerator,
             typename detail::skip_list_impl
                 <
-                    T,Compare,Allocator,NumLevels,LevelGenerator,
+                    T,Compare,Allocator,LevelGenerator,
                     detail::skip_list_node_with_span<T,typename Allocator::size_type>
                 >,
             detail::random_access_skip_list_iterator
@@ -58,10 +57,10 @@ class random_access_skip_list :
 private:
     typedef skip_list
         <
-            T, Compare, Allocator, NumLevels, LevelGenerator,
+            T, Compare, Allocator, LevelGenerator,
             typename detail::skip_list_impl
                 <
-                    T,Compare,Allocator,NumLevels,LevelGenerator,
+                    T,Compare,Allocator,LevelGenerator,
                     detail::skip_list_node_with_span<T, typename Allocator::size_type>
                 >,
             detail::random_access_skip_list_iterator
@@ -69,7 +68,7 @@ private:
         parent_type;
     typedef random_access_skip_list
         <
-            T,Compare,Allocator,NumLevels,LevelGenerator
+            T,Compare,Allocator,LevelGenerator
         >
         self_type;
     
@@ -252,48 +251,48 @@ private:
 
 namespace goodliffe {
 
-template <class T, class C, class A, unsigned NL, class LG>
+template <class T, class C, class A, class LG>
 inline
-typename random_access_skip_list<T,C,A,NL,LG>::const_reference
-random_access_skip_list<T,C,A,NL,LG>::operator[](unsigned index) const
+typename random_access_skip_list<T,C,A,LG>::const_reference
+random_access_skip_list<T,C,A,LG>::operator[](unsigned index) const
 {
     const node_type *node = impl.at(index);
     assert_that(impl.is_valid(node));
     return node->value;
 }
 
-template <class T, class C, class A, unsigned NL, class LG>
+template <class T, class C, class A, class LG>
 inline
 void
-random_access_skip_list<T,C,A,NL,LG>::erase_at(size_type index)
+random_access_skip_list<T,C,A,LG>::erase_at(size_type index)
 {
     node_type *node = impl.at(index);
     assert_that(impl.is_valid(node));
     impl.remove(node);
 }
 
-template <class T, class C, class A, unsigned NL, class LG>
+template <class T, class C, class A, class LG>
 inline
-typename random_access_skip_list<T,C,A,NL,LG>::iterator
-random_access_skip_list<T,C,A,NL,LG>::iterator_at(unsigned index)
+typename random_access_skip_list<T,C,A,LG>::iterator
+random_access_skip_list<T,C,A,LG>::iterator_at(unsigned index)
 {
     node_type *node = impl.at(index);
     return iterator(&impl, node);
 }
 
-template <class T, class C, class A, unsigned NL, class LG>
+template <class T, class C, class A, class LG>
 inline
-typename random_access_skip_list<T,C,A,NL,LG>::const_iterator
-random_access_skip_list<T,C,A,NL,LG>::iterator_at(unsigned index) const
+typename random_access_skip_list<T,C,A,LG>::const_iterator
+random_access_skip_list<T,C,A,LG>::iterator_at(unsigned index) const
 {
     const node_type *node = impl.at(index);
     return const_iterator(&impl, node);
 }
 
-template <class T, class C, class A, unsigned NL, class LG>
+template <class T, class C, class A, class LG>
 inline
-typename random_access_skip_list<T,C,A,NL,LG>::size_type
-random_access_skip_list<T,C,A,NL,LG>::index_of(const const_iterator &i) const
+typename random_access_skip_list<T,C,A,LG>::size_type
+random_access_skip_list<T,C,A,LG>::index_of(const const_iterator &i) const
 {
     return impl.index_of(i.get_node());
 }
@@ -437,10 +436,10 @@ struct skip_list_node_traits<skip_list_node_with_span<T,typename Allocator::size
 namespace goodliffe {
 namespace detail {
 
-template <class T, class C, class A, unsigned NL, class LG, class N>
+template <class T, class C, class A, class LG, class N>
 inline
-typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
-skip_list_impl<T,C,A,NL,LG,N>::at(size_type index)
+typename skip_list_impl<T,C,A,LG,N>::node_type *
+skip_list_impl<T,C,A,LG,N>::at(size_type index)
 {
     // only compiles for node_type where "node->span" is valid
     static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T,size_type>));
@@ -462,10 +461,10 @@ skip_list_impl<T,C,A,NL,LG,N>::at(size_type index)
     return node;
 }
 
-template <class T, class C, class A, unsigned NL, class LG, class N>
+template <class T, class C, class A, class LG, class N>
 inline
-const typename skip_list_impl<T,C,A,NL,LG,N>::node_type *
-skip_list_impl<T,C,A,NL,LG,N>::at(size_type index) const
+const typename skip_list_impl<T,C,A,LG,N>::node_type *
+skip_list_impl<T,C,A,LG,N>::at(size_type index) const
 {
     // only compiles for node_type where "node->span" is valid
     static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T,size_type>));
@@ -487,10 +486,10 @@ skip_list_impl<T,C,A,NL,LG,N>::at(size_type index) const
     return node;
 }
 
-template <class T, class C, class A, unsigned NL, class LG, class N>
+template <class T, class C, class A, class LG, class N>
 inline
-typename skip_list_impl<T,C,A,NL,LG,N>::size_type
-skip_list_impl<T,C,A,NL,LG,N>::index_of(const node_type *node) const
+typename skip_list_impl<T,C,A,LG,N>::size_type
+skip_list_impl<T,C,A,LG,N>::index_of(const node_type *node) const
 {
     // only compiles for node_type where "node->span" is valid
     static_assert_that(sizeof(node_type) == sizeof(skip_list_node_with_span<T,size_type>));
