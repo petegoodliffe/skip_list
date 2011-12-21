@@ -28,6 +28,7 @@ namespace detail
 
 //==============================================================================
 #pragma mark - random_access_skip_list
+//==============================================================================
 
 namespace goodliffe {
 
@@ -137,6 +138,7 @@ public:
 
 //==============================================================================
 #pragma mark - iterators
+//==============================================================================
 
 namespace goodliffe {
 namespace detail {
@@ -248,6 +250,7 @@ private:
 
 //==============================================================================
 #pragma mark - random_access_skip_list_impl
+//==============================================================================
 
 namespace goodliffe {
 
@@ -300,7 +303,8 @@ random_access_skip_list<T,C,A,LG>::index_of(const const_iterator &i) const
 } // namespace goodliffe
 
 //==============================================================================
-#pragma mark - skip_list_impl declaration
+#pragma mark - skip_list_node_with_span
+//==============================================================================
 
 namespace goodliffe {
 namespace detail {
@@ -427,8 +431,8 @@ struct skip_list_node_traits<skip_list_node_with_span<T,typename Allocator::size
     }
 };
 
-}
-}
+} // namespace detail
+} // namespace goodliffe
 
 //==============================================================================
 #pragma mark skip_list_impl
@@ -498,9 +502,9 @@ skip_list_impl<T,C,A,LG,N>::index_of(const node_type *node) const
     size_type  indexes[num_levels] = {0};
     return find_chain(node, chain, indexes);
 }
-
-}
-}
+    
+} // namespace detail
+} // namespace goodliffe
 
 //==============================================================================
 

@@ -44,6 +44,7 @@ namespace detail
 
 //==============================================================================
 #pragma mark - skip_list
+//==============================================================================
 
 namespace goodliffe {
 
@@ -261,6 +262,7 @@ namespace std
 
 //==============================================================================
 #pragma mark - diagnostics
+//==============================================================================
 
 //#define SKIP_LIST_IMPL_DIAGNOSTICS 1
 
@@ -307,6 +309,7 @@ template<> struct static_assert_that_impl<true> {};
 
 //==============================================================================
 #pragma mark - skip_list_impl declaration
+//==============================================================================
 
 namespace goodliffe {
 namespace detail {
@@ -457,6 +460,7 @@ bool less_or_equal(const T &lhs, const T &rhs, Compare &less)
 
 //==============================================================================
 #pragma mark - iterators
+//==============================================================================
 
 namespace goodliffe {
 namespace detail {
@@ -587,9 +591,13 @@ private:
 };
 
 } // namespace detail
+} // namespace goodliffe
 
 //==============================================================================
 #pragma mark - lifetime management
+//==============================================================================
+
+namespace goodliffe {
 
 template <class T, class C, class A, class LG, class SLT, template <class> class I>
 inline
@@ -969,9 +977,14 @@ skip_list<T,C,A,LG,SLT,I>::find(const value_type &value) const
         ? const_iterator(&impl, node)
         : end();
 }
+    
+} // namespace goodliffe
 
 //==============================================================================
 #pragma mark - non-members
+//==============================================================================
+
+namespace goodliffe {
 
 template <class T, class C, class A, class LG, class SLT, template <class> class I>
 inline
@@ -1026,6 +1039,7 @@ void std::swap(goodliffe::skip_list<T,C,A,LG,SLT,I> &lhs, goodliffe::skip_list<T
 
 //==============================================================================
 #pragma mark - skip_list_node_traits
+//==============================================================================
 
 namespace goodliffe {
 namespace detail {
@@ -1083,9 +1097,16 @@ struct skip_list_node_traits
     static void decrement_span(NodeType *node, Size level) {}
     static Size span(const NodeType *node, unsigned level) { return 0; }
 };
+    
+} // namespace detail
+} // namespace goodliffe
 
 //==============================================================================
 #pragma mark - skip_list_impl
+//==============================================================================
+
+namespace goodliffe {
+namespace detail {
 
 template <class T, class C, class A, class LG, class N>
 inline
@@ -1546,8 +1567,15 @@ bool skip_list_impl<T,C,A,LG,N>::check() const
 }
 #endif
 
+} // namespace detail
+} // namespace goodliffe
+
 //==============================================================================
 #pragma mark - skip_list_level_generator
+//==============================================================================
+    
+namespace goodliffe {
+namespace detail {
 
 template <unsigned ML>
 inline
