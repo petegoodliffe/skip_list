@@ -276,14 +276,14 @@ public:
     typedef T                                   value_type;
     typedef typename Allocator::size_type       size_type;
     typedef typename Allocator::difference_type difference_type;
+    typedef typename Allocator::const_reference const_reference;
+    typedef typename Allocator::const_pointer   const_pointer;
     typedef Allocator                           allocator_type;
     typedef Compare                             compare_type;
     typedef LevelGenerator                      generator_type;
     typedef NodeType                            node_type;
 
     static const unsigned num_levels = LevelGenerator::num_levels;
-    typedef typename Allocator::const_reference const_reference;
-    typedef typename Allocator::const_pointer   const_pointer;
 
     skip_list_impl(const Allocator &alloc = Allocator());
     ~skip_list_impl();
