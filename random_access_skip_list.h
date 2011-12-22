@@ -100,9 +100,7 @@ public:
     //random_access_skip_list(const random_access_skip_list &&other, const Allocator &alloc);
     //random_access_skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
 
-    ~random_access_skip_list();
-
-    allocator_type get_allocator() const;
+    allocator_type get_allocator() const { return impl.get_allocator(); }
 
     //======================================================================
     // assignment
@@ -124,28 +122,28 @@ public:
     //======================================================================
     // iterators
 
-    iterator       begin();
-    const_iterator begin() const;
-    const_iterator cbegin() const;
+    iterator       begin()          { return iterator(&impl, impl.front()); }
+    const_iterator begin() const    { return const_iterator(&impl, impl.front()); }
+    const_iterator cbegin() const   { return const_iterator(&impl, impl.front()); }
 
-    iterator       end();
-    const_iterator end() const;
-    const_iterator cend() const;
+    iterator       end()            { return iterator(&impl, impl.one_past_end()); }
+    const_iterator end() const      { return const_iterator(&impl, impl.one_past_end()); }
+    const_iterator cend() const     { return const_iterator(&impl, impl.one_past_end()); }
 
-    reverse_iterator       rbegin();
-    const_reverse_iterator rbegin() const;
-    const_reverse_iterator crbegin() const;
+    reverse_iterator       rbegin()         { return reverse_iterator(end()); }
+    const_reverse_iterator rbegin() const   { return const_reverse_iterator(end()); }
+    const_reverse_iterator crbegin() const  { return const_reverse_iterator(end()); }
 
-    reverse_iterator       rend();
-    const_reverse_iterator rend() const;
-    const_reverse_iterator crend() const;
+    reverse_iterator       rend()           { return reverse_iterator(begin()); }
+    const_reverse_iterator rend() const     { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crend() const    { return const_reverse_iterator(begin()); }
 
     //======================================================================
     // capacity
 
-    bool      empty() const;
-    size_type size() const;
-    size_type max_size() const;
+    bool      empty() const         { return impl.size() == 0; }
+    size_type size() const          { return impl.size(); }
+    size_type max_size() const      { return impl.get_allocator().max_size(); }
 
     //======================================================================
     // modifiers
@@ -170,7 +168,7 @@ public:
     iterator  erase(const_iterator position);
     iterator  erase(const_iterator first, const_iterator last);
 
-    void swap(random_access_skip_list &other);
+    void swap(random_access_skip_list &other) { impl.swap(other.impl); }
 
     friend void swap(random_access_skip_list &lhs, random_access_skip_list &rhs) { lhs.swap(rhs); }
 
@@ -283,7 +281,7 @@ class random_access_skip_list_iterator
 public:
     typedef rasl_impl                                          impl_type;
     typedef random_access_skip_list_const_iterator<rasl_impl>  const_iterator;
-    typedef typename impl_type::node_type                           node_type;
+    typedef typename impl_type::node_type                      node_type;
     typedef random_access_skip_list_iterator<rasl_impl>        self_type;
 
     random_access_skip_list_iterator()
@@ -333,7 +331,7 @@ class random_access_skip_list_const_iterator
 public:
     typedef const rasl_impl                                    impl_type;
     typedef random_access_skip_list_iterator<rasl_impl>        normal_iterator;
-    typedef const typename impl_type::node_type                     node_type;
+    typedef const typename impl_type::node_type                node_type;
     typedef random_access_skip_list_const_iterator<rasl_impl>  self_type;
 
     random_access_skip_list_const_iterator()
@@ -391,12 +389,6 @@ random_access_skip_list<T,C,A,LG>::random_access_skip_list(const allocator_type 
 }
 
 template <class T, class C, class A, class LG>
-inline
-random_access_skip_list<T,C,A,LG>::~random_access_skip_list()
-{
-}
-
-template <class T, class C, class A, class LG>
 template <class InputIterator>
 inline
 random_access_skip_list<T,C,A,LG>::random_access_skip_list(InputIterator first, InputIterator last, const allocator_type &alloc_)
@@ -425,13 +417,6 @@ random_access_skip_list<T,C,A,LG>::random_access_skip_list(const random_access_s
 //skip_list(const skip_list &&other);
 //skip_list(const skip_list &&other, const Allocator &alloc);
 //skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
-
-template <class T, class C, class A, class LG>
-inline
-A random_access_skip_list<T,C,A,LG>::get_allocator() const
-{
-    return impl.get_allocator();
-}
 
 //==============================================================================
 #pragma mark assignment
@@ -493,131 +478,6 @@ random_access_skip_list<T,C,A,LG>::back() const
 {
     assert_that(!empty());
     return impl.one_past_end()->prev->value;
-}
-
-//==============================================================================
-#pragma mark iterators
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::iterator
-random_access_skip_list<T,C,A,LG>::begin()
-{
-    return iterator(&impl, impl.front());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::const_iterator
-random_access_skip_list<T,C,A,LG>::begin() const
-{
-    return const_iterator(&impl, impl.front());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::const_iterator
-random_access_skip_list<T,C,A,LG>::cbegin() const
-{
-    return const_iterator(&impl, impl.front());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::iterator
-random_access_skip_list<T,C,A,LG>::end()
-{
-    return iterator(&impl, impl.one_past_end());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::const_iterator
-random_access_skip_list<T,C,A,LG>::end() const
-{
-    return const_iterator(&impl, impl.one_past_end());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::const_iterator
-random_access_skip_list<T,C,A,LG>::cend() const
-{
-    return const_iterator(&impl, impl.one_past_end());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::reverse_iterator
-random_access_skip_list<T,C,A,LG>::rbegin()
-{
-    return reverse_iterator(end());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::const_reverse_iterator
-random_access_skip_list<T,C,A,LG>::rbegin() const
-{
-    return const_reverse_iterator(end());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::const_reverse_iterator
-random_access_skip_list<T,C,A,LG>::crbegin() const
-{
-    return const_reverse_iterator(end());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::reverse_iterator
-random_access_skip_list<T,C,A,LG>::rend()
-{
-    return reverse_iterator(begin());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::const_reverse_iterator
-random_access_skip_list<T,C,A,LG>::rend() const
-{
-    return const_reverse_iterator(begin());
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::const_reverse_iterator
-random_access_skip_list<T,C,A,LG>::crend() const
-{
-    return const_reverse_iterator(begin());
-}
-
-//==============================================================================
-#pragma mark capacity
-
-template <class T, class C, class A, class LG>
-inline
-bool random_access_skip_list<T,C,A,LG>::empty() const
-{
-    return impl.size() == 0;
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::size_type
-random_access_skip_list<T,C,A,LG>::size() const
-{
-    return impl.size();
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename random_access_skip_list<T,C,A,LG>::size_type
-random_access_skip_list<T,C,A,LG>::max_size() const
-{
-    return impl.get_allocator().max_size();
 }
 
 //==============================================================================
@@ -720,14 +580,6 @@ random_access_skip_list<T,C,A,LG>::erase(const_iterator first, const_iterator la
     return iterator(&impl, const_cast<node_type*>(last.get_node()));
 }
 
-template <class T, class C, class A, class LG>
-inline
-void
-random_access_skip_list<T,C,A,LG>::swap(random_access_skip_list<T,C,A,LG> &other)
-{
-    impl.swap(other.impl);
-}
-    
 //==============================================================================
 #pragma mark lookup
 
@@ -762,14 +614,8 @@ random_access_skip_list<T,C,A,LG>::find(const value_type &value) const
         : end();
 }
     
-} // namespace goodliffe
-
-
 //==============================================================================
-#pragma mark - random_access_rasl_impl
-//==============================================================================
-
-namespace goodliffe {
+#pragma mark random access
 
 template <class T, class C, class A, class LG>
 inline
@@ -820,7 +666,8 @@ random_access_skip_list<T,C,A,LG>::index_of(const const_iterator &i) const
 } // namespace goodliffe
 
 //==============================================================================
-#pragma mark skip_list_node_traits
+#pragma mark - skip_list_node_traits
+//==============================================================================
 
 namespace goodliffe {
 namespace detail {
@@ -929,7 +776,7 @@ struct rasl_node_traits
 } // namespace goodliffe
 
 //==============================================================================
-#pragma mark rasl_impl
+#pragma mark - rasl_impl
 
 namespace goodliffe {
 namespace detail {
