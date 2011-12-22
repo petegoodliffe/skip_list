@@ -666,116 +666,6 @@ random_access_skip_list<T,C,A,LG>::index_of(const const_iterator &i) const
 } // namespace goodliffe
 
 //==============================================================================
-#pragma mark - skip_list_node_traits
-//==============================================================================
-
-namespace goodliffe {
-namespace detail {
-
-template <typename T, typename SPAN>
-struct rasl_node;
-
-/// Partial specialisation for rasl_node
-/// (also intialises all spans to zero)
-template <typename T, typename Allocator>
-struct rasl_node_traits
-{
-    typedef typename Allocator::size_type                           Span;
-    typedef rasl_node<T,Span>                                       NodeType;
-    typedef typename Allocator::template rebind<NodeType>::other    NodeAllocator;
-    typedef typename Allocator::template rebind<NodeType*>::other   ListAllocator;
-    typedef typename Allocator::template rebind<Span>::other        SpanAllocator;
-    typedef typename Allocator::difference_type                     Difference;
-    typedef typename Allocator::size_type                           Size;
-
-    static
-    inline
-    NodeType *allocate(unsigned level, Allocator &alloc)
-    {
-        NodeType *node = NodeAllocator(alloc).allocate(1, (void*)0);
-        node->next  = ListAllocator(alloc).allocate(level+1, (void*)0);
-        node->span  = SpanAllocator(alloc).allocate(level+1, (void*)0);
-        node->level = level;
-        for (unsigned n = 0; n <= level; ++n) node->span[n] = 1;
-#ifdef rasl_impl_DIAGNOSTICS
-        for (unsigned n = 0; n <= level; ++n) node->next[n] = 0;
-        node->magic = MAGIC_GOOD;
-#endif
-        return node;
-    }
-    static
-    inline
-    void deallocate(NodeType *node, Allocator &alloc)
-    {
-#ifdef rasl_impl_DIAGNOSTICS
-        assert_that(node->magic == MAGIC_GOOD);
-        node->magic = MAGIC_BAD;
-        for (unsigned n = 0; n <= node->level; ++n) node->next[n] = 0;
-        node->prev = 0;
-#endif
-        SpanAllocator(alloc).deallocate(node->span, node->level+1);
-        ListAllocator(alloc).deallocate(node->next, node->level+1);
-        NodeAllocator(alloc).deallocate(node, 1);
-    }
-
-    static
-    void increment_span(NodeType *node, unsigned level)
-    {
-#ifdef rasl_impl_DIAGNOSTICS
-        assert_that(level <= node->level);
-#endif
-        
-        // Level 0 always has a span of 1
-        if (level)
-            ++(node->span[level]);
-    }
-    static
-    void change_span(NodeType *node, unsigned level, Difference by)
-    {
-        // Level 0 always has a span of 1
-        if (level)
-            node->span[level] += by;
-    }
-    static
-    void set_span(NodeType *node, unsigned level, Size span)
-    {
-#ifdef rasl_impl_DIAGNOSTICS
-        assert_that(level <= node->level);
-#endif
-
-        if (level)
-            node->span[level] = span;
-    }
-    static
-    void set_all_spans(NodeType *node, Size span)
-    {
-        for (unsigned n = 0; n < node->level; ++n)
-            node->span[n] = span;
-    }
-    static
-    void decrement_span(NodeType *node, unsigned level)
-    {
-#ifdef rasl_impl_DIAGNOSTICS
-        assert_that(level <= node->level);
-#endif
-        if (level)
-            --(node->span[level]);
-    }
-    static
-    inline
-    Size span(const NodeType *node, unsigned level)
-    {
-#ifdef rasl_impl_DIAGNOSTICS
-        assert_that(level <= node->level);
-#endif
-        return node->span[level];
-    }
-};
-
-} // namespace detail
-} // namespace goodliffe
-
-//==============================================================================
 #pragma mark - rasl_impl
 
 namespace goodliffe {
@@ -847,7 +737,9 @@ public:
     compare_type less;
 
 private:
-    typedef rasl_node_traits<T, Allocator> node_traits;
+    typedef typename Allocator::template rebind<node_type>::other    node_allocator;
+    typedef typename Allocator::template rebind<node_type*>::other   list_allocator;
+    typedef typename Allocator::template rebind<size_type>::other    span_allocator;
 
     rasl_impl(const rasl_impl &other);
     rasl_impl &operator=(const rasl_impl &other);
@@ -863,6 +755,33 @@ private:
     node_type      *head;
     node_type      *tail;
     size_type       item_count;
+        
+    node_type *allocate(unsigned level)
+    {
+        node_type *node = node_allocator(alloc).allocate(1, (void*)0);
+        node->next  = list_allocator(alloc).allocate(level+1, (void*)0);
+        node->span  = span_allocator(alloc).allocate(level+1, (void*)0);
+        node->level = level;
+        for (unsigned n = 0; n <= level; ++n) node->span[n] = 1;
+#ifdef rasl_impl_DIAGNOSTICS
+        for (unsigned n = 0; n <= level; ++n) node->next[n] = 0;
+        node->magic = MAGIC_GOOD;
+#endif
+        return node;
+    }
+
+    void deallocate(node_type *node)
+    {
+#ifdef rasl_impl_DIAGNOSTICS
+        assert_that(node->magic == MAGIC_GOOD);
+        node->magic = MAGIC_BAD;
+        for (unsigned n = 0; n <= node->level; ++n) node->next[n] = 0;
+        node->prev = 0;
+#endif
+        span_allocator(alloc).deallocate(node->span, node->level+1);
+        list_allocator(alloc).deallocate(node->next, node->level+1);
+        node_allocator(alloc).deallocate(node, 1);
+    }
 };
 
 template <class T, class C, class A, class LG>
@@ -870,15 +789,15 @@ inline
 rasl_impl<T,C,A,LG>::rasl_impl(const allocator_type &alloc_)
 :   alloc(alloc_),
     levels(0),
-    head(node_traits::allocate(num_levels, alloc)),
-    tail(node_traits::allocate(num_levels, alloc)),
+    head(allocate(num_levels)),
+    tail(allocate(num_levels)),
     item_count(0)
 {
     for (unsigned n = 0; n < num_levels; n++)
     {
         head->next[n] = tail;
         tail->next[n] = 0;
-        node_traits::set_span(head, n, 1);
+        head->span[n] = 1;
     }
     head->prev = 0;
     tail->prev = head;
@@ -889,8 +808,8 @@ inline
 rasl_impl<T,C,A,LG>::~rasl_impl()
 {
     remove_all();
-    node_traits::deallocate(head, alloc);
-    node_traits::deallocate(tail, alloc);
+    deallocate(head);
+    deallocate(tail);
 }
 
 template <class T, class C, class A, class LG>
@@ -925,7 +844,7 @@ rasl_impl<T,C,A,LG>::find_chain(const value_type &value, node_type **chain, size
         impl_assert_that(l <= cur->level);
         while (cur->next[l] != tail && less(cur->next[l]->value, value))
         {
-            index += node_traits::span(cur, l);
+            index += cur->span[l];
             cur = cur->next[l];
             impl_assert_that(l <= cur->level);
         }
@@ -959,7 +878,7 @@ rasl_impl<T,C,A,LG>::find_chain(const node_type *node, node_type **chain, size_t
         impl_assert_that(l <= cur->level);
         while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
         {
-            index += node_traits::span(cur, l);
+            index += cur->span[l];
             cur = cur->next[l];
             impl_assert_that(l <= cur->level);
         }
@@ -990,7 +909,7 @@ rasl_impl<T,C,A,LG>::find_end_chain(node_type **chain, size_type *indexes) const
         impl_assert_that(l <= cur->level);
         while (cur->next[l] != tail)
         {
-            index += node_traits::span(cur, l);
+            index += cur->span[l];
             cur = cur->next[l];
             impl_assert_that(l <= cur->level);
         }
@@ -1014,7 +933,7 @@ rasl_impl<T,C,A,LG>::insert(const value_type &value, node_type *hint)
 {
     const unsigned level = new_level();
 
-    node_type *new_node = node_traits::allocate(level, alloc);
+    node_type *new_node = allocate(level);
     assert_that(new_node);
     impl_assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
@@ -1034,15 +953,16 @@ rasl_impl<T,C,A,LG>::insert(const value_type &value, node_type *hint)
     {
         if (l > level)
         {
-            node_traits::increment_span(chain[l], l);
+            if (l>0)
+                ++chain[l]->span[l];
         }
         else
         {
             new_node->next[l] = chain[l]->next[l];
             chain[l]->next[l] = new_node;
-            size_type prev_span = node_traits::span(chain[l], l);
-            node_traits::set_span(chain[l], l, index+1-indexes[l]);
-            node_traits::set_span(new_node, l, prev_span - (index-indexes[l]));
+            size_type prev_span = chain[l]->span[l];
+            chain[l]->span[l] = index+1-indexes[l];
+            new_node->span[l] = prev_span - (index-indexes[l]);
         }
     }
     new_node->next[0]->prev = new_node;
@@ -1075,17 +995,18 @@ rasl_impl<T,C,A,LG>::remove(node_type *node)
     {
         if (chain[l]->next[l] == node)
         {
-            node_traits::set_span(chain[l], l, node_traits::span(chain[l], l) + node_traits::span(node, l)-1);
+            chain[l]->span[l] = chain[l]->span[l] + node->span[l]-1;
             chain[l]->next[l] = node->next[l];
         }
         else if (chain[l] == head || less(chain[l]->value, node->value))
         {
-            node_traits::decrement_span(chain[l], l);
+            if (l > 0)
+                --chain[l]->span[l];
         }
     }
 
     alloc.destroy(&node->value);
-    node_traits::deallocate(node, alloc);
+    deallocate(node);
 
     item_count--;
     
@@ -1104,14 +1025,14 @@ rasl_impl<T,C,A,LG>::remove_all()
     {
         node_type *next = node->next[0];
         alloc.destroy(&node->value);
-        node_traits::deallocate(node, alloc);
+        deallocate(node);
         node = next;
     }
 
     for (unsigned l = 0; l < num_levels; ++l)
     {
         head->next[l] = tail;
-        node_traits::set_span(head, l, 1);
+        head->span[l] = 1;
     }
     tail->prev = head;
     item_count = 0;
@@ -1148,7 +1069,7 @@ rasl_impl<T,C,A,LG>::remove_between(node_type *first, node_type *last)
         //<< "/" << first_indexes[n]
             << ", last=" << last_chain[n]->value
         //<< "/" << last_indexes[n]
-            << "  span=" << node_traits::span(last_chain[n], n) << "\n";
+            << "  span=" << last_chain[n]->span[n] << "\n";
 */
     unsigned last_node_level = 0;
     while (last_node_level+1 < num_levels
@@ -1168,7 +1089,7 @@ rasl_impl<T,C,A,LG>::remove_between(node_type *first, node_type *last)
             first_chain[l]->next[l] = last_chain[l]->next[l];
 
         // span
-        node_traits::set_span(first_chain[l], l, last_indexes[l]+node_traits::span(last_chain[l], l)-first_indexes[l]-size_reduction);
+        first_chain[l]->span[l] = last_indexes[l]+last_chain[l]->span[l]-first_indexes[l]-size_reduction;
     }
 
     // now delete all the nodes between [first,last]
@@ -1176,7 +1097,7 @@ rasl_impl<T,C,A,LG>::remove_between(node_type *first, node_type *last)
     {
         node_type *next = first->next[0];
         alloc.destroy(&first->value);
-        node_traits::deallocate(first, alloc);
+        deallocate(first);
         item_count--;
         first = next;
     }
@@ -1233,7 +1154,7 @@ void rasl_impl<T,C,A,LG>::dump(STREAM &s) const
         {
             impl_assert_that(l <= n->level);
             const node_type *next = n->next[l];
-            size_type span = node_traits::span(n, l);
+            size_type span = n->span[l];
             bool prev_ok = false;
             char prev_char = span > 1 ? '(' : 'X';
             if (next && span <= 1)
