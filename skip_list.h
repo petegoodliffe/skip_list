@@ -931,7 +931,7 @@ public:
     skip_list_impl(const Allocator &alloc = Allocator());
     ~skip_list_impl();
 
-    Allocator        get_allocator() const;
+    Allocator        get_allocator() const                 { return alloc; }
     size_type        size() const                          { return item_count; }
     bool             is_valid(const node_type *node) const { return node && node != head && node != tail; }
     node_type       *front()                               { return head->next[0]; }
@@ -1000,13 +1000,6 @@ skip_list_impl<T,C,A,LG,N>::~skip_list_impl()
     remove_all();
     node_traits::deallocate(head, alloc);
     node_traits::deallocate(tail, alloc);
-}
-
-template <class T, class C, class A, class LG, class N>
-inline
-A skip_list_impl<T,C,A,LG,N>::get_allocator() const
-{
-    return alloc;
 }
 
 template <class T, class C, class A, class LG, class N>
