@@ -126,12 +126,15 @@ TEST_CASE( "random_access_skip_list/iterator_at", "" )
     FillWithRandomData(1000, data);
     
     random_access_skip_list<int> list(data.begin(), data.end());
-    
+    const random_access_skip_list<int> clist = list;
+
     SortVectorAndRemoveDuplicates(data);
     
     for (unsigned n = 0; n < list.size(); n += 7)
     {
         REQUIRE(*list.iterator_at(n) == data[n]);
+        REQUIRE(*list.citerator_at(n) == data[n]);
+        REQUIRE(*clist.iterator_at(n) == data[n]);
     }
 }
 

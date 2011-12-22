@@ -188,6 +188,7 @@ public:
     
     iterator       iterator_at(unsigned index);
     const_iterator iterator_at(unsigned index) const;
+    const_iterator citerator_at(unsigned index) const { return iterator_at(index); }
     
     size_type index_of(const const_iterator &i) const;
 
@@ -1134,21 +1135,7 @@ inline
 const typename rasl_impl<T,C,A,LG>::node_type *
 rasl_impl<T,C,A,LG>::at(size_type index) const
 {
-    unsigned l = levels;
-    const node_type *node = head;
-    index += 1;
-
-    while (l)
-    {
-        --l;
-        while (node->span[l] <= index)
-        {
-            index -= node->span[l];
-            node = node->next[l];
-        }
-    }
-
-    return node;
+    return const_cast<rasl_impl*>(this)->at(index);
 }
 
 template <class T, class C, class A, class LG>
