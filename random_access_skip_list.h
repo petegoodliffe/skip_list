@@ -122,13 +122,13 @@ public:
     //======================================================================
     // iterators
 
-    iterator       begin()          { return iterator(&impl, impl.front()); }
-    const_iterator begin() const    { return const_iterator(&impl, impl.front()); }
-    const_iterator cbegin() const   { return const_iterator(&impl, impl.front()); }
+    iterator       begin()                  { return iterator(&impl, impl.front()); }
+    const_iterator begin() const            { return const_iterator(&impl, impl.front()); }
+    const_iterator cbegin() const           { return const_iterator(&impl, impl.front()); }
 
-    iterator       end()            { return iterator(&impl, impl.one_past_end()); }
-    const_iterator end() const      { return const_iterator(&impl, impl.one_past_end()); }
-    const_iterator cend() const     { return const_iterator(&impl, impl.one_past_end()); }
+    iterator       end()                    { return iterator(&impl, impl.one_past_end()); }
+    const_iterator end() const              { return const_iterator(&impl, impl.one_past_end()); }
+    const_iterator cend() const             { return const_iterator(&impl, impl.one_past_end()); }
 
     reverse_iterator       rbegin()         { return reverse_iterator(end()); }
     const_reverse_iterator rbegin() const   { return const_reverse_iterator(end()); }
@@ -1109,6 +1109,60 @@ rasl_impl<T,C,A,LG>::remove_between(node_type *first, node_type *last)
 
 template <class T, class C, class A, class LG>
 inline
+typename rasl_impl<T,C,A,LG>::node_type *
+rasl_impl<T,C,A,LG>::at(size_type index)
+{
+    unsigned l = levels;
+    node_type *node = head;
+    index += 1;
+
+    while (l)
+    {
+        --l;
+        while (node->span[l] <= index)
+        {
+            index -= node->span[l];
+            node = node->next[l];
+        }
+    }
+
+    return node;
+}
+
+template <class T, class C, class A, class LG>
+inline
+const typename rasl_impl<T,C,A,LG>::node_type *
+rasl_impl<T,C,A,LG>::at(size_type index) const
+{
+    unsigned l = levels;
+    const node_type *node = head;
+    index += 1;
+
+    while (l)
+    {
+        --l;
+        while (node->span[l] <= index)
+        {
+            index -= node->span[l];
+            node = node->next[l];
+        }
+    }
+
+    return node;
+}
+
+template <class T, class C, class A, class LG>
+inline
+typename rasl_impl<T,C,A,LG>::size_type
+rasl_impl<T,C,A,LG>::index_of(const node_type *node) const
+{
+    node_type *chain[num_levels]   = {0};
+    size_type  indexes[num_levels] = {0};
+    return find_chain(node, chain, indexes);
+}
+
+template <class T, class C, class A, class LG>
+inline
 unsigned rasl_impl<T,C,A,LG>::new_level()
 {    
     unsigned level = generator.new_level();
@@ -1237,60 +1291,6 @@ bool rasl_impl<T,C,A,LG>::check() const
     return true;
 }
 #endif
-
-template <class T, class C, class A, class LG>
-inline
-typename rasl_impl<T,C,A,LG>::node_type *
-rasl_impl<T,C,A,LG>::at(size_type index)
-{
-    unsigned l = levels;
-    node_type *node = head;
-    index += 1;
-
-    while (l)
-    {
-        --l;
-        while (node->span[l] <= index)
-        {
-            index -= node->span[l];
-            node = node->next[l];
-        }
-    }
-
-    return node;
-}
-
-template <class T, class C, class A, class LG>
-inline
-const typename rasl_impl<T,C,A,LG>::node_type *
-rasl_impl<T,C,A,LG>::at(size_type index) const
-{
-    unsigned l = levels;
-    const node_type *node = head;
-    index += 1;
-
-    while (l)
-    {
-        --l;
-        while (node->span[l] <= index)
-        {
-            index -= node->span[l];
-            node = node->next[l];
-        }
-    }
-
-    return node;
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename rasl_impl<T,C,A,LG>::size_type
-rasl_impl<T,C,A,LG>::index_of(const node_type *node) const
-{
-    node_type *chain[num_levels]   = {0};
-    size_type  indexes[num_levels] = {0};
-    return find_chain(node, chain, indexes);
-}
     
 } // namespace detail
 } // namespace goodliffe
