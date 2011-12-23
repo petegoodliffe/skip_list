@@ -285,10 +285,14 @@ public:
     typedef typename impl_type::node_type                      node_type;
     typedef random_access_skip_list_iterator<rasl_impl>        self_type;
 
+    typedef typename impl_type::difference_type                difference_type;
+
     random_access_skip_list_iterator()
         : impl(0), node(0) {}
     random_access_skip_list_iterator(impl_type *impl_, node_type *node_)
         : impl(impl_), node(node_) {}
+    random_access_skip_list_iterator(const random_access_skip_list_iterator &other)
+        : impl(other.impl), node(other.node) {}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }
@@ -300,12 +304,15 @@ public:
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
     
-    self_type &operator+=(int n)
+    self_type &operator+=(difference_type n)
         { node = impl->at(impl->index_of(node)+n); return *this; }
-    self_type &operator-=(int n)
+    self_type &operator-=(difference_type n)
         { node = impl->at(impl->index_of(node)-n); return *this; }
 
-    typename impl_type::difference_type operator-(const random_access_skip_list_iterator &lhs) const; // TODO
+    random_access_skip_list_iterator operator+(difference_type rhs) const
+        { return random_access_skip_list_iterator(*this) += rhs; }
+    random_access_skip_list_iterator operator-(difference_type rhs) const
+        { return random_access_skip_list_iterator(*this) -= rhs; }
     typename impl_type::const_reference operator[](int index) const; // TODO
     bool operator<(const self_type &other) const; // TODO
 
