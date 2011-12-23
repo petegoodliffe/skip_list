@@ -20,6 +20,23 @@
 #endif
 
 //==============================================================================
+#pragma mark - internal forward declarations
+
+namespace goodliffe {
+
+/// @internal
+/// Internal namespace for impementation of skip list data structure
+namespace detail
+{
+    template <typename T,typename C,typename A,typename LG>
+    class sl_impl;
+
+    template <typename LIST> class sl_iterator;
+    template <typename LIST> class sl_const_iterator;
+}
+}
+
+//==============================================================================
 #pragma mark - skip_list
 //==============================================================================
 
@@ -31,7 +48,7 @@ namespace goodliffe {
 /// The skip list provides fast searching, and good insert/erase performance.
 /// You can iterate bi-directionally, but do not have full random access.
 ///
-/// For full random access, use the random_access_skip_list container.
+/// For full random access, use the skip_list container.
 ///
 /// TODO:
 ///     * C++11: noexcept decls
@@ -53,25 +70,15 @@ namespace goodliffe {
 template <typename T,
           typename Compare        = std::less<T>,
           typename Allocator      = std::allocator<T>,
-          typename LevelGenerator = detail::skip_list_level_generator<32>,
-          typename SkipListType   = typename detail::skip_list_impl<T,Compare,Allocator,LevelGenerator,detail::skip_list_node<T> >,
-          template <typename> class Iterator = detail::skip_list_iterator >
+          typename LevelGenerator = detail::skip_list_level_generator<32> >
 class skip_list
 {
 protected:
-    typedef skip_list
-        <
-            T,Compare,Allocator,LevelGenerator,SkipListType,Iterator
-        >
-        self_type;
+    typedef typename detail::sl_impl<T,Compare,Allocator,LevelGenerator> impl_type;
+    typedef typename impl_type::node_type                                node_type;
 
-    typedef SkipListType                    impl_type;
-    typedef typename impl_type::node_type   node_type;
-
-    template <typename T1> friend class detail::skip_list_iterator;
-    template <typename T1> friend class detail::skip_list_const_iterator;
-    template <typename T1> friend class detail::random_access_skip_list_iterator;
-    template <typename T1> friend class detail::random_access_skip_list_const_iterator;
+    template <typename T1> friend class detail::sl_iterator;
+    template <typename T1> friend class detail::sl_const_iterator;
 
 public:
 
@@ -87,8 +94,8 @@ public:
     typedef typename allocator_type::pointer            pointer;
     typedef typename allocator_type::const_pointer      const_pointer;
     typedef Compare                                     compare;
-
-    typedef Iterator<impl_type>                         iterator;
+    
+    typedef typename detail::sl_iterator<impl_type>     iterator;
     typedef typename iterator::const_iterator           const_iterator;
     typedef std::reverse_iterator<iterator>             reverse_iterator;
     typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
@@ -111,7 +118,7 @@ public:
 
     ~skip_list();
 
-    allocator_type get_allocator() const;
+    allocator_type get_allocator() const { return impl.get_allocator(); }
 
     //======================================================================
     // assignment
@@ -133,28 +140,28 @@ public:
     //======================================================================
     // iterators
 
-    iterator       begin();
-    const_iterator begin() const;
-    const_iterator cbegin() const;
+    iterator       begin()                  { return iterator(&impl, impl.front()); }
+    const_iterator begin() const            { return const_iterator(&impl, impl.front()); }
+    const_iterator cbegin() const           { return const_iterator(&impl, impl.front()); }
 
-    iterator       end();
-    const_iterator end() const;
-    const_iterator cend() const;
+    iterator       end()                    { return iterator(&impl, impl.one_past_end()); }
+    const_iterator end() const              { return const_iterator(&impl, impl.one_past_end()); }
+    const_iterator cend() const             { return const_iterator(&impl, impl.one_past_end()); }
 
-    reverse_iterator       rbegin();
-    const_reverse_iterator rbegin() const;
-    const_reverse_iterator crbegin() const;
+    reverse_iterator       rbegin()         { return reverse_iterator(end()); }
+    const_reverse_iterator rbegin() const   { return const_reverse_iterator(end()); }
+    const_reverse_iterator crbegin() const  { return const_reverse_iterator(end()); }
 
-    reverse_iterator       rend();
-    const_reverse_iterator rend() const;
-    const_reverse_iterator crend() const;
+    reverse_iterator       rend()           { return reverse_iterator(begin()); }
+    const_reverse_iterator rend() const     { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crend() const    { return const_reverse_iterator(begin()); }
 
     //======================================================================
     // capacity
 
-    bool      empty() const;
-    size_type size() const;
-    size_type max_size() const;
+    bool      empty() const         { return impl.size() == 0; }
+    size_type size() const          { return impl.size(); }
+    size_type max_size() const      { return impl.get_allocator().max_size(); }
 
     //======================================================================
     // modifiers
@@ -179,7 +186,7 @@ public:
     iterator  erase(const_iterator position);
     iterator  erase(const_iterator first, const_iterator last);
 
-    void swap(skip_list &other);
+    void swap(skip_list &other) { impl.swap(other.impl); }
 
     friend void swap(skip_list &lhs, skip_list &rhs) { lhs.swap(rhs); }
 
@@ -211,30 +218,64 @@ protected:
     impl_type impl;
 };
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-bool operator==(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs);
+} // namespace goodliffe
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-bool operator!=(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs);
+//==============================================================================
+#pragma mark - non-members
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-bool operator<(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs);
+namespace goodliffe {
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-bool operator<=(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs);
+template <class T, class C, class A, class LG>
+inline
+bool operator==(const skip_list<T,C,A,LG> &lhs, const skip_list<T,C,A,LG> &rhs)
+{
+    return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-bool operator>(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs);
+template <class T, class C, class A, class LG>
+inline
+bool operator!=(const skip_list<T,C,A,LG> &lhs, const skip_list<T,C,A,LG> &rhs)
+{
+    return !operator==(lhs, rhs);
+}
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-bool operator>=(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs);
-    
+template <class T, class C, class A, class LG>
+inline
+bool operator<(const skip_list<T,C,A,LG> &lhs, const skip_list<T,C,A,LG> &rhs)
+{
+    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
+
+template <class T, class C, class A, class LG>
+inline
+bool operator<=(const skip_list<T,C,A,LG> &lhs, const skip_list<T,C,A,LG> &rhs)
+{
+    return !(rhs < lhs);
+}
+
+template <class T, class C, class A, class LG>
+inline
+bool operator>(const skip_list<T,C,A,LG> &lhs, const skip_list<T,C,A,LG> &rhs)
+{
+    return rhs < lhs;
+}
+
+template <class T, class C, class A, class LG>
+inline
+bool operator>=(const skip_list<T,C,A,LG> &lhs, const skip_list<T,C,A,LG> &rhs)
+{
+    return !(lhs < rhs);
+}
+
 } // namespace goodliffe
 
 namespace std
 {
-    template <class T, class C, class A, class LG, class SLT, template <class> class I>
-    void swap(goodliffe::skip_list<T,C,A,LG,SLT,I> &lhs, goodliffe::skip_list<T,C,A,LG,SLT,I> &rhs);
+    template <class T, class C, class A, class LG>
+    void swap(goodliffe::skip_list<T,C,A,LG> &lhs, goodliffe::skip_list<T,C,A,LG> &rhs)
+    {
+        lhs.swap(rhs);
+    }
 }
 
 //==============================================================================
@@ -244,26 +285,29 @@ namespace std
 namespace goodliffe {
 namespace detail {
 
-template <typename SKIP_LIST_IMPL>
-class skip_list_iterator
+template <typename SL_IMPL>
+class sl_iterator
     : public std::iterator<std::bidirectional_iterator_tag,
-                           typename SKIP_LIST_IMPL::value_type,
-                           typename SKIP_LIST_IMPL::difference_type,
-                           typename SKIP_LIST_IMPL::const_pointer,
-                           typename SKIP_LIST_IMPL::const_reference>
+                           typename SL_IMPL::value_type,
+                           typename SL_IMPL::difference_type,
+                           typename SL_IMPL::const_pointer,
+                           typename SL_IMPL::const_reference>
 {
 public:
-    typedef SKIP_LIST_IMPL                              impl_type;
-    typedef skip_list_const_iterator<SKIP_LIST_IMPL>    const_iterator;
-    typedef typename impl_type::node_type               node_type;
-    typedef skip_list_iterator<SKIP_LIST_IMPL>          self_type;
+    typedef SL_IMPL                         impl_type;
+    typedef sl_const_iterator<impl_type>    const_iterator;
+    typedef typename impl_type::node_type   node_type;
+    typedef sl_iterator<impl_type>          self_type;
 
-    skip_list_iterator() :
+    typedef typename impl_type::const_reference const_reference;
+    typedef typename impl_type::const_pointer   const_pointer;
+
+    sl_iterator() :
 #ifdef SKIP_LIST_DIAGNOSTICS
         impl(0),
 #endif
         node(0) {}
-    skip_list_iterator(impl_type *impl_, node_type *node_) :
+    sl_iterator(impl_type *impl_, node_type *node_) :
 #ifdef SKIP_LIST_DIAGNOSTICS
         impl(impl_),
 #endif
@@ -279,8 +323,8 @@ public:
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
 
-    typename impl_type::const_reference operator*()  { return node->value; }
-    typename impl_type::const_pointer   operator->() { return node->value; }
+    const_reference operator*()  { return node->value; }
+    const_pointer   operator->() { return node->value; }
     
     bool operator==(const self_type &other) const
         { return node == other.node; }
@@ -304,31 +348,34 @@ private:
     node_type *node;
 };
 
-template <class SKIP_LIST_IMPL>
-class skip_list_const_iterator
+template <class SL_IMPL>
+class sl_const_iterator
     : public std::iterator<std::bidirectional_iterator_tag,
-                           typename SKIP_LIST_IMPL::value_type,
-                           typename SKIP_LIST_IMPL::difference_type,
-                           typename SKIP_LIST_IMPL::const_pointer,
-                           typename SKIP_LIST_IMPL::const_reference>
+                           typename SL_IMPL::value_type,
+                           typename SL_IMPL::difference_type,
+                           typename SL_IMPL::const_pointer,
+                           typename SL_IMPL::const_reference>
 {
 public:
-    typedef const SKIP_LIST_IMPL                        impl_type;
-    typedef skip_list_iterator<SKIP_LIST_IMPL>          iterator;
-    typedef const typename impl_type::node_type         node_type;
-    typedef skip_list_const_iterator<SKIP_LIST_IMPL>    self_type;
+    typedef const SL_IMPL                       impl_type;
+    typedef sl_iterator<SL_IMPL>                iterator;
+    typedef const typename impl_type::node_type node_type;
+    typedef sl_const_iterator<SL_IMPL>          self_type;
 
-    skip_list_const_iterator() :
+    typedef typename impl_type::const_reference const_reference;
+    typedef typename impl_type::const_pointer   const_pointer;
+
+    sl_const_iterator() :
 #ifdef SKIP_LIST_DIAGNOSTICS
         impl(0),
 #endif
         node(0) {}
-    skip_list_const_iterator(const iterator &i) :
+    sl_const_iterator(const iterator &i) :
 #ifdef SKIP_LIST_DIAGNOSTICS
         impl(i.get_impl()),
 #endif
         node(i.get_node()) {}
-    skip_list_const_iterator(const impl_type *impl_, node_type *node_) :
+    sl_const_iterator(const impl_type *impl_, node_type *node_) :
 #ifdef SKIP_LIST_DIAGNOSTICS
         impl(impl_),
 #endif
@@ -344,8 +391,8 @@ public:
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
 
-    typename impl_type::const_reference operator*()  { return node->value; }
-    typename impl_type::const_pointer   operator->() { return node->value; }
+    const_reference operator*()  { return node->value; }
+    const_pointer   operator->() { return node->value; }
 
     bool operator==(const self_type &other) const
         { return node == other.node; }
@@ -378,39 +425,39 @@ private:
 
 namespace goodliffe {
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-skip_list<T,C,A,LG,SLT,I>::skip_list(const allocator_type &alloc_)
+skip_list<T,C,A,LG>::skip_list(const allocator_type &alloc_)
 :   impl(alloc_)
 {
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-skip_list<T,C,A,LG,SLT,I>::~skip_list()
+skip_list<T,C,A,LG>::~skip_list()
 {
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 template <class InputIterator>
 inline
-skip_list<T,C,A,LG,SLT,I>::skip_list(InputIterator first, InputIterator last, const allocator_type &alloc_)
+skip_list<T,C,A,LG>::skip_list(InputIterator first, InputIterator last, const allocator_type &alloc_)
 :   impl(alloc_)
 {
     assign(first, last);
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-skip_list<T,C,A,LG,SLT,I>::skip_list(const skip_list &other)
+skip_list<T,C,A,LG>::skip_list(const skip_list &other)
 :   impl(other.get_allocator())
 {    
     assign(other.begin(), other.end());
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-skip_list<T,C,A,LG,SLT,I>::skip_list(const skip_list &other, const allocator_type &alloc_)
+skip_list<T,C,A,LG>::skip_list(const skip_list &other, const allocator_type &alloc_)
 :   impl(alloc_)
 {
     assign(other.begin(), other.end());
@@ -421,20 +468,13 @@ skip_list<T,C,A,LG,SLT,I>::skip_list(const skip_list &other, const allocator_typ
 //skip_list(const skip_list &&other, const Allocator &alloc);
 //skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-A skip_list<T,C,A,LG,SLT,I>::get_allocator() const
-{
-    return impl.get_allocator();
-}
-
 //==============================================================================
 #pragma mark assignment
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-skip_list<T,C,A,LG,SLT,I> &
-skip_list<T,C,A,LG,SLT,I>::operator=(const skip_list<T,C,A,LG,SLT,I> &other)
+skip_list<T,C,A,LG> &
+skip_list<T,C,A,LG>::operator=(const skip_list<T,C,A,LG> &other)
 {
     assign(other.begin(), other.end());
     return *this;
@@ -442,10 +482,10 @@ skip_list<T,C,A,LG,SLT,I>::operator=(const skip_list<T,C,A,LG,SLT,I> &other)
 
 //C++11 skip_list& operator=(skip_list&& other);
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 template <typename InputIterator>
 inline
-void skip_list<T,C,A,LG,SLT,I>::assign(InputIterator first, InputIterator last)
+void skip_list<T,C,A,LG>::assign(InputIterator first, InputIterator last)
 {
     clear();
     while (first != last) insert(*first++);
@@ -454,190 +494,65 @@ void skip_list<T,C,A,LG,SLT,I>::assign(InputIterator first, InputIterator last)
 //==============================================================================
 #pragma mark element access
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::reference
-skip_list<T,C,A,LG,SLT,I>::front()
+typename skip_list<T,C,A,LG>::reference
+skip_list<T,C,A,LG>::front()
 {
     assert_that(!empty());
     return impl.front()->value;
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::const_reference
-skip_list<T,C,A,LG,SLT,I>::front() const
+typename skip_list<T,C,A,LG>::const_reference
+skip_list<T,C,A,LG>::front() const
 {
     assert_that(!empty());
     return impl.front()->value;
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::reference
-skip_list<T,C,A,LG,SLT,I>::back()
+typename skip_list<T,C,A,LG>::reference
+skip_list<T,C,A,LG>::back()
 {
     assert_that(!empty());
     return impl.one_past_end()->prev->value;
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::const_reference
-skip_list<T,C,A,LG,SLT,I>::back() const
+typename skip_list<T,C,A,LG>::const_reference
+skip_list<T,C,A,LG>::back() const
 {
     assert_that(!empty());
     return impl.one_past_end()->prev->value;
-}
-
-//==============================================================================
-#pragma mark iterators
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::iterator
-skip_list<T,C,A,LG,SLT,I>::begin()
-{
-    return iterator(&impl, impl.front());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::const_iterator
-skip_list<T,C,A,LG,SLT,I>::begin() const
-{
-    return const_iterator(&impl, impl.front());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::const_iterator
-skip_list<T,C,A,LG,SLT,I>::cbegin() const
-{
-    return const_iterator(&impl, impl.front());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::iterator
-skip_list<T,C,A,LG,SLT,I>::end()
-{
-    return iterator(&impl, impl.one_past_end());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::const_iterator
-skip_list<T,C,A,LG,SLT,I>::end() const
-{
-    return const_iterator(&impl, impl.one_past_end());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::const_iterator
-skip_list<T,C,A,LG,SLT,I>::cend() const
-{
-    return const_iterator(&impl, impl.one_past_end());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::reverse_iterator
-skip_list<T,C,A,LG,SLT,I>::rbegin()
-{
-    return reverse_iterator(end());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::const_reverse_iterator
-skip_list<T,C,A,LG,SLT,I>::rbegin() const
-{
-    return const_reverse_iterator(end());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::const_reverse_iterator
-skip_list<T,C,A,LG,SLT,I>::crbegin() const
-{
-    return const_reverse_iterator(end());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::reverse_iterator
-skip_list<T,C,A,LG,SLT,I>::rend()
-{
-    return reverse_iterator(begin());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::const_reverse_iterator
-skip_list<T,C,A,LG,SLT,I>::rend() const
-{
-    return const_reverse_iterator(begin());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::const_reverse_iterator
-skip_list<T,C,A,LG,SLT,I>::crend() const
-{
-    return const_reverse_iterator(begin());
-}
-
-//==============================================================================
-#pragma mark capacity
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-bool skip_list<T,C,A,LG,SLT,I>::empty() const
-{
-    return impl.size() == 0;
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::size_type
-skip_list<T,C,A,LG,SLT,I>::size() const
-{
-    return impl.size();
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-typename skip_list<T,C,A,LG,SLT,I>::size_type
-skip_list<T,C,A,LG,SLT,I>::max_size() const
-{
-    return impl.get_allocator().max_size();
 }
 
 //==============================================================================
 #pragma mark modifiers
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-void skip_list<T,C,A,LG,SLT,I>::clear()
+void skip_list<T,C,A,LG>::clear()
 {
     impl.remove_all();
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::insert_by_value_result
-skip_list<T,C,A,LG,SLT,I>::insert(const value_type &value)
+typename skip_list<T,C,A,LG>::insert_by_value_result
+skip_list<T,C,A,LG>::insert(const value_type &value)
 {
     node_type *node = impl.insert(value);
     return std::make_pair(iterator(&impl, node), impl.is_valid(node));
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::iterator
-skip_list<T,C,A,LG,SLT,I>::insert(const_iterator hint, const value_type &value)
+typename skip_list<T,C,A,LG>::iterator
+skip_list<T,C,A,LG>::insert(const_iterator hint, const value_type &value)
 {
     assert_that(hint.get_impl() == &impl);
     
@@ -651,11 +566,11 @@ skip_list<T,C,A,LG,SLT,I>::insert(const_iterator hint, const value_type &value)
 
 //C++11iterator insert const_iterator pos, value_type &&value);
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 template <class InputIterator>
 inline
 void
-skip_list<T,C,A,LG,SLT,I>::insert(InputIterator first, InputIterator last)
+skip_list<T,C,A,LG>::insert(InputIterator first, InputIterator last)
 {
     iterator last_inserted = end();
     while (first != last)
@@ -667,10 +582,10 @@ skip_list<T,C,A,LG,SLT,I>::insert(InputIterator first, InputIterator last)
 //C++11iterator insert(std::initializer_list<value_type> ilist);
 // C++11 emplace
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::size_type
-skip_list<T,C,A,LG,SLT,I>::erase(const value_type &value)
+typename skip_list<T,C,A,LG>::size_type
+skip_list<T,C,A,LG>::erase(const value_type &value)
 {
     node_type *node = impl.find(value);
     if (impl.is_valid(node) && detail::equivalent(node->value, value, impl.less))
@@ -684,10 +599,10 @@ skip_list<T,C,A,LG,SLT,I>::erase(const value_type &value)
     }
 }    
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::iterator
-skip_list<T,C,A,LG,SLT,I>::erase(const_iterator position)
+typename skip_list<T,C,A,LG>::iterator
+skip_list<T,C,A,LG>::erase(const_iterator position)
 {
     assert_that(position.get_impl() == &impl);
     assert_that(impl.is_valid(position.get_node()));
@@ -697,10 +612,10 @@ skip_list<T,C,A,LG,SLT,I>::erase(const_iterator position)
     return iterator(&impl, next);
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::iterator
-skip_list<T,C,A,LG,SLT,I>::erase(const_iterator first, const_iterator last)
+typename skip_list<T,C,A,LG>::iterator
+skip_list<T,C,A,LG>::erase(const_iterator first, const_iterator last)
 {
     assert_that(first.get_impl() == &impl);
     assert_that(last.get_impl() == &impl);
@@ -714,31 +629,23 @@ skip_list<T,C,A,LG,SLT,I>::erase(const_iterator first, const_iterator last)
     
     return iterator(&impl, const_cast<node_type*>(last.get_node()));
 }
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-void
-skip_list<T,C,A,LG,SLT,I>::swap(skip_list<T,C,A,LG,SLT,I> &other)
-{
-    impl.swap(other.impl);
-}
-    
+  
 //==============================================================================
 #pragma mark lookup
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::size_type
-skip_list<T,C,A,LG,SLT,I>::count(const value_type &value) const
+typename skip_list<T,C,A,LG>::size_type
+skip_list<T,C,A,LG>::count(const value_type &value) const
 {
     const node_type *node = impl.find(value);
     return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less);
 }
 
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::iterator
-skip_list<T,C,A,LG,SLT,I>::find(const value_type &value)
+typename skip_list<T,C,A,LG>::iterator
+skip_list<T,C,A,LG>::find(const value_type &value)
 {
     node_type *node = impl.find(value);
     return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
@@ -746,10 +653,10 @@ skip_list<T,C,A,LG,SLT,I>::find(const value_type &value)
         : end();
 }
   
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list<T,C,A,LG,SLT,I>::const_iterator
-skip_list<T,C,A,LG,SLT,I>::find(const value_type &value) const
+typename skip_list<T,C,A,LG>::const_iterator
+skip_list<T,C,A,LG>::find(const value_type &value) const
 {
     const node_type *node = impl.find(value);
     return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
@@ -760,142 +667,18 @@ skip_list<T,C,A,LG,SLT,I>::find(const value_type &value) const
 } // namespace goodliffe
 
 //==============================================================================
-#pragma mark - non-members
-//==============================================================================
-
-namespace goodliffe {
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-bool operator==(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs)
-{
-    return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-bool operator!=(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs)
-{
-    return !operator==(lhs, rhs);
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-bool operator<(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs)
-{
-    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-bool operator<=(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs)
-{
-    return !(rhs < lhs);
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-bool operator>(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs)
-{
-    return rhs < lhs;
-}
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-bool operator>=(const skip_list<T,C,A,LG,SLT,I> &lhs, const skip_list<T,C,A,LG,SLT,I> &rhs)
-{
-    return !(lhs < rhs);
-}
-    
-} // namespace goodliffe
-
-template <class T, class C, class A, class LG, class SLT, template <class> class I>
-inline
-void std::swap(goodliffe::skip_list<T,C,A,LG,SLT,I> &lhs, goodliffe::skip_list<T,C,A,LG,SLT,I> &rhs)
-{
-    lhs.swap(rhs);
-}
-
-//==============================================================================
-#pragma mark - skip_list_node_traits
-//==============================================================================
-
-namespace goodliffe {
-namespace detail {
-
-template <typename T, typename Allocator>
-struct skip_list_node_traits;
-
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-enum
-{
-    MAGIC_GOOD = 0x01020304,
-    MAGIC_BAD  = 0xfefefefe
-};
-#endif
-
-// TODO: change these to use correct types (not unsigned, int)
-
-/// The functions to allocate and deallocate a skip_list_node
-template <typename NodeType, typename Allocator>
-struct skip_list_node_traits
-{
-    typedef typename Allocator::template rebind<NodeType>::other  NodeAllocator;
-    typedef typename Allocator::template rebind<NodeType*>::other ListAllocator;
-    typedef typename Allocator::difference_type                   Difference;
-    typedef typename Allocator::size_type                         Size;
-
-    static
-    inline
-    NodeType *allocate(unsigned level, Allocator &alloc)
-    {
-        NodeType *node = NodeAllocator(alloc).allocate(1, (void*)0);
-        node->next  = ListAllocator(alloc).allocate(level+1, (void*)0);
-        node->level = level;
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        for (unsigned n = 0; n <= level; ++n) node->next[n] = 0;
-        node->magic = MAGIC_GOOD;
-#endif
-        return node;
-    }
-    static
-    inline
-    void deallocate(NodeType *node, Allocator &alloc)
-    {
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-        assert_that(node->magic == MAGIC_GOOD);
-        node->magic = MAGIC_BAD;
-        for (unsigned n = 0; n <= node->level; ++n) node->next[n] = 0;
-        node->prev = 0;
-#endif
-        ListAllocator(alloc).deallocate(node->next, node->level+1);
-        NodeAllocator(alloc).deallocate(node, 1);
-    }
-
-    static void increment_span(NodeType *node, unsigned level) {}
-    static void change_span(NodeType *node, unsigned level, Difference by) {}
-    static void set_span(NodeType *node, unsigned level, Size span) {}
-    static void set_all_spans(NodeType *node, Size span) {}
-    static void decrement_span(NodeType *node, Size level) {}
-    static Size span(const NodeType *node, unsigned level) { return 0; }
-};
-    
-} // namespace detail
-} // namespace goodliffe
-
-//==============================================================================
-#pragma mark - skip_list_impl
+#pragma mark - sl_impl
 //==============================================================================
 
 namespace goodliffe {
 namespace detail {
 
 template <typename T>
-struct skip_list_node
+struct sl_node
 {
-    typedef skip_list_node<T> self_type;
+    typedef sl_node<T> self_type;
 
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+#ifdef sl_impl_DIAGNOSTICS
     unsigned    magic;
 #endif
     T           value;
@@ -910,9 +693,8 @@ struct skip_list_node
 /// Not for "public" access.
 ///
 /// @internal
-template <typename T, typename Compare, typename Allocator,
-          typename LevelGenerator, typename NodeType>
-class skip_list_impl
+template <typename T, typename Compare, typename Allocator, typename LevelGenerator>
+class sl_impl
 {
 public:
     
@@ -924,12 +706,12 @@ public:
     typedef Allocator                           allocator_type;
     typedef Compare                             compare_type;
     typedef LevelGenerator                      generator_type;
-    typedef NodeType                            node_type;
+    typedef sl_node<T>                          node_type;
 
     static const unsigned num_levels = LevelGenerator::num_levels;
 
-    skip_list_impl(const Allocator &alloc = Allocator());
-    ~skip_list_impl();
+    sl_impl(const Allocator &alloc = Allocator());
+    ~sl_impl();
 
     Allocator        get_allocator() const                 { return alloc; }
     size_type        size() const                          { return item_count; }
@@ -939,14 +721,11 @@ public:
     node_type       *one_past_end()                        { return tail; }
     const node_type *one_past_end() const                  { return tail; }
     node_type       *find(const value_type &value) const;
-    node_type       *at(size_type index);
-    const node_type *at(size_type index) const;
     node_type       *insert(const value_type &value, node_type *hint = 0);
     void             remove(node_type *value);
     void             remove_all();
     void             remove_between(node_type *first, node_type *last);
-    void             swap(skip_list_impl &other);
-    size_type        index_of(const node_type *node) const;
+    void             swap(sl_impl &other);
 
     template <typename STREAM>
     void        dump(STREAM &stream) const;
@@ -956,56 +735,75 @@ public:
     compare_type less;
 
 private:
-    typedef skip_list_node_traits<node_type, Allocator> node_traits;
+    typedef typename Allocator::template rebind<node_type>::other    node_allocator;
+    typedef typename Allocator::template rebind<node_type*>::other   list_allocator;
 
-    skip_list_impl(const skip_list_impl &other);
-    skip_list_impl &operator=(const skip_list_impl &other);
+    sl_impl(const sl_impl &other);
+    sl_impl &operator=(const sl_impl &other);
     
-    size_type find_chain(const value_type &value, node_type **chain) const;
-    size_type find_chain(const value_type &value, node_type **chain, size_type *indexes) const;
-    size_type find_chain(const node_type *node, node_type **chain, size_type *indexes) const;
-    size_type find_end_chain(node_type **chain, size_type *indexes) const;
-
     allocator_type  alloc;
     generator_type  generator;
     unsigned        levels;
     node_type      *head;
     node_type      *tail;
     size_type       item_count;
+    
+    node_type *allocate(unsigned level)
+    {
+        node_type *node = node_allocator(alloc).allocate(1, (void*)0);
+        node->next  = list_allocator(alloc).allocate(level+1, (void*)0);
+        node->level = level;
+#ifdef sl_impl_DIAGNOSTICS
+        for (unsigned n = 0; n <= level; ++n) node->next[n] = 0;
+        node->magic = MAGIC_GOOD;
+#endif
+        return node;
+    }
+
+    void deallocate(node_type *node)
+    {
+#ifdef sl_impl_DIAGNOSTICS
+        assert_that(node->magic == MAGIC_GOOD);
+        node->magic = MAGIC_BAD;
+        for (unsigned n = 0; n <= node->level; ++n) node->next[n] = 0;
+        node->prev = 0;
+#endif
+        list_allocator(alloc).deallocate(node->next, node->level+1);
+        node_allocator(alloc).deallocate(node, 1);
+    }
 };
 
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
-skip_list_impl<T,C,A,LG,N>::skip_list_impl(const allocator_type &alloc_)
+sl_impl<T,C,A,LG>::sl_impl(const allocator_type &alloc_)
 :   alloc(alloc_),
     levels(0),
-    head(node_traits::allocate(num_levels, alloc)),
-    tail(node_traits::allocate(num_levels, alloc)),
+    head(allocate(num_levels)),
+    tail(allocate(num_levels)),
     item_count(0)
 {
     for (unsigned n = 0; n < num_levels; n++)
     {
         head->next[n] = tail;
         tail->next[n] = 0;
-        node_traits::set_span(head, n, 1);
     }
     head->prev = 0;
     tail->prev = head;
 }
 
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
-skip_list_impl<T,C,A,LG,N>::~skip_list_impl()
+sl_impl<T,C,A,LG>::~sl_impl()
 {
     remove_all();
-    node_traits::deallocate(head, alloc);
-    node_traits::deallocate(tail, alloc);
+    deallocate(head);
+    deallocate(tail);
 }
 
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list_impl<T,C,A,LG,N>::node_type *
-skip_list_impl<T,C,A,LG,N>::find(const value_type &value) const
+typename sl_impl<T,C,A,LG>::node_type *
+sl_impl<T,C,A,LG>::find(const value_type &value) const
 {
     // I could have a const and non-const overload, but this cast is simpler
     node_type *search = const_cast<node_type*>(head);
@@ -1020,144 +818,66 @@ skip_list_impl<T,C,A,LG,N>::find(const value_type &value) const
     return search;
 }
 
-template <class T, class C, class A, class LG, class N>
-inline
-typename skip_list_impl<T,C,A,LG,N>::size_type
-skip_list_impl<T,C,A,LG,N>::find_chain(const value_type &value, node_type **chain, size_type *indexes) const
-{
-    size_type index = 0;
-    node_type *cur = head;
-    unsigned l = num_levels;
-    while (l)
-    {
-        --l;
-        impl_assert_that(l <= cur->level);
-        while (cur->next[l] != tail && less(cur->next[l]->value, value))
-        {
-            index += node_traits::span(cur, l);
-            cur = cur->next[l];
-            impl_assert_that(l <= cur->level);
-        }
-        chain[l]   = cur;
-        indexes[l] = index;
-    }
-    
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-    for (unsigned l1 = 0; l1 < num_levels; ++l1)
-    {
-        assert_that(chain[l1]->level >= l1);
-    }
-#endif
-
-    return index;
-}
-
-// TODO: fold these down
-template <class T, class C, class A, class LG, class N>
-inline
-typename skip_list_impl<T,C,A,LG,N>::size_type
-skip_list_impl<T,C,A,LG,N>::find_chain(const node_type *node, node_type **chain, size_type *indexes) const
-{
-    assert_that(is_valid(node));
-    size_type index = 0;
-    node_type *cur = head;
-    unsigned l = num_levels;
-    while (l)
-    {
-        --l;
-        impl_assert_that(l <= cur->level);
-        while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
-        {
-            index += node_traits::span(cur, l);
-            cur = cur->next[l];
-            impl_assert_that(l <= cur->level);
-        }
-        chain[l]   = cur;
-        indexes[l] = index;
-    }
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-    for (unsigned l1 = 0; l1 < num_levels; ++l1)
-    {
-        assert_that(chain[l1]->level >= l1);
-    }
-#endif
-    return index;
-}
-
-// TODO: fold these down, up, sideways
-template <class T, class C, class A, class LG, class N>
-inline
-typename skip_list_impl<T,C,A,LG,N>::size_type
-skip_list_impl<T,C,A,LG,N>::find_end_chain(node_type **chain, size_type *indexes) const
-{
-    size_type index = 0;
-    node_type *cur = head;
-    unsigned l = num_levels;
-    while (l)
-    {
-        --l;
-        impl_assert_that(l <= cur->level);
-        while (cur->next[l] != tail)
-        {
-            index += node_traits::span(cur, l);
-            cur = cur->next[l];
-            impl_assert_that(l <= cur->level);
-        }
-        chain[l]   = cur;
-        indexes[l] = index;
-    }
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-    for (unsigned l1 = 0; l1 < num_levels; ++l1)
-    {
-        impl_assert_that(chain[l1]->level >= l1);
-    }
-#endif
-    return index;
-}
-
 // TODO: Hint is now ignored (has to be, for spans to work)
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
-typename skip_list_impl<T,C,A,LG,N>::node_type*
-skip_list_impl<T,C,A,LG,N>::insert(const value_type &value, node_type *hint)
+typename sl_impl<T,C,A,LG>::node_type*
+sl_impl<T,C,A,LG>::insert(const value_type &value, node_type *hint)
 {
     const unsigned level = new_level();
 
-    node_type *new_node = node_traits::allocate(level, alloc);
+    node_type *new_node = allocate(level);
     assert_that(new_node);
-    impl_assert_that(new_node->level == level);
+    assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
 
-    node_type *chain[num_levels]   = {0};
-    size_type  indexes[num_levels] = {0};
-    size_type  index               = find_chain(value, chain, indexes);
+    const bool good_hint    = is_valid(hint) && hint->level == levels-1;
+    node_type *insert_point = good_hint ? hint : head;
+    unsigned   l            = levels;
 
-    // Do not allow repeated values in the list (we could in a "multi_skip_list")
+    while (l)
     {
-        node_type *next = chain[0]->next[0];
-        if (next != tail && detail::equivalent(next->value, value, less))
-            return tail;
-    }
-
-    for (unsigned l = 0; l < num_levels; ++l)
-    {
-        if (l > level)
+        --l;
+        assert_that(l <= insert_point->level);
+        while (insert_point->next[l] != tail && less(insert_point->next[l]->value, value))
         {
-            node_traits::increment_span(chain[l], l);
+            insert_point = insert_point->next[l];
+            assert_that(l <= insert_point->level);
         }
-        else
+        
+        if (l <= level)
         {
-            new_node->next[l] = chain[l]->next[l];
-            chain[l]->next[l] = new_node;
-            size_type prev_span = node_traits::span(chain[l], l);
-            node_traits::set_span(chain[l], l, index+1-indexes[l]);
-            node_traits::set_span(new_node, l, prev_span - (index-indexes[l]));
+            node_type *next = insert_point->next[l];
+            assert_that(next);
+        
+            new_node->next[l]     = next;
+            insert_point->next[l] = new_node;
         }
     }
-    new_node->next[0]->prev = new_node;
-    new_node->prev          = chain[0];
     
+    // By the time we get here, insert_point is the level 0 node immediately
+    // preceding new_node
+    assert_that(insert_point->next[0] == new_node);
+    node_type *next = new_node->next[0];
+    assert_that(next);
+    new_node->prev = insert_point;
+    next->prev = new_node;
+
     ++item_count;
+          
+#if defined SKIP_LIST_IMPL_DIAGNOSTICS
+      for (unsigned n = 0; n < level; ++n)
+      {
+          assert_that(new_node->next[n] != 0);
+      }
+#endif
+
+    // Do not allow repeated values in the list
+    if (next != tail && detail::equivalent(next->value, value, less))
+    {
+        remove(new_node);
+        new_node = tail;
+    }
 
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     check();
@@ -1166,35 +886,35 @@ skip_list_impl<T,C,A,LG,N>::insert(const value_type &value, node_type *hint)
     return new_node;
 }
 
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
 void
-skip_list_impl<T,C,A,LG,N>::remove(node_type *node)
+sl_impl<T,C,A,LG>::remove(node_type *node)
 {
-    assert_that(is_valid(node));
+    assert_that(node != head);
+    assert_that(node != tail);
     assert_that(node->next[0]);
-    
-    node_type *chain[num_levels]   = {0};
-    size_type  indexes[num_levels] = {0};
-    find_chain(node, chain, indexes);
 
     node->next[0]->prev = node->prev;
-    
-    for (unsigned l = 0; l < num_levels; ++l)
+
+    // patch up all next pointers
+    node_type *cur = head;
+    for (unsigned l = levels; l; )
     {
-        if (chain[l]->next[l] == node)
+        --l;
+        assert_that(l <= cur->level);
+        while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
         {
-            node_traits::set_span(chain[l], l, node_traits::span(chain[l], l) + node_traits::span(node, l)-1);
-            chain[l]->next[l] = node->next[l];
+            cur = cur->next[l];
         }
-        else if (chain[l] == head || less(chain[l]->value, node->value))
+        if (cur->next[l] == node)
         {
-            node_traits::decrement_span(chain[l], l);
+            cur->next[l] = node->next[l];
         }
     }
 
     alloc.destroy(&node->value);
-    node_traits::deallocate(node, alloc);
+    deallocate(node);
 
     item_count--;
     
@@ -1203,25 +923,22 @@ skip_list_impl<T,C,A,LG,N>::remove(node_type *node)
 #endif
 }
 
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
 void
-skip_list_impl<T,C,A,LG,N>::remove_all()
+sl_impl<T,C,A,LG>::remove_all()
 {
     node_type *node = head->next[0];
     while (node != tail)
     {
         node_type *next = node->next[0];
         alloc.destroy(&node->value);
-        node_traits::deallocate(node, alloc);
+        deallocate(node);
         node = next;
     }
 
     for (unsigned l = 0; l < num_levels; ++l)
-    {
         head->next[l] = tail;
-        node_traits::set_span(head, l, 1);
-    }
     tail->prev = head;
     item_count = 0;
         
@@ -1230,54 +947,43 @@ skip_list_impl<T,C,A,LG,N>::remove_all()
 #endif
 }
 
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
 void 
-skip_list_impl<T,C,A,LG,N>::remove_between(node_type *first, node_type *last)
+sl_impl<T,C,A,LG>::remove_between(node_type *first, node_type *last)
 {
-    assert_that(is_valid(first));
-    assert_that(is_valid(last));
+    assert_that(first != head);
+    assert_that(first != tail);
+    assert_that(last != head);
+    assert_that(last != tail);
 
-    node_type * const prev         = first->prev;
-    node_type * const one_past_end = last->next[0];
-
-    node_type *first_chain[num_levels]   = {0};
-    node_type *last_chain[num_levels]    = {0};
-    size_type  first_indexes[num_levels] = {0};
-    size_type  last_indexes[num_levels]  = {0};
-    size_type  first_index               = find_chain(first, first_chain, first_indexes);
-    size_type  last_index                = one_past_end != tail
-                                         ? find_chain(one_past_end, last_chain, last_indexes)
-                                         : find_end_chain(last_chain, last_indexes);
-    size_type  size_reduction            = last_index-first_index;
-/*
-    std::cerr << "Removing from " << first->value << " to " << last->value;
-    for (int n = 0; n < levels; ++n)
-        std::cerr << "[" << n << "] first=" << first_chain[n]->value
-        //<< "/" << first_indexes[n]
-            << ", last=" << last_chain[n]->value
-        //<< "/" << last_indexes[n]
-            << "  span=" << node_traits::span(last_chain[n], n) << "\n";
-*/
-    unsigned last_node_level = 0;
-    while (last_node_level+1 < num_levels
-           && last_chain[last_node_level+1] == last) ++last_node_level;
-    impl_assert_that(last_node_level == last->level);
+    node_type       * const prev         = first->prev;
+    node_type       * const one_past_end = last->next[0];
+    const value_type       &first_value  = first->value;
+    const value_type       &last_value   = last->value;
 
     // backwards pointer
-    one_past_end->prev = prev;
+    one_past_end->prev = prev;    
 
-    // forwards pointers (and spans)
-    for (unsigned l = 0; l < num_levels; ++l)
+    // forwards pointers
+    node_type *cur = head;
+    for (unsigned l = levels; l; )
     {
-        // forwards pointer
-        if (l <= last_node_level)
-            first_chain[l]->next[l] = last->next[l];
-        else
-            first_chain[l]->next[l] = last_chain[l]->next[l];
-
-        // span
-        node_traits::set_span(first_chain[l], l, last_indexes[l]+node_traits::span(last_chain[l], l)-first_indexes[l]-size_reduction);
+        --l;
+        assert_that(l < cur->level);
+        while (cur->next[l] != tail && less(cur->next[l]->value, first_value))
+        {
+            cur = cur->next[l];
+        }
+        if (cur->next[l] != tail
+            && detail::less_or_equal(cur->next[l]->value, last_value, less))
+        {
+            // patch up next[l] pointer
+            node_type *end = cur->next[l];
+            while (end != tail && detail::less_or_equal(end->value, last_value, less))
+                end = end->next[l];
+            cur->next[l] = end;
+        }
     }
 
     // now delete all the nodes between [first,last]
@@ -1285,7 +991,7 @@ skip_list_impl<T,C,A,LG,N>::remove_between(node_type *first, node_type *last)
     {
         node_type *next = first->next[0];
         alloc.destroy(&first->value);
-        node_traits::deallocate(first, alloc);
+        deallocate(first);
         item_count--;
         first = next;
     }
@@ -1295,9 +1001,9 @@ skip_list_impl<T,C,A,LG,N>::remove_between(node_type *first, node_type *last)
 #endif
 }
 
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
-unsigned skip_list_impl<T,C,A,LG,N>::new_level()
+unsigned sl_impl<T,C,A,LG>::new_level()
 {    
     unsigned level = generator.new_level();
     if (level >= levels)
@@ -1308,9 +1014,9 @@ unsigned skip_list_impl<T,C,A,LG,N>::new_level()
     return level;
 }
 
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
-void skip_list_impl<T,C,A,LG,N>::swap(skip_list_impl &other)
+void sl_impl<T,C,A,LG>::swap(sl_impl &other)
 {
     using std::swap;
 
@@ -1322,16 +1028,16 @@ void skip_list_impl<T,C,A,LG,N>::swap(skip_list_impl &other)
     swap(tail,       other.tail);
     swap(item_count, other.item_count);
 
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+#ifdef sl_impl_DIAGNOSTICS
     check();
 #endif
 }
 
 // for diagnostics only
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 template <class STREAM>
 inline
-void skip_list_impl<T,C,A,LG,N>::dump(STREAM &s) const
+void sl_impl<T,C,A,LG>::dump(STREAM &s) const
 {
     s << "skip_list(size="<<item_count<<",levels=" << levels << ")\n";
     for (unsigned l = 0; l < levels+1; ++l)
@@ -1342,16 +1048,10 @@ void skip_list_impl<T,C,A,LG,N>::dump(STREAM &s) const
         {
             impl_assert_that(l <= n->level);
             const node_type *next = n->next[l];
-            size_type span = node_traits::span(n, l);
             bool prev_ok = false;
-            char prev_char = span > 1 ? '(' : 'X';
-            if (next && span <= 1)
+            if (next)
             {
-                if (next->prev == n)
-                {
-                    prev_ok = true;
-                    prev_char = '<';
-                }
+                if (next->prev == n) prev_ok = true;
             }
             if (is_valid(n))
                 s << n->value << " ";
@@ -1362,9 +1062,9 @@ void skip_list_impl<T,C,A,LG,N>::dump(STREAM &s) const
             {
                 if (next != tail && !less(n->value, next->value))
                     s << "*XXXXXXXXX* ";
-                s << span << ">"
+                s << ">"
                   << " "
-                  << prev_char;
+                  << (prev_ok?"<":"X");
             }
             n = next;
         }
@@ -1372,11 +1072,11 @@ void skip_list_impl<T,C,A,LG,N>::dump(STREAM &s) const
     }
 }
 
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+#ifdef sl_impl_DIAGNOSTICS
 // for diagnostics only
-template <class T, class C, class A, class LG, class N>
+template <class T, class C, class A, class LG>
 inline
-bool skip_list_impl<T,C,A,LG,N>::check() const
+bool sl_impl<T,C,A,LG>::check() const
 {
     for (unsigned l = 0; l < levels; ++l)
     {

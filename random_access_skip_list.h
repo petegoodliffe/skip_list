@@ -68,7 +68,7 @@ public:
 
     //======================================================================
     // types
-    
+
     typedef T                                           value_type;
     typedef Allocator                                   allocator_type;
     typedef typename impl_type::size_type               size_type;
@@ -205,7 +205,7 @@ protected:
 };
 
 } // namespace goodliffe
-    
+
 //==============================================================================
 #pragma mark - non-members
 
@@ -722,6 +722,7 @@ random_access_skip_list<T,C,A,LG>::index_of(const const_iterator &i) const
 
 //==============================================================================
 #pragma mark - rasl_impl
+//==============================================================================
 
 namespace goodliffe {
 namespace detail {

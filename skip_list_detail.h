@@ -26,15 +26,6 @@ namespace detail
 {
     template <unsigned NumLevels>   class bit_based_skip_list_level_generator;
     template <unsigned NumLevels>   class skip_list_level_generator;
-    template <typename T>           struct skip_list_node;
-    
-    template <typename T,typename C,typename A,typename LG,typename N>
-    class skip_list_impl;
-
-    template <typename LIST> class skip_list_iterator;
-    template <typename LIST> class skip_list_const_iterator;
-    template <typename LIST> class random_access_skip_list_iterator;
-    template <typename LIST> class random_access_skip_list_const_iterator;
 }
 }
 
@@ -84,11 +75,19 @@ template<> struct static_assert_that_impl<true> {};
 #define static_assert_that(a) \
     {::goodliffe::detail::static_assert_that_impl<a> foo;(void)foo;}
 
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
+enum
+{
+    MAGIC_GOOD = 0x01020304,
+    MAGIC_BAD  = 0xfefefefe
+};
+#endif
+
 } // namespace detail
 } // namespace goodliffe
 
 //==============================================================================
-#pragma mark - skip_list_impl declaration
+#pragma mark - skip_list level generators
 //==============================================================================
 
 namespace goodliffe {
@@ -118,6 +117,8 @@ public:
 } // namespace detail
 } // namespace goodliffe
 
+//==============================================================================
+#pragma mark - value equivalence based on "less"
 //==============================================================================
 
 namespace goodliffe {

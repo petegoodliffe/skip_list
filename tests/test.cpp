@@ -16,7 +16,7 @@
 #include "test_types.h"
 
 using goodliffe::skip_list;
-using goodliffe::detail::skip_list_impl;
+using goodliffe::detail::sl_impl;
 
 TEST_CASE( "skip_list/smoketest", "" )
 {
