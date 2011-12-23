@@ -281,6 +281,15 @@ TEST_CASE( "random_access_skip_list/iterators/operator<", "" )
     }
 }
 
+TEST_CASE( "random_access_skip_list/iterators/subtraction", "" )
+{
+    random_access_skip_list<int> list;
+    for (int n = 0; n < 10; ++n) list.insert(n);
+    
+    REQUIRE((list.end()-list.begin()) == 10)
+    REQUIRE(((list.begin()+5)-(list.begin()+2)) == 3)
+}
+
 //============================================================================
 #pragma mark erase_at
 

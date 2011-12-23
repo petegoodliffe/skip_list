@@ -319,6 +319,8 @@ public:
         { return *operator+(index); }
     bool operator<(const self_type &rhs) const
         { return impl->index_of(node) < impl->index_of(rhs.node); }
+    difference_type operator-(const self_type &rhs) const
+        { return impl->index_of(node) - impl->index_of(rhs.node); }
 
     const_reference operator*()  { return node->value; }
     const_pointer   operator->() { return node->value; }
