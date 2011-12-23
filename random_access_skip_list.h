@@ -888,6 +888,8 @@ inline
 typename rasl_impl<T,C,A,LG>::size_type
 rasl_impl<T,C,A,LG>::find_chain(const node_type *node, node_type **chain, size_type *indexes) const
 {
+    assert_that(node && node != head);
+    if (node == tail) return find_end_chain(chain, indexes);
     assert_that(is_valid(node));
     size_type index = 0;
     node_type *cur = head;
@@ -1132,6 +1134,8 @@ inline
 typename rasl_impl<T,C,A,LG>::node_type *
 rasl_impl<T,C,A,LG>::at(size_type index)
 {
+    assert_that(index < item_count);
+
     unsigned l = levels;
     node_type *node = head;
     index += 1;

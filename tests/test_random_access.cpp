@@ -171,6 +171,21 @@ TEST_CASE( "random_access_skip_list/iterators/+=", "" )
     i += 1;    REQUIRE(*i == 8);
 }
 
+TEST_CASE( "random_access_skip_list/iterators/-=", "" )
+{
+    random_access_skip_list<int> list;
+    for (int n = 0; n < 10; ++n)
+        list.insert(n);
+
+    REQUIRE(list.index_of(list.end()) == 10);
+    
+    random_access_skip_list<int>::iterator i = list.end();
+    i -= 2;    REQUIRE(*i == 8);
+    i -= 2;    REQUIRE(*i == 6);
+    i -= 3;    REQUIRE(*i == 3);
+    i -= 1;    REQUIRE(*i == 2);
+}
+
 //============================================================================
 // erase_at
 
@@ -323,6 +338,8 @@ TEST_CASE( "random_access_skip_list/index_of", "" )
     REQUIRE(list.index_of(i++) == 6);
     REQUIRE(list.index_of(i++) == 7);
     REQUIRE(list.index_of(i++) == 8);
+    
+    REQUIRE(list.index_of(list.end()) == 9);
 }
 
 //============================================================================
