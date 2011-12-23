@@ -696,7 +696,7 @@ struct rasl_node
 {
     typedef SPAN size_type;
     
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     unsigned    magic;
 #endif
     T           value;
@@ -783,7 +783,7 @@ private:
         node->span  = span_allocator(alloc).allocate(level+1, (void*)0);
         node->level = level;
         for (unsigned n = 0; n <= level; ++n) node->span[n] = 1;
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         for (unsigned n = 0; n <= level; ++n) node->next[n] = 0;
         node->magic = MAGIC_GOOD;
 #endif
@@ -792,7 +792,7 @@ private:
 
     void deallocate(node_type *node)
     {
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->magic == MAGIC_GOOD);
         node->magic = MAGIC_BAD;
         for (unsigned n = 0; n <= node->level; ++n) node->next[n] = 0;
@@ -872,7 +872,7 @@ rasl_impl<T,C,A,LG>::find_chain(const value_type &value, node_type **chain, size
         indexes[l] = index;
     }
     
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     for (unsigned l1 = 0; l1 < num_levels; ++l1)
     {
         assert_that(chain[l1]->level >= l1);
@@ -905,7 +905,7 @@ rasl_impl<T,C,A,LG>::find_chain(const node_type *node, node_type **chain, size_t
         chain[l]   = cur;
         indexes[l] = index;
     }
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     for (unsigned l1 = 0; l1 < num_levels; ++l1)
     {
         assert_that(chain[l1]->level >= l1);
@@ -936,7 +936,7 @@ rasl_impl<T,C,A,LG>::find_end_chain(node_type **chain, size_type *indexes) const
         chain[l]   = cur;
         indexes[l] = index;
     }
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     for (unsigned l1 = 0; l1 < num_levels; ++l1)
     {
         impl_assert_that(chain[l1]->level >= l1);
@@ -990,7 +990,7 @@ rasl_impl<T,C,A,LG>::insert(const value_type &value, node_type *hint)
     
     ++item_count;
 
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     check();
 #endif
 
@@ -1030,7 +1030,7 @@ rasl_impl<T,C,A,LG>::remove(node_type *node)
 
     item_count--;
     
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     check();
 #endif
 }
@@ -1057,7 +1057,7 @@ rasl_impl<T,C,A,LG>::remove_all()
     tail->prev = head;
     item_count = 0;
         
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     check();
 #endif
 }
@@ -1122,7 +1122,7 @@ rasl_impl<T,C,A,LG>::remove_between(node_type *first, node_type *last)
         first = next;
     }
         
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     check();
 #endif
 }
@@ -1194,7 +1194,7 @@ void rasl_impl<T,C,A,LG>::swap(rasl_impl &other)
     swap(tail,       other.tail);
     swap(item_count, other.item_count);
 
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     check();
 #endif
 }
@@ -1244,7 +1244,7 @@ void rasl_impl<T,C,A,LG>::dump(STREAM &s) const
     }
 }
 
-#ifdef rasl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
 // for diagnostics only
 template <class T, class C, class A, class LG>
 inline
