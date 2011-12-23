@@ -348,7 +348,6 @@ inline
 rasl_iterator<I> operator+(int lhs, rasl_iterator<I> rhs)
     { return rhs+lhs; }
 
-
 template <typename RASL_IMPL>
 class rasl_const_iterator
     : public std::iterator<std::random_access_iterator_tag,
@@ -363,12 +362,18 @@ public:
     typedef const typename impl_type::node_type node_type;
     typedef rasl_const_iterator<RASL_IMPL>      self_type;
 
+    typedef typename impl_type::difference_type     difference_type;
+    typedef typename impl_type::const_reference     const_reference;
+    typedef typename impl_type::const_pointer       const_pointer;
+
     rasl_const_iterator()
         : impl(0), node(0) {}
     rasl_const_iterator(const normal_iterator &i)
         : impl(i.get_impl()), node(i.get_node()) {}
     rasl_const_iterator(const impl_type *impl_, node_type *node_)
         : impl(impl_), node(node_) {}
+    rasl_const_iterator(const rasl_const_iterator &other)
+        : impl(other.impl), node(other.node) {}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }
@@ -380,8 +385,24 @@ public:
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
 
-    typename impl_type::const_reference operator*()  { return node->value; }
-    typename impl_type::const_pointer   operator->() { return node->value; }
+    self_type &operator+=(difference_type n)
+        { node = impl->at(impl->index_of(node)+n); return *this; }
+    self_type &operator-=(difference_type n)
+        { node = impl->at(impl->index_of(node)-n); return *this; }
+
+    rasl_const_iterator operator+(difference_type rhs) const
+        { return rasl_const_iterator(*this) += rhs; }
+    rasl_const_iterator operator-(difference_type rhs) const
+        { return rasl_const_iterator(*this) -= rhs; }
+    const_reference operator[](int index) const
+        { return *operator+(index); }
+    bool operator<(const self_type &rhs) const
+        { return impl->index_of(node) < impl->index_of(rhs.node); }
+    difference_type operator-(const self_type &rhs) const
+        { return impl->index_of(node) - impl->index_of(rhs.node); }
+
+    const_reference operator*()  { return node->value; }
+    const_pointer   operator->() { return node->value; }
 
     bool operator==(const self_type &other) const
         { return impl == other.impl && node == other.node; }
@@ -400,6 +421,11 @@ private:
     impl_type *impl;
     node_type *node;
 };
+
+template <typename I>
+inline
+rasl_const_iterator<I> operator+(int lhs, rasl_const_iterator<I> rhs)
+    { return rhs+lhs; }
 
 } // namespace detail
 } // namespace goodliffe

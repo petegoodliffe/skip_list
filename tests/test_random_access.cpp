@@ -159,6 +159,7 @@ TEST_CASE( "random_access_skip_list/iterator_at", "" )
 TEST_CASE( "random_access_skip_list/iterators/+=", "" )
 {
     random_access_skip_list<int> list;
+    const random_access_skip_list<int> &clist = list;
     for (int n = 0; n < 9; ++n) list.insert(n);
     
     random_access_skip_list<int>::iterator i = list.begin();
@@ -167,26 +168,42 @@ TEST_CASE( "random_access_skip_list/iterators/+=", "" )
     i += 2;    REQUIRE(*i == 4);
     i += 3;    REQUIRE(*i == 7);
     i += 1;    REQUIRE(*i == 8);
+    
+    random_access_skip_list<int>::const_iterator ci = clist.begin();
+    REQUIRE(*ci == 0);
+    ci += 2;    REQUIRE(*ci == 2);
+    ci += 2;    REQUIRE(*ci == 4);
+    ci += 3;    REQUIRE(*ci == 7);
+    ci += 1;    REQUIRE(*ci == 8);
 }
 
 TEST_CASE( "random_access_skip_list/iterators/-=", "" )
 {
     random_access_skip_list<int> list;
+    const random_access_skip_list<int> &clist = list;
     for (int n = 0; n < 10; ++n) list.insert(n);
 
     REQUIRE(list.index_of(list.end()) == 10);
-    
+    REQUIRE(clist.index_of(list.end()) == 10);
+
     random_access_skip_list<int>::iterator i = list.end();
     i -= 2;    REQUIRE(*i == 8);
     i -= 2;    REQUIRE(*i == 6);
     i -= 3;    REQUIRE(*i == 3);
     i -= 1;    REQUIRE(*i == 2);
+
+    random_access_skip_list<int>::const_iterator ci = clist.end();
+    ci -= 2;    REQUIRE(*ci == 8);
+    ci -= 2;    REQUIRE(*ci == 6);
+    ci -= 3;    REQUIRE(*ci == 3);
+    ci -= 1;    REQUIRE(*ci == 2);
 }
 
 TEST_CASE( "random_access_skip_list/iterators/+/lhs is iterator", "" )
 {
     random_access_skip_list<int> list;
-    std::vector<int>             vec;
+    const random_access_skip_list<int> &clist = list;
+    std::vector<int> vec;
     for (int n = 0; n < 10; ++n) list.insert(n);
     for (int n = 0; n < 10; ++n) vec.push_back(n);
     
@@ -198,13 +215,16 @@ TEST_CASE( "random_access_skip_list/iterators/+/lhs is iterator", "" )
     {
         random_access_skip_list<int>::iterator i = list.begin() + 2;
         REQUIRE(*i == 2);
+        random_access_skip_list<int>::const_iterator ci = clist.begin() + 2;
+        REQUIRE(*ci == 2);
     }
 }
 
 TEST_CASE( "random_access_skip_list/iterators/+/rhs is iterator", "" )
 {
     random_access_skip_list<int> list;
-    std::vector<int>             vec;
+    const random_access_skip_list<int> &clist = list;
+    std::vector<int> vec;
     for (int n = 0; n < 10; ++n) list.insert(n);
     for (int n = 0; n < 10; ++n) vec.push_back(n);
     
@@ -216,13 +236,16 @@ TEST_CASE( "random_access_skip_list/iterators/+/rhs is iterator", "" )
     {
         random_access_skip_list<int>::iterator i = 2 + list.begin();
         REQUIRE(*i == 2);
+        random_access_skip_list<int>::const_iterator ci = 2 + clist.begin();
+        REQUIRE(*ci == 2);
     }
 }
 
 TEST_CASE( "random_access_skip_list/iterators/-/lhs is iterator", "" )
 {
     random_access_skip_list<int> list;
-    std::vector<int>             vec;
+    const random_access_skip_list<int> &clist = list;
+    std::vector<int> vec;
     for (int n = 0; n < 10; ++n) list.insert(n);
     for (int n = 0; n < 10; ++n) vec.push_back(n);
     
@@ -237,12 +260,18 @@ TEST_CASE( "random_access_skip_list/iterators/-/lhs is iterator", "" )
         i = i - 2;
         REQUIRE(*i == 3);
     }
+    {
+        random_access_skip_list<int>::const_iterator i = clist.begin() + 5;
+        i = i - 2;
+        REQUIRE(*i == 3);
+    }
 }
 
 TEST_CASE( "random_access_skip_list/iterators/operator[]", "" )
 {
     random_access_skip_list<int> list;
-    std::vector<int>             vec;
+    const random_access_skip_list<int> &clist = list;
+    std::vector<int> vec;
     for (int n = 0; n < 10; ++n) list.insert(n);
     for (int n = 0; n < 10; ++n) vec.push_back(n);
     
@@ -255,12 +284,17 @@ TEST_CASE( "random_access_skip_list/iterators/operator[]", "" )
         random_access_skip_list<int>::iterator i = list.begin()+2;
         REQUIRE(i[3] == 5);
     }
+    {
+        random_access_skip_list<int>::const_iterator i = clist.begin()+2;
+        REQUIRE(i[3] == 5);
+    }
 }
 
 TEST_CASE( "random_access_skip_list/iterators/operator<", "" )
 {
     random_access_skip_list<int> list;
-    std::vector<int>             vec;
+    const random_access_skip_list<int> &clist = list;
+    std::vector<int> vec;
     for (int n = 0; n < 10; ++n) list.insert(n);
     for (int n = 0; n < 10; ++n) vec.push_back(n);
     
@@ -279,15 +313,26 @@ TEST_CASE( "random_access_skip_list/iterators/operator<", "" )
         REQUIRE_FALSE(list.begin() < list.begin());
         REQUIRE(list.begin() < list.begin()+1);
     }
+    {
+        REQUIRE(clist.begin() < clist.end());
+        REQUIRE_FALSE(clist.end() < clist.begin());
+        
+        REQUIRE_FALSE(clist.begin() < clist.begin());
+        REQUIRE(clist.begin() < clist.begin()+1);
+    }
 }
 
 TEST_CASE( "random_access_skip_list/iterators/subtraction", "" )
 {
     random_access_skip_list<int> list;
+    const random_access_skip_list<int> &clist = list;
     for (int n = 0; n < 10; ++n) list.insert(n);
     
     REQUIRE((list.end()-list.begin()) == 10)
     REQUIRE(((list.begin()+5)-(list.begin()+2)) == 3)
+
+    REQUIRE((clist.end()-clist.begin()) == 10)
+    REQUIRE(((clist.begin()+5)-(clist.begin()+2)) == 3)
 }
 
 //============================================================================
