@@ -286,6 +286,8 @@ public:
     typedef random_access_skip_list_iterator<rasl_impl>        self_type;
 
     typedef typename impl_type::difference_type                difference_type;
+    typedef typename impl_type::const_reference                const_reference;
+    typedef typename impl_type::const_pointer                  const_pointer;
 
     random_access_skip_list_iterator()
         : impl(0), node(0) {}
@@ -313,25 +315,26 @@ public:
         { return random_access_skip_list_iterator(*this) += rhs; }
     random_access_skip_list_iterator operator-(difference_type rhs) const
         { return random_access_skip_list_iterator(*this) -= rhs; }
-    typename impl_type::const_reference operator[](int index) const
+    const_reference operator[](int index) const
         { return *operator+(index); }
-    bool operator<(const self_type &other) const; // TODO
+    bool operator<(const self_type &rhs) const
+        { return impl->index_of(node) < impl->index_of(rhs.node); }
 
-    typename impl_type::const_reference operator*()  { return node->value; }
-    typename impl_type::const_pointer   operator->() { return node->value; }
+    const_reference operator*()  { return node->value; }
+    const_pointer   operator->() { return node->value; }
     
-    bool operator==(const self_type &other) const
-        { return impl == other.impl && node == other.node; }
-    bool operator!=(const self_type &other) const
-        { return !operator==(other); }
+    bool operator==(const self_type &rhs) const
+        { return impl == rhs.impl && node == rhs.node; }
+    bool operator!=(const self_type &rhs) const
+        { return !operator==(rhs); }
     
-    bool operator==(const const_iterator &other) const
-        { return impl == other.get_impl() && node == other.node; }
-    bool operator!=(const const_iterator &other) const
-        { return !operator==(other); }
+    bool operator==(const const_iterator &rhs) const
+        { return impl == rhs.impl && node == rhs.node; }
+    bool operator!=(const const_iterator &rhs) const
+        { return !operator==(rhs); }
 
     const impl_type *get_impl() const { return impl; } ///< @internal
-    const node_type *get_node() const { return node; }   ///< @internal
+    const node_type *get_node() const { return node; } ///< @internal
 
 private:
     impl_type *impl;

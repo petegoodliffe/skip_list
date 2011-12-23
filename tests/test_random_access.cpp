@@ -239,7 +239,7 @@ TEST_CASE( "random_access_skip_list/iterators/-/lhs is iterator", "" )
     }
 }
 
-TEST_CASE( "random_access_skip_list/iterators/[]", "" )
+TEST_CASE( "random_access_skip_list/iterators/operator[]", "" )
 {
     random_access_skip_list<int> list;
     std::vector<int>             vec;
@@ -257,6 +257,29 @@ TEST_CASE( "random_access_skip_list/iterators/[]", "" )
     }
 }
 
+TEST_CASE( "random_access_skip_list/iterators/operator<", "" )
+{
+    random_access_skip_list<int> list;
+    std::vector<int>             vec;
+    for (int n = 0; n < 10; ++n) list.insert(n);
+    for (int n = 0; n < 10; ++n) vec.push_back(n);
+    
+    {
+        // A comparison of what can be done with vector
+        REQUIRE(vec.begin() < vec.end());
+        REQUIRE_FALSE(vec.end() < vec.begin());
+        
+        REQUIRE_FALSE(vec.begin() < vec.begin());
+        REQUIRE(vec.begin() < vec.begin()+1);
+    }
+    {
+        REQUIRE(list.begin() < list.end());
+        REQUIRE_FALSE(list.end() < list.begin());
+        
+        REQUIRE_FALSE(list.begin() < list.begin());
+        REQUIRE(list.begin() < list.begin()+1);
+    }
+}
 
 //============================================================================
 #pragma mark erase_at
