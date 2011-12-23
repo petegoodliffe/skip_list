@@ -157,6 +157,20 @@ TEST_CASE( "random_access_skip_list/iterators/convert from one to t'other", "" )
     random_access_skip_list<int>::const_iterator ci = i;
 }
 
+TEST_CASE( "random_access_skip_list/iterators/+=", "" )
+{
+    random_access_skip_list<int> list;
+    for (int n = 0; n < 9; ++n)
+        list.insert(n);
+    
+    random_access_skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i == 0);
+    i += 2;    REQUIRE(*i == 2);
+    i += 2;    REQUIRE(*i == 4);
+    i += 3;    REQUIRE(*i == 7);
+    i += 1;    REQUIRE(*i == 8);
+}
+
 //============================================================================
 // erase_at
 

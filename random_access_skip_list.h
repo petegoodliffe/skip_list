@@ -273,7 +273,7 @@ namespace detail {
 
 template <typename rasl_impl>
 class random_access_skip_list_iterator
-    : public std::iterator<std::bidirectional_iterator_tag, // TODO random access
+    : public std::iterator<std::random_access_iterator_tag,
                            typename rasl_impl::value_type,
                            typename rasl_impl::difference_type,
                            typename rasl_impl::const_pointer,
@@ -299,6 +299,15 @@ public:
         { node = node->prev; return *this; }
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
+    
+    self_type &operator+=(int n)
+        { node = impl->at(impl->index_of(node)+n); return *this; }
+    self_type &operator-=(int n)
+        { node = impl->at(impl->index_of(node)-n); return *this; }
+
+    typename impl_type::difference_type operator-(const random_access_skip_list_iterator &lhs) const; // TODO
+    typename impl_type::const_reference operator[](int index) const; // TODO
+    bool operator<(const self_type &other) const; // TODO
 
     typename impl_type::const_reference operator*()  { return node->value; }
     typename impl_type::const_pointer   operator->() { return node->value; }
@@ -321,9 +330,19 @@ private:
     node_type *node;
 };
 
+template <typename I>
+inline
+random_access_skip_list_iterator<I> operator+(int lhs, random_access_skip_list_iterator<I> rhs)
+    { return rhs+lhs; }
+template <typename I>
+inline
+random_access_skip_list_iterator<I> operator-(int lhs, random_access_skip_list_iterator<I> rhs)
+    { return rhs-lhs; } // TODO: checl
+
+
 template <typename rasl_impl>
 class random_access_skip_list_const_iterator
-    : public std::iterator<std::bidirectional_iterator_tag,
+    : public std::iterator<std::random_access_iterator_tag,
                            typename rasl_impl::value_type,
                            typename rasl_impl::difference_type,
                            typename rasl_impl::const_pointer,
