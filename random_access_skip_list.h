@@ -28,8 +28,8 @@ namespace detail
     template <typename T,typename C,typename A,typename LG>
     class rasl_impl;
 
-    template <typename LIST> class random_access_skip_list_iterator;
-    template <typename LIST> class random_access_skip_list_const_iterator;
+    template <typename LIST> class rasl_iterator;
+    template <typename LIST> class rasl_const_iterator;
 }
 }
 
@@ -61,8 +61,8 @@ private:
     typedef typename detail::rasl_impl<T,Compare,Allocator,LevelGenerator> impl_type;
     typedef typename impl_type::node_type                                  node_type;
 
-    template <typename T1> friend class detail::random_access_skip_list_iterator;
-    template <typename T1> friend class detail::random_access_skip_list_const_iterator;
+    template <typename T1> friend class detail::rasl_iterator;
+    template <typename T1> friend class detail::rasl_const_iterator;
 
 public:
 
@@ -79,10 +79,10 @@ public:
     typedef typename allocator_type::const_pointer      const_pointer;
     typedef Compare                                     compare;
     
-    typedef typename detail::random_access_skip_list_iterator<impl_type> iterator;
-    typedef typename iterator::const_iterator                            const_iterator;
-    typedef std::reverse_iterator<iterator>                              reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>                        const_reverse_iterator;
+    typedef typename detail::rasl_iterator<impl_type>   iterator;
+    typedef typename iterator::const_iterator           const_iterator;
+    typedef std::reverse_iterator<iterator>             reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
 
     //======================================================================
     // lifetime management
@@ -271,29 +271,29 @@ namespace std
 namespace goodliffe {
 namespace detail {
 
-template <typename rasl_impl>
-class random_access_skip_list_iterator
+template <typename RASL_IMPL>
+class rasl_iterator
     : public std::iterator<std::random_access_iterator_tag,
-                           typename rasl_impl::value_type,
-                           typename rasl_impl::difference_type,
-                           typename rasl_impl::const_pointer,
-                           typename rasl_impl::const_reference>
+                           typename RASL_IMPL::value_type,
+                           typename RASL_IMPL::difference_type,
+                           typename RASL_IMPL::const_pointer,
+                           typename RASL_IMPL::const_reference>
 {
 public:
-    typedef rasl_impl                                          impl_type;
-    typedef random_access_skip_list_const_iterator<rasl_impl>  const_iterator;
-    typedef typename impl_type::node_type                      node_type;
-    typedef random_access_skip_list_iterator<rasl_impl>        self_type;
+    typedef RASL_IMPL                               impl_type;
+    typedef rasl_const_iterator<impl_type>          const_iterator;
+    typedef typename impl_type::node_type           node_type;
+    typedef rasl_iterator<impl_type>                self_type;
 
-    typedef typename impl_type::difference_type                difference_type;
-    typedef typename impl_type::const_reference                const_reference;
-    typedef typename impl_type::const_pointer                  const_pointer;
+    typedef typename impl_type::difference_type     difference_type;
+    typedef typename impl_type::const_reference     const_reference;
+    typedef typename impl_type::const_pointer       const_pointer;
 
-    random_access_skip_list_iterator()
+    rasl_iterator()
         : impl(0), node(0) {}
-    random_access_skip_list_iterator(impl_type *impl_, node_type *node_)
+    rasl_iterator(impl_type *impl_, node_type *node_)
         : impl(impl_), node(node_) {}
-    random_access_skip_list_iterator(const random_access_skip_list_iterator &other)
+    rasl_iterator(const rasl_iterator &other)
         : impl(other.impl), node(other.node) {}
 
     self_type &operator++()
@@ -311,10 +311,10 @@ public:
     self_type &operator-=(difference_type n)
         { node = impl->at(impl->index_of(node)-n); return *this; }
 
-    random_access_skip_list_iterator operator+(difference_type rhs) const
-        { return random_access_skip_list_iterator(*this) += rhs; }
-    random_access_skip_list_iterator operator-(difference_type rhs) const
-        { return random_access_skip_list_iterator(*this) -= rhs; }
+    rasl_iterator operator+(difference_type rhs) const
+        { return rasl_iterator(*this) += rhs; }
+    rasl_iterator operator-(difference_type rhs) const
+        { return rasl_iterator(*this) -= rhs; }
     const_reference operator[](int index) const
         { return *operator+(index); }
     bool operator<(const self_type &rhs) const
@@ -343,29 +343,29 @@ private:
 
 template <typename I>
 inline
-random_access_skip_list_iterator<I> operator+(int lhs, random_access_skip_list_iterator<I> rhs)
+rasl_iterator<I> operator+(int lhs, rasl_iterator<I> rhs)
     { return rhs+lhs; }
 
 
-template <typename rasl_impl>
-class random_access_skip_list_const_iterator
+template <typename RASL_IMPL>
+class rasl_const_iterator
     : public std::iterator<std::random_access_iterator_tag,
-                           typename rasl_impl::value_type,
-                           typename rasl_impl::difference_type,
-                           typename rasl_impl::const_pointer,
-                           typename rasl_impl::const_reference>
+                           typename RASL_IMPL::value_type,
+                           typename RASL_IMPL::difference_type,
+                           typename RASL_IMPL::const_pointer,
+                           typename RASL_IMPL::const_reference>
 {
 public:
-    typedef const rasl_impl                                    impl_type;
-    typedef random_access_skip_list_iterator<rasl_impl>        normal_iterator;
-    typedef const typename impl_type::node_type                node_type;
-    typedef random_access_skip_list_const_iterator<rasl_impl>  self_type;
+    typedef const RASL_IMPL                     impl_type;
+    typedef rasl_iterator<RASL_IMPL>            normal_iterator;
+    typedef const typename impl_type::node_type node_type;
+    typedef rasl_const_iterator<RASL_IMPL>      self_type;
 
-    random_access_skip_list_const_iterator()
+    rasl_const_iterator()
         : impl(0), node(0) {}
-    random_access_skip_list_const_iterator(const normal_iterator &i)
+    rasl_const_iterator(const normal_iterator &i)
         : impl(i.get_impl()), node(i.get_node()) {}
-    random_access_skip_list_const_iterator(const impl_type *impl_, node_type *node_)
+    rasl_const_iterator(const impl_type *impl_, node_type *node_)
         : impl(impl_), node(node_) {}
 
     self_type &operator++()
