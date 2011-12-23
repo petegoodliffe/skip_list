@@ -218,6 +218,28 @@ TEST_CASE( "random_access_skip_list/iterators/+/rhs is iterator", "" )
         REQUIRE(*i == 2);
     }
 }
+
+// TODO: operator-
+
+TEST_CASE( "random_access_skip_list/iterators/[]", "" )
+{
+    random_access_skip_list<int> list;
+    std::vector<int>             vec;
+    for (int n = 0; n < 10; ++n) list.insert(n);
+    for (int n = 0; n < 10; ++n) vec.push_back(n);
+    
+    {
+        // A comparison of what can be done with vector
+        std::vector<int>::iterator i = vec.begin()+2;
+        REQUIRE(i[3] == 5);
+    }
+    {
+        random_access_skip_list<int>::iterator i = list.begin()+2;
+        REQUIRE(i[3] == 5);
+    }
+}
+
+
 //============================================================================
 #pragma mark erase_at
 

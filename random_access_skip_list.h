@@ -313,7 +313,8 @@ public:
         { return random_access_skip_list_iterator(*this) += rhs; }
     random_access_skip_list_iterator operator-(difference_type rhs) const
         { return random_access_skip_list_iterator(*this) -= rhs; }
-    typename impl_type::const_reference operator[](int index) const; // TODO
+    typename impl_type::const_reference operator[](int index) const
+        { return *operator+(index); }
     bool operator<(const self_type &other) const; // TODO
 
     typename impl_type::const_reference operator*()  { return node->value; }
