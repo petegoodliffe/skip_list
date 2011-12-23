@@ -342,10 +342,6 @@ template <typename I>
 inline
 random_access_skip_list_iterator<I> operator+(int lhs, random_access_skip_list_iterator<I> rhs)
     { return rhs+lhs; }
-template <typename I>
-inline
-random_access_skip_list_iterator<I> operator-(int lhs, random_access_skip_list_iterator<I> rhs)
-    { return rhs-lhs; } // TODO: checl
 
 
 template <typename rasl_impl>
