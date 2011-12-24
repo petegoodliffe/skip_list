@@ -116,8 +116,6 @@ public:
     //skip_list(const skip_list &&other, const Allocator &alloc);
     //skip_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
 
-    ~skip_list();
-
     allocator_type get_allocator() const { return impl.get_allocator(); }
 
     //======================================================================
@@ -433,12 +431,6 @@ skip_list<T,C,A,LG>::skip_list(const allocator_type &alloc_)
 }
 
 template <class T, class C, class A, class LG>
-inline
-skip_list<T,C,A,LG>::~skip_list()
-{
-}
-
-template <class T, class C, class A, class LG>
 template <class InputIterator>
 inline
 skip_list<T,C,A,LG>::skip_list(InputIterator first, InputIterator last, const allocator_type &alloc_)
@@ -678,7 +670,7 @@ struct sl_node
 {
     typedef sl_node<T> self_type;
 
-#ifdef sl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     unsigned    magic;
 #endif
     T           value;
@@ -753,7 +745,7 @@ private:
         node_type *node = node_allocator(alloc).allocate(1, (void*)0);
         node->next  = list_allocator(alloc).allocate(level+1, (void*)0);
         node->level = level;
-#ifdef sl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         for (unsigned n = 0; n <= level; ++n) node->next[n] = 0;
         node->magic = MAGIC_GOOD;
 #endif
@@ -762,7 +754,7 @@ private:
 
     void deallocate(node_type *node)
     {
-#ifdef sl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
         assert_that(node->magic == MAGIC_GOOD);
         node->magic = MAGIC_BAD;
         for (unsigned n = 0; n <= node->level; ++n) node->next[n] = 0;
@@ -891,8 +883,7 @@ inline
 void
 sl_impl<T,C,A,LG>::remove(node_type *node)
 {
-    assert_that(node != head);
-    assert_that(node != tail);
+    assert_that(is_valid(node));
     assert_that(node->next[0]);
 
     node->next[0]->prev = node->prev;
@@ -952,10 +943,8 @@ inline
 void 
 sl_impl<T,C,A,LG>::remove_between(node_type *first, node_type *last)
 {
-    assert_that(first != head);
-    assert_that(first != tail);
-    assert_that(last != head);
-    assert_that(last != tail);
+    assert_that(is_valid(first));
+    assert_that(is_valid(last));
 
     node_type       * const prev         = first->prev;
     node_type       * const one_past_end = last->next[0];
@@ -1028,7 +1017,7 @@ void sl_impl<T,C,A,LG>::swap(sl_impl &other)
     swap(tail,       other.tail);
     swap(item_count, other.item_count);
 
-#ifdef sl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     check();
 #endif
 }
@@ -1072,7 +1061,7 @@ void sl_impl<T,C,A,LG>::dump(STREAM &s) const
     }
 }
 
-#ifdef sl_impl_DIAGNOSTICS
+#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
 // for diagnostics only
 template <class T, class C, class A, class LG>
 inline
