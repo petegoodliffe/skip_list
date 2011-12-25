@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C12727F414A60B2B0047E267 /* test_multi_skip_list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C12727F314A60B2B0047E267 /* test_multi_skip_list.cpp */; };
 		C176E0661487941900D90461 /* benchmark.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C16AEEC314838FF700E7977A /* benchmark.cpp */; };
 		C176E067148794F500D90461 /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C16AEEB5147FA40400E7977A /* test.cpp */; };
 		C1DF30DE148E91ED002DDB47 /* test_random_access.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C1DF30DD148E91EC002DDB47 /* test_random_access.cpp */; };
@@ -44,6 +45,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C12727F314A60B2B0047E267 /* test_multi_skip_list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test_multi_skip_list.cpp; sourceTree = "<group>"; };
 		C155A91B149D5B0F0061FB7C /* random_access_skip_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = random_access_skip_list.h; sourceTree = "<group>"; };
 		C16AEE9C147FA3A100E7977A /* tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		C16AEEB3147FA40400E7977A /* catch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = catch.hpp; sourceTree = "<group>"; };
@@ -101,6 +103,7 @@
 				C16AEEB3147FA40400E7977A /* catch.hpp */,
 				C16AEEC314838FF700E7977A /* benchmark.cpp */,
 				C16AEEB5147FA40400E7977A /* test.cpp */,
+				C12727F314A60B2B0047E267 /* test_multi_skip_list.cpp */,
 				C1DF30DD148E91EC002DDB47 /* test_random_access.cpp */,
 				C17B6906148ED8A3002ABD3E /* test_types.h */,
 			);
@@ -209,6 +212,7 @@
 			files = (
 				C176E067148794F500D90461 /* test.cpp in Sources */,
 				C1DF30DE148E91ED002DDB47 /* test_random_access.cpp in Sources */,
+				C12727F414A60B2B0047E267 /* test_multi_skip_list.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
