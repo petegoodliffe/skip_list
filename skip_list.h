@@ -741,18 +741,7 @@ inline
 typename multi_skip_list<T,C,A,LG>::size_type
 multi_skip_list<T,C,A,LG>::count(const value_type &value) const
 {
-    const node_type *node = impl.find(value);
-    size_type count = 0;
-    if (impl.is_valid(node))
-    {
-        ++count;
-        while (node->value < value)
-        {
-            ++count;
-            node = node->next[0];
-        }
-    }
-    return count;
+    return impl.count(value);
 }
 
 } // namespace goodliffe
@@ -818,6 +807,7 @@ public:
     void             remove_all();
     void             remove_between(node_type *first, node_type *last);
     void             swap(sl_impl &other);
+    size_type        count(const value_type &value) const;
 
     template <typename STREAM>
     void        dump(STREAM &stream) const;
@@ -890,6 +880,37 @@ sl_impl<T,C,A,LG,D>::~sl_impl()
     remove_all();
     deallocate(head);
     deallocate(tail);
+}
+
+template <class T, class C, class A, class LG, bool D>
+inline
+typename sl_impl<T,C,A,LG,D>::size_type
+sl_impl<T,C,A,LG,D>::count(const value_type &value) const
+{
+    // only used in multi_skip_lists
+
+    const node_type *node = find(value);
+    size_type count = 0;
+
+    // backwards (find doesn't necessarily land on the first)
+    const node_type *back = node;
+    if (back != head)
+    {
+        back = back->prev;
+        while (back != head && detail::equivalent(back->value, value, less))
+        {
+            ++count;
+            back = back->prev;
+        }
+    }
+
+    // forwards
+    while (is_valid(node) && detail::equivalent(node->value, value, less))
+    {
+        ++count;
+        node = node->next[0];
+    }
+    return count;
 }
 
 template <class T, class C, class A, class LG, bool D>

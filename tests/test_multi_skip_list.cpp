@@ -51,4 +51,35 @@ TEST_CASE( "multi_skip_list/insert", "" )
 
     list.insert(10);
     REQUIRE(list.size() == 2);
+
+    list.insert(10);
+    REQUIRE(list.size() == 3);
+
+    list.insert(11);
+    REQUIRE(list.size() == 4);
+    
+    multi_skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i == 10); ++i;
+    REQUIRE(*i == 10); ++i;
+    REQUIRE(*i == 10); ++i;
+    REQUIRE(*i == 11); ++i;
+    REQUIRE(i == list.end());
+}
+
+TEST_CASE( "multi_skip_list/count", "" )
+{
+    multi_skip_list<int> list;
+    REQUIRE(list.count(10) == 0);
+
+    list.insert(10);
+    REQUIRE(list.count(10) == 1);
+
+    list.insert(10);
+    multi_skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i == 10); ++i;
+    REQUIRE(*i == 10); ++i;
+    REQUIRE(list.count(10) == 2);
+
+    list.insert(10);
+    REQUIRE(list.count(10) == 3);
 }
