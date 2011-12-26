@@ -174,16 +174,13 @@
 			<File
 				RelativePath="..\tests\benchmark.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\tests\test.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tests\test_multi_skip_list.cpp"
 				>
 			</File>
 			<File
@@ -197,7 +194,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\random_access_skip_list.h"
+				>
+			</File>
+			<File
 				RelativePath="..\skip_list.h"
+				>
+			</File>
+			<File
+				RelativePath="..\skip_list_detail.h"
 				>
 			</File>
 			<Filter

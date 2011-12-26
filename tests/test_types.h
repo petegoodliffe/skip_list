@@ -5,8 +5,14 @@
 
 #pragma once
 
+// MSVS complains about using std::equal unless we define thiis.
+// It's a handy warning in the light of all the other evil you can
+// wreak with STL iterators. It's like a post to tie your jelly to.
+#define _SCL_SECURE_NO_WARNINGS
+
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 struct Struct
 {
@@ -167,7 +173,7 @@ void FillWithReverseOrderedData(size_t size, std::vector<int> &data)
 inline
 void SortVectorAndRemoveDuplicates(std::vector<int> &data)
 {
-    sort(data.begin(), data.end());
-    std::vector<int>::iterator end = unique(data.begin(), data.end());
+    std::sort(data.begin(), data.end());
+    std::vector<int>::iterator end = std::unique(data.begin(), data.end());
     data.erase(end, data.end());
 }

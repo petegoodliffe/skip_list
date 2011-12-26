@@ -3,6 +3,11 @@
 // Copyright (c) 2011 Pete Goodliffe. All rights reserved
 //============================================================================
 
+// MSVS complains about using std::equal unless we define thiis.
+// It's a handy warning in the light of all the other evil you can
+// wreak with STL iterators. It's like a post to tie your jelly to.
+#define _SCL_SECURE_NO_WARNINGS
+
 #include "skip_list.h"
 
 #define CATCH_CONFIG_NO_STREAM_REDIRECTION 1
@@ -12,6 +17,15 @@
 #include <set>
 
 using goodliffe::multi_skip_list;
+
+//==============================================================================
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning (disable : 4068 ) /* disable unknown pragma warnings */
+#endif
+
+//==============================================================================
 
 TEST_CASE( "multi_skip_list/smoketest", "" )
 {

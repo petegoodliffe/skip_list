@@ -32,6 +32,15 @@
 using goodliffe::skip_list;
 using goodliffe::random_access_skip_list;
 
+//==============================================================================
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning (disable : 4068 ) /* disable unknown pragma warnings */
+#endif
+
+//==============================================================================
+
 TEST_CASE( "skip_list/benchmark/smoketest", "" )
 {
     //REQUIRE(false);
