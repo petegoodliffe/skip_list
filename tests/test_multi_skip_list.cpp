@@ -9,6 +9,8 @@
 #include "catch.hpp"
 #include "test_types.h"
 
+#include <set>
+
 using goodliffe::multi_skip_list;
 
 TEST_CASE( "multi_skip_list/smoketest", "" )
@@ -109,3 +111,41 @@ TEST_CASE( "multi_skip_list/remove a multi", "" )
     REQUIRE(list.count(11) == 0);
 }
 
+TEST_CASE( "multi_skip_list/comparison with multiset", "" )
+{
+    std::multiset<int> set;
+    multi_skip_list<int> list;
+
+    for (unsigned loops = 0; loops < 10; ++loops)
+    {
+        for (unsigned n = 0; n < 1000; ++n)
+        {
+            {
+                int number = rand()%1000;
+                set.insert(number);
+                list.insert(number);
+            }
+            {
+                int number = rand()%100;
+                set.insert(number);
+                list.insert(number);
+            }
+            REQUIRE(CheckEquality(list, set));
+        }
+        
+        for (unsigned n = 0; n < 300; ++n)
+        {
+            {
+                int number = rand()%1000;
+                set.erase(number);
+                list.erase(number);
+            }
+            {
+                int number = rand()%100;
+                set.erase(number);
+                list.erase(number);
+            }
+            REQUIRE(CheckEquality(list, set));
+        }
+    }
+}
