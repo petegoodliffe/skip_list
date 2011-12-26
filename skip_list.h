@@ -286,6 +286,15 @@ public:
     // "multi" operations
 
     size_type count(const value_type &value) const;
+
+    iterator lower_bound(const value_type &value);
+    const_iterator lower_bound(const value_type &value) const;
+
+    iterator upper_bound(const value_type &value);
+    const_iterator upper_bound(const value_type &value) const;
+
+    std::pair<iterator,iterator> equal_range(const value_type &value);
+    std::pair<const_iterator,const_iterator> equal_range(const value_type &value) const;
 };
 
 } // namespace goodliffe
@@ -742,6 +751,74 @@ typename multi_skip_list<T,C,A,LG>::size_type
 multi_skip_list<T,C,A,LG>::count(const value_type &value) const
 {
     return impl.count(value);
+}
+
+template <class T, class C, class A, class LG>
+inline
+typename multi_skip_list<T,C,A,LG>::iterator
+multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value)
+{
+    // TODO
+    pg_not_implemented_yet();
+    return parent_type::begin();
+}
+
+template <class T, class C, class A, class LG>
+inline
+typename multi_skip_list<T,C,A,LG>::const_iterator
+multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value) const
+{
+    // TODO
+    pg_not_implemented_yet();
+    return parent_type::begin();
+}
+
+template <class T, class C, class A, class LG>
+inline
+typename multi_skip_list<T,C,A,LG>::iterator
+multi_skip_list<T,C,A,LG>::upper_bound(const value_type &value)
+{
+    // TODO
+    pg_not_implemented_yet();
+    return parent_type::begin();
+}
+
+template <class T, class C, class A, class LG>
+inline
+typename multi_skip_list<T,C,A,LG>::const_iterator
+multi_skip_list<T,C,A,LG>::upper_bound(const value_type &value) const
+{
+    // TODO
+    pg_not_implemented_yet();
+    return parent_type::begin();
+}
+
+template <class T, class C, class A, class LG>
+inline
+std::pair
+    <
+        typename multi_skip_list<T,C,A,LG>::iterator,
+        typename multi_skip_list<T,C,A,LG>::iterator
+    >
+multi_skip_list<T,C,A,LG>::equal_range(const value_type &value)
+{
+    // TODO
+    pg_not_implemented_yet();
+    return std::make_pair(parent_type::begin(),parent_type::begin());
+}
+    
+template <class T, class C, class A, class LG>
+inline    
+std::pair
+    <
+        typename multi_skip_list<T,C,A,LG>::const_iterator,
+        typename multi_skip_list<T,C,A,LG>::const_iterator
+    >
+multi_skip_list<T,C,A,LG>::equal_range(const value_type &value) const
+{
+    // TODO
+    pg_not_implemented_yet();
+    return std::make_pair(parent_type::begin(),parent_type::begin());
 }
 
 } // namespace goodliffe
