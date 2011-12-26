@@ -111,6 +111,28 @@ TEST_CASE( "multi_skip_list/remove a multi", "" )
     REQUIRE(list.count(11) == 0);
 }
 
+TEST_CASE( "multi_skip_list/erase over multie item boundary", "" )
+{
+    multi_skip_list<int> list;
+    
+    list.insert(11);
+    list.insert(10);
+    list.insert(11);
+    list.insert(10);
+    list.insert(11);
+    
+    multi_skip_list<int>::iterator start = list.begin()++++;
+    multi_skip_list<int>::iterator end   = start++++;
+    
+    REQUIRE(list.size() == 5);
+    list.erase(start,end);
+    REQUIRE(list.size() == 3);
+    
+    multi_skip_list<int>::iterator i = list.begin();
+    REQUIRE(*i == 10); ++i;
+    REQUIRE(*i == 11); ++i;
+}
+
 TEST_CASE( "multi_skip_list/comparison with multiset", "" )
 {
     std::multiset<int> set;
