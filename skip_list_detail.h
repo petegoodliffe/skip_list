@@ -36,35 +36,38 @@ namespace detail
 //#define SKIP_LIST_IMPL_DIAGNOSTICS 1
 
 #if defined(DEBUG) || defined(_DEBUG) || defined(SKIP_LIST_IMPL_DIAGNOSTICS)
-#define SKIP_LIST_DIAGNOSTICS 1
+    #define SKIP_LIST_DIAGNOSTICS 1
 #endif
 
 #ifdef SKIP_LIST_DIAGNOSTICS
 
-#include <cstdio>
+    #include <cstdio>
 
-void pg_assertion_break();
-inline
-void pg_assertion_break() { fprintf(stderr, "**** place a breakpoint at pg_assertion_break to debug\n"); }
-#include <cassert>
-#include <stdio.h>
-#define pg_fail(a)            {fprintf(stderr,"%s:%d: \"%s\"\n", __FILE__, __LINE__, a); /*assert(false);*/ pg_assertion_break(); }
-#define assert_that(a)        {if (!(a)) pg_fail(#a);}
-#define pg_not_implemented_yet() pg_fail("not implemented yet")
+    void pg_assertion_break();
+    inline
+    void pg_assertion_break() { fprintf(stderr, "**** place a breakpoint at pg_assertion_break to debug\n"); }
+    #include <cassert>
+    #include <stdio.h>
+    #define pg_fail(a)            {fprintf(stderr,"%s:%d: \"%s\"\n", __FILE__, __LINE__, a); /*assert(false);*/ pg_assertion_break(); }
+    #define assert_that(a)        {if (!(a)) pg_fail(#a);}
+    #define pg_not_implemented_yet() pg_fail("not implemented yet")
 
 #else
 
-#define pg_fail(a)            
-#define assert_that(a)        
-#define pg_not_implemented_yet() 
+    #define pg_fail(a)            
+    #define assert_that(a)        
+    #define pg_not_implemented_yet() 
 
 #endif
+
 
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-#define impl_assert_that(a) assert_that(a)
+    #include <iostream>
+    #define impl_assert_that(a) assert_that(a)
 #else
-#define impl_assert_that(a)
+    #define impl_assert_that(a)
 #endif
+
 
 namespace goodliffe {
 namespace detail {

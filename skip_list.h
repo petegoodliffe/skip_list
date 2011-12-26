@@ -758,9 +758,16 @@ inline
 typename multi_skip_list<T,C,A,LG>::iterator
 multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value)
 {
-    // TODO
-    pg_not_implemented_yet();
-    return parent_type::begin();
+    const node_type *node = impl.find(value);
+    
+    while (impl.is_valid(node->prev) && detail::equivalent(node->prev, value, impl.less))
+    {
+        node = node->prev;
+    }
+    
+    return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
+        ? iterator(&impl, node)
+        : parent_type::end();
 }
 
 template <class T, class C, class A, class LG>
@@ -1230,10 +1237,10 @@ void sl_impl<T,C,A,LG,D>::swap(sl_impl &other)
 }
 
 // for diagnostics only
-template <class T, class C, class A, class LG, bool D>
+template <class T, class C, class A, class LG, bool AllowDuplicates>
 template <class STREAM>
 inline
-void sl_impl<T,C,A,LG,D>::dump(STREAM &s) const
+void sl_impl<T,C,A,LG,AllowDuplicates>::dump(STREAM &s) const
 {
     s << "skip_list(size="<<item_count<<",levels=" << levels << ")\n";
     for (unsigned l = 0; l < levels+1; ++l)
@@ -1256,8 +1263,16 @@ void sl_impl<T,C,A,LG,D>::dump(STREAM &s) const
             
             if (n != tail)
             {
-                if (next != tail && !less(n->value, next->value))
-                    s << "*XXXXXXXXX* ";
+                if (AllowDuplicates)
+                {
+                    if (next != tail && !detail::less_or_equal(n->value, next->value, less))
+                        s << "*XXXXXXXXX* ";
+                }
+                else
+                {
+                    if (next != tail && !less(n->value, next->value))
+                        s << "*XXXXXXXXX* ";
+                }
                 s << ">"
                   << " "
                   << (prev_ok?"<":"X");
@@ -1270,9 +1285,9 @@ void sl_impl<T,C,A,LG,D>::dump(STREAM &s) const
 
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
 // for diagnostics only
-template <class T, class C, class A, class LG, bool D>
+template <class T, class C, class A, class LG, bool AllowDuplicates>
 inline
-bool sl_impl<T,C,A,LG,D>::check() const
+bool sl_impl<T,C,A,LG,AllowDuplicates>::check() const
 {
     for (unsigned l = 0; l < levels; ++l)
     {
@@ -1299,7 +1314,8 @@ bool sl_impl<T,C,A,LG,D>::check() const
             node_type *next = n->next[l];
             if (n != head && next != tail)
             {
-                if (!(less(n->value, next->value)))
+                if ((!AllowDuplicates && !(less(n->value, next->value)))
+                    || (AllowDuplicates && !(detail::less_or_equal(n->value, next->value, less))))
                 {
                     assert_that(false && "value order error");
                     dump(std::cerr);
