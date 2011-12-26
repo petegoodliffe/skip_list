@@ -999,10 +999,10 @@ sl_impl<T,C,A,LG,AllowDuplicates>::insert(const value_type &value, node_type *hi
     return new_node;
 }
 
-template <class T, class C, class A, class LG, bool D>
+template <class T, class C, class A, class LG, bool AllowDuplicates>
 inline
 void
-sl_impl<T,C,A,LG,D>::remove(node_type *node)
+sl_impl<T,C,A,LG,AllowDuplicates>::remove(node_type *node)
 {
     assert_that(is_valid(node));
     assert_that(node->next[0]);
@@ -1018,6 +1018,15 @@ sl_impl<T,C,A,LG,D>::remove(node_type *node)
         while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
         {
             cur = cur->next[l];
+        }
+        if (AllowDuplicates)
+        {
+            while (cur != node
+                   && cur->next[l] != tail
+                   && detail::equivalent(cur->next[l]->value, node->value, less))
+            {
+                cur = cur->next[l];
+            }
         }
         if (cur->next[l] == node)
         {

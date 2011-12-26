@@ -75,11 +75,37 @@ TEST_CASE( "multi_skip_list/count", "" )
     REQUIRE(list.count(10) == 1);
 
     list.insert(10);
-    multi_skip_list<int>::iterator i = list.begin();
-    REQUIRE(*i == 10); ++i;
-    REQUIRE(*i == 10); ++i;
     REQUIRE(list.count(10) == 2);
 
     list.insert(10);
     REQUIRE(list.count(10) == 3);
 }
+
+TEST_CASE( "multi_skip_list/remove a multi", "" )
+{
+    multi_skip_list<int> list;
+    
+    list.insert(10);
+    list.insert(11);
+    list.insert(10);
+    list.insert(11);
+    REQUIRE(list.count(10) == 2);
+    REQUIRE(list.count(11) == 2);
+
+    list.erase(10);
+    REQUIRE(list.count(10) == 1);
+    REQUIRE(list.count(11) == 2);
+
+    list.erase(11);
+    REQUIRE(list.count(10) == 1);
+    REQUIRE(list.count(11) == 1);
+
+    list.erase(10);
+    REQUIRE(list.count(10) == 0);
+    REQUIRE(list.count(11) == 1);
+
+    list.erase(11);
+    REQUIRE(list.count(10) == 0);
+    REQUIRE(list.count(11) == 0);
+}
+
