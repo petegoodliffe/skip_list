@@ -1257,25 +1257,27 @@ void sl_impl<T,C,A,LG,AllowDuplicates>::dump(STREAM &s) const
                 if (next->prev == n) prev_ok = true;
             }
             if (is_valid(n))
-                s << n->value << " ";
+                s << n->value;
             else
-                s << "* ";
+                s << "*";
             
-            if (n != tail)
+            if (is_valid(n))
             {
                 if (AllowDuplicates)
                 {
                     if (next != tail && !detail::less_or_equal(n->value, next->value, less))
-                        s << "*XXXXXXXXX* ";
+                        s << "*XXXXXXXXX*";
                 }
                 else
                 {
                     if (next != tail && !less(n->value, next->value))
-                        s << "*XXXXXXXXX* ";
+                        s << "*XXXXXXXXX*";
                 }
-                s << ">"
-                  << " "
-                  << (prev_ok?"<":"X");
+            }
+            s << "> ";
+            if (is_valid(n))
+            {
+              s << (prev_ok?"<":"-");
             }
             n = next;
         }
