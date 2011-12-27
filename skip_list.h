@@ -225,7 +225,7 @@ protected:
             ? iterator(&impl, node)
             : end();
     }
-    const_iterator to_iterator(const node_type *node, const value_type &value)
+    const_iterator to_iterator(const node_type *node, const value_type &value) const
     {
         return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
             ? const_iterator(&impl, node)
@@ -782,9 +782,14 @@ inline
 typename multi_skip_list<T,C,A,LG>::const_iterator
 multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value) const
 {
-    // TODO
-    pg_not_implemented_yet();
-    return parent_type::begin();
+    const node_type *node = impl.find(value);
+    while (impl.is_valid(node->prev)
+           && detail::equivalent(node->prev->value, value, impl.less))
+    {
+        node = node->prev;
+    }
+    
+    return parent_type::to_iterator(node, value);
 }
 
 template <class T, class C, class A, class LG>
