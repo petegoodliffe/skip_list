@@ -218,6 +218,19 @@ public:
 
 protected:
     impl_type impl;
+
+    iterator to_iterator(node_type *node, const value_type &value)
+    {
+        return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
+            ? iterator(&impl, node)
+            : end();
+    }
+    const_iterator to_iterator(const node_type *node, const value_type &value)
+    {
+        return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
+            ? const_iterator(&impl, node)
+            : end();
+    }
 };
     
 } // namespace goodliffe
@@ -721,9 +734,7 @@ typename skip_list<T,C,A,LG,D>::iterator
 skip_list<T,C,A,LG,D>::find(const value_type &value)
 {
     node_type *node = impl.find(value);
-    return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
-        ? iterator(&impl, node)
-        : end();
+    return to_iterator(node, value);
 }
   
 template <class T, class C, class A, class LG, bool D>
@@ -732,9 +743,7 @@ typename skip_list<T,C,A,LG,D>::const_iterator
 skip_list<T,C,A,LG,D>::find(const value_type &value) const
 {
     const node_type *node = impl.find(value);
-    return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
-        ? const_iterator(&impl, node)
-        : end();
+    return to_iterator(node, value);
 }
     
 } // namespace goodliffe
@@ -759,15 +768,13 @@ typename multi_skip_list<T,C,A,LG>::iterator
 multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value)
 {
     node_type *node = impl.find(value);
-    
-    while (impl.is_valid(node->prev) && detail::equivalent(node->prev->value, value, impl.less))
+    while (impl.is_valid(node->prev)
+           && detail::equivalent(node->prev->value, value, impl.less))
     {
         node = node->prev;
     }
     
-    return impl.is_valid(node) && detail::equivalent(node->value, value, impl.less)
-        ? iterator(&impl, node)
-        : parent_type::end();
+    return parent_type::to_iterator(node, value);
 }
 
 template <class T, class C, class A, class LG>
