@@ -758,9 +758,9 @@ inline
 typename multi_skip_list<T,C,A,LG>::iterator
 multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value)
 {
-    const node_type *node = impl.find(value);
+    node_type *node = impl.find(value);
     
-    while (impl.is_valid(node->prev) && detail::equivalent(node->prev, value, impl.less))
+    while (impl.is_valid(node->prev) && detail::equivalent(node->prev->value, value, impl.less))
     {
         node = node->prev;
     }
@@ -1015,7 +1015,6 @@ sl_impl<T,C,A,LG,D>::find(const value_type &value) const
     return search;
 }
 
-// TODO: Hint is now ignored (has to be, for spans to work)
 template <class T, class C, class A, class LG, bool AllowDuplicates>
 inline
 typename sl_impl<T,C,A,LG,AllowDuplicates>::node_type*

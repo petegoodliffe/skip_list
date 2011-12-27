@@ -185,3 +185,37 @@ TEST_CASE( "multi_skip_list/comparison with multiset", "" )
         }
     }
 }
+
+//============================================================================
+// lower_bound
+
+template <typename T, typename CONTAINER>
+bool LowerBoundTest(const T &value, CONTAINER &container, size_t advance)
+{
+    typename CONTAINER::iterator i = container.begin();
+    std::advance(i, advance);
+    return (container.lower_bound(value) == i);
+}
+
+TEST_CASE( "multi_skip_list/comparison with multiset", "" )
+{
+    std::multiset<int> set; // we use multiset as a comparison of behaviour
+    set.insert(5);
+    set.insert(7);
+    set.insert(7);
+    set.insert(11);
+    set.insert(11);
+    set.insert(21);
+
+    multi_skip_list<int> list(set.begin(), set.end());
+    
+    REQUIRE(LowerBoundTest(5,  set, 0)); REQUIRE(LowerBoundTest(5,  list, 0));
+    REQUIRE(LowerBoundTest(7,  set, 1)); REQUIRE(LowerBoundTest(7,  list, 1));
+    REQUIRE(LowerBoundTest(11, set, 3)); REQUIRE(LowerBoundTest(11, list, 3));
+    REQUIRE(LowerBoundTest(21, set, 5)); REQUIRE(LowerBoundTest(21, list, 5));
+
+    REQUIRE(LowerBoundTest(0,  set, 0)); REQUIRE(LowerBoundTest(0,  list, 0));
+    REQUIRE(LowerBoundTest(4,  set, 0)); REQUIRE(LowerBoundTest(4,  list, 0));
+    REQUIRE(LowerBoundTest(6,  set, 1)); REQUIRE(LowerBoundTest(6,  list, 1));
+    REQUIRE(LowerBoundTest(22, set, 6)); REQUIRE(LowerBoundTest(22, list, 6));
+}
