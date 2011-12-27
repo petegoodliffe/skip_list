@@ -1105,11 +1105,21 @@ sl_impl<T,C,A,LG,AllowDuplicates>::remove(node_type *node)
         }
         if (AllowDuplicates)
         {
-            while (cur != node
-                   && cur->next[l] != tail
-                   && detail::equivalent(cur->next[l]->value, node->value, less))
+            node_type *cur2 = cur;
+
+            while (cur2 != tail)
             {
-                cur = cur->next[l];
+                node_type *next = cur2->next[0];
+                if (next == tail) break;
+                if (next == node)
+                {
+                    cur = cur2;
+                    break;
+                }
+                if (detail::equivalent(cur2->next[l]->value, node->value, less))
+                    cur2 = next;
+                else
+                    break;
             }
         }
         if (cur->next[l] == node)
