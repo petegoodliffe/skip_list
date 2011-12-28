@@ -720,7 +720,6 @@ skip_list<T,C,A,LG,D>::erase(const_iterator first, const_iterator last)
         impl.remove_between(first_node, last_node);
     }
     
-    // TODO: why not just return last?
     return iterator(&impl, const_cast<node_type*>(last.get_node()));
 }
   
