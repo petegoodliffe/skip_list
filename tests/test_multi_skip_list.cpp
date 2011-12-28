@@ -125,7 +125,7 @@ TEST_CASE( "multi_skip_list/remove a multi", "" )
     REQUIRE(list.count(11) == 0);
 }
 
-TEST_CASE( "multi_skip_list/erase over multie item boundary", "" )
+TEST_CASE( "multi_skip_list/erase over multiple item boundary", "" )
 {
     multi_skip_list<int> list;
     
@@ -245,4 +245,51 @@ TEST_CASE( "multi_skip_list/lower_bound/comparison with multiset", "" )
     REQUIRE(LowerBoundTest(4,  clist, 0));
     REQUIRE(LowerBoundTest(6,  clist, 1));
     REQUIRE(LowerBoundTest(22, clist, 6));
+}
+
+//============================================================================
+// upper_bound
+
+template <typename T, typename CONTAINER>
+bool UpperBoundTest(const T &value, CONTAINER &container, size_t advance)
+{
+    typename CONTAINER::iterator i = container.begin();
+    std::advance(i, advance);
+    return (container.upper_bound(value) == i);
+}
+template <typename T, typename CONTAINER>
+bool UpperBoundTest(const T &value, const CONTAINER &container, size_t advance)
+{
+    typename CONTAINER::const_iterator i = container.begin();
+    std::advance(i, advance);
+    return (container.upper_bound(value) == i);
+}
+
+
+TEST_CASE( "multi_skip_list/upper_bound/with empty list", "" )
+{
+    multi_skip_list<int> list;
+    
+    REQUIRE(list.upper_bound(0) == list.end());
+    REQUIRE(list.upper_bound(1) == list.end());
+    REQUIRE(list.upper_bound(100) == list.end());
+}
+
+TEST_CASE( "multi_skip_list/upper_bound/comparison with multiset", "" )
+{
+    std::multiset<int> set; // we use multiset as a comparison of behaviour
+    set.insert(5);
+    set.insert(7);
+    set.insert(7);
+    set.insert(11);
+    set.insert(11);
+    set.insert(21);
+    
+    multi_skip_list<int> list(set.begin(), set.end());
+    REQUIRE(false);
+    REQUIRE(UpperBoundTest(5,  set, 1)); REQUIRE(UpperBoundTest(5,  list, 1));
+    REQUIRE(UpperBoundTest(7,  set, 3)); REQUIRE(UpperBoundTest(7,  list, 3));
+    REQUIRE(UpperBoundTest(11, set, 5)); //REQUIRE(UpperBoundTest(11, list, 3));
+    REQUIRE(UpperBoundTest(21, set, 6)); //REQUIRE(UpperBoundTest(21, list, 5));
+    
 }
