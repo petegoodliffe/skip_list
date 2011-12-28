@@ -204,7 +204,16 @@ bool LowerBoundTest(const T &value, const CONTAINER &container, size_t advance)
     return (container.lower_bound(value) == i);
 }
 
-TEST_CASE( "multi_skip_list/comparison with multiset", "" )
+TEST_CASE( "multi_skip_list/lower_bound/with empty list", "" )
+{
+    multi_skip_list<int> list;
+    
+    REQUIRE(list.lower_bound(0) == list.end());
+    REQUIRE(list.lower_bound(1) == list.end());
+    REQUIRE(list.lower_bound(100) == list.end());
+}
+
+TEST_CASE( "multi_skip_list/lower_bound/comparison with multiset", "" )
 {
     std::multiset<int> set; // we use multiset as a comparison of behaviour
     set.insert(5);
