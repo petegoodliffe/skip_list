@@ -886,15 +886,14 @@ multi_skip_list<T,C,A,LG>::erase(const_iterator first, const_iterator last)
 {
     assert_that(first.get_impl() == &impl);
     assert_that(last.get_impl() == &impl);
-
-    if (first != last)
-    {
-        node_type *first_node = const_cast<node_type*>(first.get_node());
-        node_type *last_node  = const_cast<node_type*>(last.get_node()->prev);
-        impl.remove_between_multi(first_node, last_node);
-    }
     
-    // TODO: why not just return last?
+    while (first != last)
+    {
+        const_iterator to_remove = first++;
+        node_type *node = const_cast<node_type*>(to_remove.get_node());
+        impl.remove(node);
+    }
+
     return iterator(&impl, const_cast<node_type*>(last.get_node()));
 }
 
@@ -960,7 +959,6 @@ public:
     void             remove(node_type *value);
     void             remove_all();
     void             remove_between(node_type *first, node_type *last);
-    void             remove_between_multi(node_type *first, node_type *last);
     void             swap(sl_impl &other);
     size_type        count(const value_type &value) const;
 
@@ -1279,62 +1277,7 @@ sl_impl<T,C,A,LG,D>::remove_between(node_type *first, node_type *last)
         item_count--;
         first = next;
     }
-        
-#ifdef SKIP_LIST_IMPL_DIAGNOSTICS
-    check();
-#endif
-}
-
-template <class T, class C, class A, class LG, bool D>
-inline
-void 
-sl_impl<T,C,A,LG,D>::remove_between_multi(node_type *first, node_type *last)
-{
-    assert_that(is_valid(first));
-    assert_that(is_valid(last));
-    assert_that(D);
-
-    node_type       * const prev         = first->prev;
-    node_type       * const one_past_end = last->next[0];
-    const value_type       &first_value  = first->value;
-    const value_type       &last_value   = last->value;
-
-    // backwards pointer
-    one_past_end->prev = prev;
     
-    // TODO! new algorithm
-
-    // forwards pointers
-    node_type *cur = head;
-    for (unsigned l = levels; l; )
-    {
-        --l;
-        assert_that(l < cur->level);
-        while (cur->next[l] != tail && less(cur->next[l]->value, first_value))
-        {
-            cur = cur->next[l];
-        }
-        if (cur->next[l] != tail
-            && detail::less_or_equal(cur->next[l]->value, last_value, less))
-        {
-            // patch up next[l] pointer
-            node_type *end = cur->next[l];
-            while (end != tail && detail::less_or_equal(end->value, last_value, less))
-                end = end->next[l];
-            cur->next[l] = end;
-        }
-    }
-
-    // now delete all the nodes between [first,last]
-    while (first != one_past_end)
-    {
-        node_type *next = first->next[0];
-        alloc.destroy(&first->value);
-        deallocate(first);
-        item_count--;
-        first = next;
-    }
-        
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
     check();
 #endif
