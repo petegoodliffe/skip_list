@@ -298,9 +298,9 @@ public:
     //======================================================================
     // Overridden operations
 
+    size_type erase(const value_type &value);
     iterator  erase(const_iterator position);
     iterator  erase(const_iterator first, const_iterator last);
-    using parent_type::erase;
 
     //======================================================================
     // "multi" operations
@@ -846,6 +846,24 @@ multi_skip_list<T,C,A,LG>::equal_range(const value_type &value) const
     // TODO
     pg_not_implemented_yet();
     return std::make_pair(parent_type::begin(),parent_type::begin());
+}
+
+template <class T, class C, class A, class LG>
+inline
+typename multi_skip_list<T,C,A,LG>::size_type
+multi_skip_list<T,C,A,LG>::erase(const value_type &value)
+{
+    size_type count = 0;
+
+    for (node_type *node = impl.find(value);
+         impl.is_valid(node) && detail::equivalent(node->value, value, impl.less);
+         node = impl.find(value))
+    {
+        impl.remove(node);
+        ++count;
+    }
+
+    return count;
 }
 
 template <class T, class C, class A, class LG>

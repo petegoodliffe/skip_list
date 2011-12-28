@@ -108,19 +108,11 @@ TEST_CASE( "multi_skip_list/remove a multi", "" )
     REQUIRE(list.count(10) == 2);
     REQUIRE(list.count(11) == 2);
 
-    list.erase(10);
-    REQUIRE(list.count(10) == 1);
+    REQUIRE(list.erase(10) == 2);
+    REQUIRE(list.count(10) == 0);
     REQUIRE(list.count(11) == 2);
 
-    list.erase(11);
-    REQUIRE(list.count(10) == 1);
-    REQUIRE(list.count(11) == 1);
-
-    list.erase(10);
-    REQUIRE(list.count(10) == 0);
-    REQUIRE(list.count(11) == 1);
-
-    list.erase(11);
+    REQUIRE(list.erase(11) == 2);
     REQUIRE(list.count(10) == 0);
     REQUIRE(list.count(11) == 0);
 }
@@ -166,26 +158,32 @@ TEST_CASE( "multi_skip_list/comparison with multiset", "" )
                 int number = rand()%1000;
                 set.insert(number);
                 list.insert(number);
+                REQUIRE(set.count(number) == list.count(number));
             }
             {
                 int number = rand()%100;
                 set.insert(number);
                 list.insert(number);
+                REQUIRE(set.count(number) == list.count(number));
             }
             REQUIRE(CheckEquality(list, set));
         }
-        
+
         for (unsigned n = 0; n < 300; ++n)
         {
             {
                 int number = rand()%1000;
-                set.erase(number);
-                list.erase(number);
+                REQUIRE(set.count(number) == list.count(number));
+                size_t set_erase  = set.erase(number);
+                size_t list_erase = list.erase(number);
+                REQUIRE(set_erase == list_erase);
             }
             {
                 int number = rand()%100;
-                set.erase(number);
-                list.erase(number);
+                REQUIRE(set.count(number) == list.count(number));
+                size_t set_erase  = set.erase(number);
+                size_t list_erase = list.erase(number);
+                REQUIRE(set_erase == list_erase);
             }
             REQUIRE(CheckEquality(list, set));
         }
