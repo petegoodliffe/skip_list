@@ -134,9 +134,15 @@ TEST_CASE( "multi_skip_list/erase over multiple item boundary", "" )
     list.insert(11);
     list.insert(10);
     list.insert(11);
+
+    multi_skip_list<int>::iterator start = ++list.begin();
+    multi_skip_list<int>::iterator end   = start; ++++end;
     
-    multi_skip_list<int>::iterator start = list.begin()++++;
-    multi_skip_list<int>::iterator end   = start++++;
+    REQUIRE(std::distance(list.begin(), start) == 1);
+    REQUIRE(std::distance(list.begin(), end) == 3);
+    
+    REQUIRE(*start == 10);
+    REQUIRE(*end == 11);
     
     REQUIRE(list.size() == 5);
     list.erase(start,end);
