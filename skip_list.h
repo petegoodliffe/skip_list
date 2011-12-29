@@ -1041,6 +1041,7 @@ typename sl_impl<T,C,A,LG,D>::size_type
 sl_impl<T,C,A,LG,D>::count(const value_type &value) const
 {
     // only used in multi_skip_lists
+    impl_assert_that(D);
 
     const node_type *node = find(value);
     size_type count = 0;
@@ -1071,8 +1072,10 @@ inline
 typename sl_impl<T,C,A,LG,D>::node_type *
 sl_impl<T,C,A,LG,D>::find(const value_type &value) const
 {
-    // I could have a const and non-const overload, but this cast is simpler
+    // I could have an identical const and non-const overload,
+    // but this cast is simpler (and safe)
     node_type *search = const_cast<node_type*>(head);
+
     for (unsigned l = levels; l; )
     {
         --l;
