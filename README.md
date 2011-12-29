@@ -30,6 +30,7 @@ Examples:
     std::copy(list.begin(), list.end(), std::ostream_iterator<int>(std::cout, "\n"));
 
 There are several containers provided here:
+
 * *skip_list* The basic skip-list. Provides bidirectional iteration. Only allows you
   to insert a value into the list once. The API is akin to std::list and std::set.
 * *multi_slip_list* As multiset is to set, this is a skip list that allows to you insert
