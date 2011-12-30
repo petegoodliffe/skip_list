@@ -176,15 +176,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\tests\test.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\tests\test_multi_skip_list.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\tests\test_random_access.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tests\test_skip_list.cpp"
 				>
 			</File>
 		</Filter>
