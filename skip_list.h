@@ -774,14 +774,13 @@ inline
 typename multi_skip_list<T,C,A,LG>::iterator
 multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value)
 {
-    node_type *node = impl.find(value);
-    while (impl.is_valid(node->prev)
-           && detail::equivalent(node->prev->value, value, impl.less))
+    node_type *node = impl.find_first(value);
+    if (node == impl.one_past_front())
     {
-        node = node->prev;
+        node = node->next[0];
     }
     
-    return parent_type::to_iterator(node, value);
+    return iterator(&impl, node);
 }
 
 template <class T, class C, class A, class LG>
@@ -789,14 +788,13 @@ inline
 typename multi_skip_list<T,C,A,LG>::const_iterator
 multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value) const
 {
-    const node_type *node = impl.find(value);
-    while (impl.is_valid(node->prev)
-           && detail::equivalent(node->prev->value, value, impl.less))
+    const node_type *node = impl.find_first(value);
+    if (node == impl.one_past_front())
     {
-        node = node->prev;
+        node = node->next[0];
     }
     
-    return parent_type::to_iterator(node, value);
+    return const_iterator(&impl, node);
 }
 
 template <class T, class C, class A, class LG>
@@ -952,9 +950,12 @@ public:
     bool             is_valid(const node_type *node) const { return node && node != head && node != tail; }
     node_type       *front()                               { return head->next[0]; }
     const node_type *front() const                         { return head->next[0]; }
+    node_type       *one_past_front()                      { return head; }
+    const node_type *one_past_front() const                { return head; }
     node_type       *one_past_end()                        { return tail; }
     const node_type *one_past_end() const                  { return tail; }
     node_type       *find(const value_type &value) const;
+    node_type       *find_first(const value_type &value) const;
     node_type       *insert(const value_type &value, node_type *hint = 0);
     void             remove(node_type *value);
     void             remove_all();
@@ -1085,6 +1086,25 @@ sl_impl<T,C,A,LG,D>::find(const value_type &value) const
         }
     }
     return search;
+}
+    
+template <class T, class C, class A, class LG, bool D>
+inline
+typename sl_impl<T,C,A,LG,D>::node_type *
+sl_impl<T,C,A,LG,D>::find_first(const value_type &value) const
+{
+    // only used in multi_skip_lists
+    impl_assert_that(D);
+
+    node_type *node = find(value);
+    
+    while (node != head && detail::equivalent(node->prev->value, value, less))
+    {
+        node = node->prev;
+    }
+    if (node != tail && less(node->value, value)) node = node->next[0];
+
+    return node;
 }
 
 template <class T, class C, class A, class LG, bool AllowDuplicates>
