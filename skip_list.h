@@ -808,7 +808,7 @@ inline
 typename multi_skip_list<T,C,A,LG>::const_iterator
 multi_skip_list<T,C,A,LG>::upper_bound(const value_type &value) const
 {
-    const node_type *node = impl.find(value);
+    const node_type *node = impl.find_first(value);
     if (node == impl.one_past_front()) node = node->next[0];
     while (impl.is_valid(node) && detail::equivalent(node->value, value, impl.less))
     {
