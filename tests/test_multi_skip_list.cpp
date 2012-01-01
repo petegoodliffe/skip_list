@@ -272,8 +272,6 @@ bool UpperBoundTest(const T &value, const CONTAINER &container, size_t advance)
 TEST_CASE( "multi_skip_list/upper_bound/with empty list", "" )
 {
     multi_skip_list<int> list;
-    return;
-
     REQUIRE(list.upper_bound(0) == list.end());
     REQUIRE(list.upper_bound(1) == list.end());
     REQUIRE(list.upper_bound(100) == list.end());
@@ -289,11 +287,28 @@ TEST_CASE( "multi_skip_list/upper_bound/comparison with multiset", "" )
     set.insert(11);
     set.insert(21);
     
-    return;
     multi_skip_list<int> list(set.begin(), set.end());
     REQUIRE(UpperBoundTest(5,  set, 1)); REQUIRE(UpperBoundTest(5,  list, 1));
     REQUIRE(UpperBoundTest(7,  set, 3)); REQUIRE(UpperBoundTest(7,  list, 3));
-    REQUIRE(UpperBoundTest(11, set, 5)); //REQUIRE(UpperBoundTest(11, list, 3));
-    REQUIRE(UpperBoundTest(21, set, 6)); //REQUIRE(UpperBoundTest(21, list, 5));
+    REQUIRE(UpperBoundTest(11, set, 5)); REQUIRE(UpperBoundTest(11, list, 5));
+    REQUIRE(UpperBoundTest(21, set, 6)); REQUIRE(UpperBoundTest(21, list, 6));
     
+    REQUIRE(UpperBoundTest(0,  set, 0)); REQUIRE(UpperBoundTest(0,  list, 0));
+    REQUIRE(UpperBoundTest(4,  set, 0)); REQUIRE(UpperBoundTest(4,  list, 0));
+    REQUIRE(UpperBoundTest(6,  set, 1)); REQUIRE(UpperBoundTest(6,  list, 1));
+    REQUIRE(UpperBoundTest(8,  set, 3)); REQUIRE(UpperBoundTest(8,  list, 3));
+    REQUIRE(UpperBoundTest(20, set, 5)); REQUIRE(UpperBoundTest(20, list, 5));
+    REQUIRE(UpperBoundTest(22, set, 6)); REQUIRE(UpperBoundTest(22, list, 6));
+    
+    const multi_skip_list<int> &clist = list;
+    REQUIRE(UpperBoundTest(5,  clist, 1));
+    REQUIRE(UpperBoundTest(7,  clist, 3));
+    REQUIRE(UpperBoundTest(11, clist, 5));
+    REQUIRE(UpperBoundTest(21, clist, 6));
+    REQUIRE(UpperBoundTest(0,  clist, 0));
+    REQUIRE(UpperBoundTest(4,  clist, 0));
+    REQUIRE(UpperBoundTest(6,  clist, 1));
+    REQUIRE(UpperBoundTest(8,  clist, 3));
+    REQUIRE(UpperBoundTest(20, clist, 5));
+    REQUIRE(UpperBoundTest(22, clist, 6));
 }

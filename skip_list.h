@@ -775,11 +775,7 @@ typename multi_skip_list<T,C,A,LG>::iterator
 multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value)
 {
     node_type *node = impl.find_first(value);
-    if (node == impl.one_past_front())
-    {
-        node = node->next[0];
-    }
-    
+    if (node == impl.one_past_front()) node = node->next[0];
     return iterator(&impl, node);
 }
 
@@ -789,11 +785,7 @@ typename multi_skip_list<T,C,A,LG>::const_iterator
 multi_skip_list<T,C,A,LG>::lower_bound(const value_type &value) const
 {
     const node_type *node = impl.find_first(value);
-    if (node == impl.one_past_front())
-    {
-        node = node->next[0];
-    }
-    
+    if (node == impl.one_past_front()) node = node->next[0];
     return const_iterator(&impl, node);
 }
 
@@ -802,9 +794,13 @@ inline
 typename multi_skip_list<T,C,A,LG>::iterator
 multi_skip_list<T,C,A,LG>::upper_bound(const value_type &value)
 {
-    // TODO
-    pg_not_implemented_yet();
-    return parent_type::begin();
+    node_type *node = impl.find_first(value);
+    if (node == impl.one_past_front()) node = node->next[0];
+    while (impl.is_valid(node) && detail::equivalent(node->value, value, impl.less))
+    {
+        node = node->next[0];
+    }
+    return iterator(&impl, node);
 }
 
 template <class T, class C, class A, class LG>
@@ -812,9 +808,13 @@ inline
 typename multi_skip_list<T,C,A,LG>::const_iterator
 multi_skip_list<T,C,A,LG>::upper_bound(const value_type &value) const
 {
-    // TODO
-    pg_not_implemented_yet();
-    return parent_type::begin();
+    const node_type *node = impl.find(value);
+    if (node == impl.one_past_front()) node = node->next[0];
+    while (impl.is_valid(node) && detail::equivalent(node->value, value, impl.less))
+    {
+        node = node->next[0];
+    }
+    return const_iterator(&impl, node);
 }
 
 template <class T, class C, class A, class LG>
