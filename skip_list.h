@@ -255,6 +255,7 @@ class multi_skip_list :
 protected:
     typedef skip_list<T,Compare,Allocator,LevelGenerator,true> parent_type;
     using typename parent_type::node_type;
+    using typename parent_type::impl_type;
     using parent_type::impl;
 
 public:
@@ -272,10 +273,10 @@ public:
     using typename parent_type::const_pointer;
     using typename parent_type::compare;
     
-    using typename parent_type::iterator;
-    using typename parent_type::const_iterator;
-    using typename parent_type::reverse_iterator;
-    using typename parent_type::const_reverse_iterator;
+    typedef typename detail::sl_iterator<impl_type>     iterator;
+    typedef typename iterator::const_iterator           const_iterator;
+    typedef std::reverse_iterator<iterator>             reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
 
     //======================================================================
     // lifetime management
