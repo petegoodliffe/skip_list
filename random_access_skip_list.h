@@ -991,11 +991,6 @@ rasl_impl<T,C,A,LG>::insert(const value_type &value, node_type *hint)
 {
     const unsigned level = new_level();
 
-    node_type *new_node = allocate(level);
-    assert_that(new_node);
-    impl_assert_that(new_node->level == level);
-    alloc.construct(&new_node->value, value);
-
     node_type *chain[num_levels]   = {0};
     size_type  indexes[num_levels] = {0};
     size_type  index               = find_chain(value, chain, indexes);
@@ -1006,6 +1001,11 @@ rasl_impl<T,C,A,LG>::insert(const value_type &value, node_type *hint)
         if (next != tail && detail::equivalent(next->value, value, less))
             return tail;
     }
+
+    node_type *new_node = allocate(level);
+    assert_that(new_node);
+    impl_assert_that(new_node->level == level);
+    alloc.construct(&new_node->value, value);
 
     for (unsigned l = 0; l < num_levels; ++l)
     {
