@@ -299,8 +299,8 @@ public:
     // Overridden operations
 
     size_type erase(const value_type &value);
-    iterator  erase(const_iterator position);
     iterator  erase(const_iterator first, const_iterator last);
+    using parent_type::erase;
 
     //======================================================================
     // "multi" operations
@@ -857,20 +857,6 @@ multi_skip_list<T,C,A,LG>::erase(const value_type &value)
     }
 
     return count;
-}
-
-template <class T, class C, class A, class LG>
-inline
-typename multi_skip_list<T,C,A,LG>::iterator
-multi_skip_list<T,C,A,LG>::erase(const_iterator position)
-{
-    // TODO: is this needed as a separate version? maybe not
-    assert_that(position.get_impl() == &impl);
-    assert_that(impl.is_valid(position.get_node()));
-    node_type *node = const_cast<node_type*>(position.get_node());
-    node_type *next = node->next[0];
-    impl.remove(node);
-    return iterator(&impl, next);
 }
 
 template <class T, class C, class A, class LG>
