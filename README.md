@@ -46,14 +46,6 @@ The multi_skip_list works slightly slower to provide multiple-identical-item ins
 The random_access_skip_list uses a little more memory to support fast random-access.
 
 
-Current state
--------------
-
-* *skip_list* is fully implemented and stable
-* *random_access_skip_list* is fully implemented.
-* *multi_skip_list* is a work in progress.
-
-
 Performance
 -----------
 
