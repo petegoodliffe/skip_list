@@ -268,7 +268,6 @@ bool UpperBoundTest(const T &value, const CONTAINER &container, size_t advance)
     return (container.upper_bound(value) == i);
 }
 
-
 TEST_CASE( "multi_skip_list/upper_bound/with empty list", "" )
 {
     multi_skip_list<int> list;
@@ -311,4 +310,69 @@ TEST_CASE( "multi_skip_list/upper_bound/comparison with multiset", "" )
     REQUIRE(UpperBoundTest(8,  clist, 3));
     REQUIRE(UpperBoundTest(20, clist, 5));
     REQUIRE(UpperBoundTest(22, clist, 6));
+}
+
+//============================================================================
+// equal_range
+
+template <typename T, typename CONTAINER>
+bool EqualRangeTest(const T &value, CONTAINER &container)
+{
+    typedef typename CONTAINER::iterator iterator;
+    std::pair<iterator,iterator> range = container.equal_range(value);
+    return range.first == container.lower_bound(value)
+        && range.second == container.upper_bound(value);
+}
+template <typename T, typename CONTAINER>
+bool EqualRangeTest(const T &value, const CONTAINER &container)
+{
+    typedef typename CONTAINER::const_iterator iterator;
+    std::pair<iterator,iterator> range = container.equal_range(value);
+    return range.first == container.lower_bound(value)
+        && range.second == container.upper_bound(value);
+}
+
+TEST_CASE( "multi_skip_list/equal_range/with empty list", "" )
+{
+    multi_skip_list<int> list;
+    std::pair<multi_skip_list<int>::iterator, multi_skip_list<int>::iterator> invalid = std::make_pair(list.end(), list.end());
+    REQUIRE(list.equal_range(0) == invalid);
+    REQUIRE(list.equal_range(1) == invalid);
+    REQUIRE(list.equal_range(100) == invalid);
+}
+
+TEST_CASE( "multi_skip_list/equal_range/comparison with multiset", "" )
+{
+    std::multiset<int> set; // we use multiset as a comparison of behaviour
+    set.insert(5);
+    set.insert(7);
+    set.insert(7);
+    set.insert(11);
+    set.insert(11);
+    set.insert(21);
+    
+    multi_skip_list<int> list(set.begin(), set.end());
+    REQUIRE(EqualRangeTest(5,  set)); REQUIRE(EqualRangeTest(5,  list));
+    REQUIRE(EqualRangeTest(7,  set)); REQUIRE(EqualRangeTest(7,  list));
+    REQUIRE(EqualRangeTest(11, set)); REQUIRE(EqualRangeTest(11, list));
+    REQUIRE(EqualRangeTest(21, set)); REQUIRE(EqualRangeTest(21, list));
+    
+    REQUIRE(EqualRangeTest(0,  set)); REQUIRE(EqualRangeTest(0,  list));
+    REQUIRE(EqualRangeTest(4,  set)); REQUIRE(EqualRangeTest(4,  list));
+    REQUIRE(EqualRangeTest(6,  set)); REQUIRE(EqualRangeTest(6,  list));
+    REQUIRE(EqualRangeTest(8,  set)); REQUIRE(EqualRangeTest(8,  list));
+    REQUIRE(EqualRangeTest(20, set)); REQUIRE(EqualRangeTest(20, list));
+    REQUIRE(EqualRangeTest(22, set)); REQUIRE(EqualRangeTest(22, list));
+    
+    const multi_skip_list<int> &clist = list;
+    REQUIRE(EqualRangeTest(5,  clist));
+    REQUIRE(EqualRangeTest(7,  clist));
+    REQUIRE(EqualRangeTest(11, clist));
+    REQUIRE(EqualRangeTest(21, clist));
+    REQUIRE(EqualRangeTest(0,  clist));
+    REQUIRE(EqualRangeTest(4,  clist));
+    REQUIRE(EqualRangeTest(6,  clist));
+    REQUIRE(EqualRangeTest(8,  clist));
+    REQUIRE(EqualRangeTest(20, clist));
+    REQUIRE(EqualRangeTest(22, clist));
 }

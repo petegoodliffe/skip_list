@@ -826,9 +826,7 @@ std::pair
     >
 multi_skip_list<T,C,A,LG>::equal_range(const value_type &value)
 {
-    // TODO
-    pg_not_implemented_yet();
-    return std::make_pair(parent_type::begin(),parent_type::begin());
+    return std::make_pair(lower_bound(value), upper_bound(value));
 }
     
 template <class T, class C, class A, class LG>
@@ -840,9 +838,7 @@ std::pair
     >
 multi_skip_list<T,C,A,LG>::equal_range(const value_type &value) const
 {
-    // TODO
-    pg_not_implemented_yet();
-    return std::make_pair(parent_type::begin(),parent_type::begin());
+    return std::make_pair(lower_bound(value), upper_bound(value));
 }
 
 template <class T, class C, class A, class LG>
