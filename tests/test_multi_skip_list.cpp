@@ -117,6 +117,9 @@ TEST_CASE( "multi_skip_list/remove a multi", "" )
     REQUIRE(list.count(11) == 0);
 }
 
+//============================================================================
+// erase
+
 TEST_CASE( "multi_skip_list/erase over multiple item boundary", "" )
 {
     multi_skip_list<int> list;
@@ -144,6 +147,55 @@ TEST_CASE( "multi_skip_list/erase over multiple item boundary", "" )
     REQUIRE(*i == 10); ++i;
     REQUIRE(*i == 11); ++i;
 }
+
+TEST_CASE( "multi_skip_list/erase over multiple item boundary", "" )
+{
+    multi_skip_list<int> list;
+    
+    list.insert(11);
+    list.insert(10);
+    list.insert(11);
+    list.insert(10);
+    list.insert(11);
+    REQUIRE(list.size() == 5);
+
+    multi_skip_list<int>::iterator i      = ++++list.begin();
+    multi_skip_list<int>::iterator result = list.erase(i);
+
+    REQUIRE(*result == 11);
+    REQUIRE(std::distance(list.begin(), result) == 2);
+    REQUIRE(list.size() == 4);
+    
+    i = ++list.begin();
+    result = list.erase(i);
+
+    REQUIRE(*result == 11);
+    REQUIRE(std::distance(list.begin(), result) == 1);
+    REQUIRE(list.size() == 3);
+    
+    i = list.begin();
+    result = list.erase(i);
+    
+    REQUIRE(*result == 11);
+    REQUIRE(std::distance(list.begin(), result) == 0);
+    REQUIRE(list.size() == 2);
+
+    i = ++list.begin();
+    result = list.erase(i);
+    
+    REQUIRE(result == list.end());
+    REQUIRE(std::distance(list.begin(), result) == 1);
+    REQUIRE(list.size() == 1);
+    
+    i = list.begin();
+    result = list.erase(i);
+
+    REQUIRE(result == list.end());
+    REQUIRE(list.empty());
+}
+
+//============================================================================
+// son of the mother of all tests
 
 TEST_CASE( "multi_skip_list/comparison with multiset", "" )
 {
