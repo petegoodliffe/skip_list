@@ -43,21 +43,27 @@ namespace detail
 namespace goodliffe {
 
 /// An STL-style skip list container; a reasonably fast associative
-/// ordered container.
+/// ordered container of unique objects.
 ///
 /// The skip list provides fast searching, and good insert/erase performance.
 /// You can iterate bi-directionally, but do not have full random access.
 ///
-/// For full random access, use the skip_list container.
+/// For full random access, use the random_access_skip_list container.
+///
+/// To insert non-unique objects, use the multi_skip_list container.
+///
+/// The order of the elements that compare equivalent is the order of insertion
+/// and does not change.
+///
+/// Inserting a new element into a skip_list does not invalidate iterators that
+/// point to existing elements. Erasing an element from a skip_list also does
+/// not invalidate any iterators, except, of course, for iterators that actually
+/// point to the element that is being erased.
 ///
 /// TODO:
 ///     * C++11: noexcept decls
 ///     * C++11: move operations
-///     * make "multi" skip_list version
-///
-/// Document:
-///     * efficiency of operations (big-O notation)
-///     * iterator invalidation
+///     * Document efficiency of operations (big-O notation)
 ///
 /// Following the freaky STL container names, this might be better named
 /// unique_sorted_list or sorted_list, or somesuch other drivel.
@@ -241,8 +247,8 @@ protected:
 
 namespace goodliffe {
 
-/// The multi_skip_list is a skip_list variant that allows duplicate values
-/// to be held (as a multiset is to a set).
+/// The multi_skip_list is a skip_list variant that allows on-unique elements
+/// to be held. (The multi_skip_list is to skip_list as std::multiset is to std::set).
 ///
 /// @see skip_list
 template <typename T,
@@ -273,10 +279,10 @@ public:
     using typename parent_type::const_pointer;
     using typename parent_type::compare;
     
-    typedef typename detail::sl_iterator<impl_type>     iterator;
-    typedef typename iterator::const_iterator           const_iterator;
-    typedef std::reverse_iterator<iterator>             reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
+    typedef typename detail::sl_iterator<impl_type> iterator;
+    typedef typename iterator::const_iterator       const_iterator;
+    typedef std::reverse_iterator<iterator>         reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
 
     //======================================================================
     // lifetime management
@@ -304,7 +310,7 @@ public:
     using parent_type::erase;
 
     //======================================================================
-    // "multi" operations
+    // Additional "multi" operations
 
     size_type count(const value_type &value) const;
 
