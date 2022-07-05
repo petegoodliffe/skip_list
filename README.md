@@ -14,7 +14,7 @@ Unlike most skip list implementations, you can iterate bi-directionally. Unlike
 traditional skip lists, I also provide additional containers providing full random
 access and multiple-identical item containment.
 
-This implementation provides a familiar C++ interface, with birectional iterators
+This implementation provides a familiar C++ interface, with bidirectional iterators
 and compatibility with STL algorithms. It should drop cleanly into any modern
 C++ project.
 
